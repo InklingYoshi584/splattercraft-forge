@@ -4,6 +4,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.splatcraft.forge.items.weapons.WeaponBaseItem;
+import net.splatcraft.forge.util.AbilityAccessUtils;
 import net.splatcraft.forge.util.CommonUtils;
 
 public class UseStoredSpecialPacket extends PlayC2SPacket
@@ -11,6 +12,9 @@ public class UseStoredSpecialPacket extends PlayC2SPacket
     @Override
     public void execute(Player player)
     {
+        if (!AbilityAccessUtils.canUseInkAbilities(player))
+            return;
+
         if (CommonUtils.anyWeaponOnCooldown(player))
             return;
 

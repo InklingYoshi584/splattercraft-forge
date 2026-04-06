@@ -43,6 +43,7 @@ import net.splatcraft.forge.registries.SplatcraftSounds;
 import net.splatcraft.forge.registries.SplatcraftStats;
 import net.splatcraft.forge.tileentities.InkColorTileEntity;
 import net.splatcraft.forge.util.ColorUtils;
+import net.splatcraft.forge.util.AbilityAccessUtils;
 import net.splatcraft.forge.util.InkBlockUtils;
 import net.splatcraft.forge.util.InkDamageUtils;
 
@@ -74,6 +75,13 @@ public class SquidFormHandler {
             return;
 
         PlayerInfo info = PlayerInfoCapability.get(player);
+        if (!AbilityAccessUtils.canUseInkAbilities(player) && info.isSquid())
+        {
+            info.setIsSquid(false);
+            if (!player.level().isClientSide())
+                SplatcraftPacketHandler.sendToTrackersAndSelf(new PlayerSetSquidS2CPacket(player.getUUID(), false), player);
+        }
+
         if (event.phase == TickEvent.Phase.START) {
             //if(!shouldBeInvisible(player))
             //    player.setInvisible(shouldBeInvisible(player));

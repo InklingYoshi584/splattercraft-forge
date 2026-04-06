@@ -57,6 +57,7 @@ import net.splatcraft.forge.items.weapons.IChargeableWeapon;
 import net.splatcraft.forge.items.weapons.SubWeaponItem;
 import net.splatcraft.forge.items.weapons.WeaponBaseItem;
 import net.splatcraft.forge.registries.SplatcraftGameRules;
+import net.splatcraft.forge.util.AbilityAccessUtils;
 import net.splatcraft.forge.util.*;
 
 import java.util.ArrayList;
@@ -98,6 +99,9 @@ public class RendererHandler
 
         if (PlayerInfoCapability.isSquid(player))
         {
+            if (!AbilityAccessUtils.canUseInkAbilities(player))
+                return;
+
             event.setCanceled(true);
             if (squidRenderer == null)
                 squidRenderer = new InkSquidRenderer(InkSquidRenderer.getContext());
@@ -140,6 +144,9 @@ public class RendererHandler
         Player player = Minecraft.getInstance().player;
         if (PlayerInfoCapability.isSquid(player))
         {
+            if (!AbilityAccessUtils.canUseInkAbilities(player))
+                return;
+
             event.setCanceled(true);
             return;
         }

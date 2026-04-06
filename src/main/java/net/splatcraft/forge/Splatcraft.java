@@ -44,7 +44,9 @@ public class Splatcraft {
         SplatcraftRegisties.register();
 
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, SplatcraftConfig.clientConfig);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, SplatcraftConfig.serverConfig);
         SplatcraftConfig.loadConfig(SplatcraftConfig.clientConfig, FMLPaths.CONFIGDIR.get().resolve(Splatcraft.MODID + "-client.toml").toString());
+        SplatcraftConfig.loadConfig(SplatcraftConfig.serverConfig, FMLPaths.CONFIGDIR.get().resolve(Splatcraft.MODID + "-server.toml").toString());
 
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::commonSetup);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientSetup);

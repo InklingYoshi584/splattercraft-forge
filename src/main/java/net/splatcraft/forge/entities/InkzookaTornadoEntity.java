@@ -36,7 +36,7 @@ public class InkzookaTornadoEntity extends Entity implements IColoredEntity
     private UUID ownerUUID;
     private ItemStack sourceWeapon = ItemStack.EMPTY;
     private InkBlockUtils.InkType inkType = InkBlockUtils.InkType.NORMAL;
-    private int lifespan = 200;
+    private int lifespan = 24;
 
     public InkzookaTornadoEntity(EntityType<? extends InkzookaTornadoEntity> type, Level level)
     {

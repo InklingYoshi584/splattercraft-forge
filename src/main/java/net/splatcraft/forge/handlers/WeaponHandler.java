@@ -21,6 +21,7 @@ import net.splatcraft.forge.items.weapons.SpecialWeaponItem;
 import net.splatcraft.forge.items.weapons.WeaponBaseItem;
 import net.splatcraft.forge.network.SplatcraftPacketHandler;
 import net.splatcraft.forge.network.s2c.PlayerSetSquidS2CPacket;
+import net.splatcraft.forge.util.AbilityAccessUtils;
 import net.splatcraft.forge.util.ColorUtils;
 import net.splatcraft.forge.util.CommonUtils;
 import net.splatcraft.forge.util.PlayerCharge;
@@ -55,6 +56,13 @@ public class WeaponHandler {
 	@SubscribeEvent
 	public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
 		Player player = event.player;
+		if (event.phase == TickEvent.Phase.START && !AbilityAccessUtils.canUseInkAbilities(player)) {
+			player.stopUsingItem();
+			PlayerCharge.dischargeWeapon(player);
+			prevPosMap.put(player, player.position());
+			return;
+		}
+
 		if (PlayerCooldown.hasPlayerCooldown(player)) {
 			player.getInventory().selected = PlayerCooldown.getPlayerCooldown(player).getSlotIndex();
 		}

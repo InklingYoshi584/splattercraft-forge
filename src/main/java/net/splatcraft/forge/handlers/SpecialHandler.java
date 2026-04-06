@@ -11,6 +11,7 @@ import net.splatcraft.forge.data.capabilities.playerinfo.PlayerInfo;
 import net.splatcraft.forge.data.capabilities.playerinfo.PlayerInfoCapability;
 import net.splatcraft.forge.items.weapons.SpecialWeaponItem;
 import net.splatcraft.forge.items.weapons.WeaponBaseItem;
+import net.splatcraft.forge.util.AbilityAccessUtils;
 
 @Mod.EventBusSubscriber(modid = Splatcraft.MODID)
 public class SpecialHandler
@@ -22,6 +23,18 @@ public class SpecialHandler
             return;
 
         Player player = event.player;
+        if (!AbilityAccessUtils.canUseInkAbilities(player))
+        {
+            ItemStack activeSpecial = getActiveSpecialStack(player);
+            if (activeSpecial.getItem() instanceof SpecialWeaponItem specialWeapon)
+            {
+                int sourceSlot = PlayerInfoCapability.get(player).getSpecialSourceSlot();
+                if (sourceSlot >= 0 && sourceSlot < player.getInventory().getContainerSize())
+                    endSpecial(player, player.getInventory().getItem(sourceSlot), specialWeapon, activeSpecial, true);
+            }
+            return;
+        }
+
         if (!PlayerInfoCapability.hasCapability(player))
             return;
 

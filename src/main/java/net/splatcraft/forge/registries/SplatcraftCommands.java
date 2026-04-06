@@ -18,6 +18,7 @@ import net.splatcraft.forge.commands.ReplaceColorCommand;
 import net.splatcraft.forge.commands.ScanTurfCommand;
 import net.splatcraft.forge.commands.StageCommand;
 import net.splatcraft.forge.commands.SuperJumpCommand;
+import net.splatcraft.forge.commands.AbilityWhitelistCommand;
 import net.splatcraft.forge.commands.arguments.InkColorArgument;
 
 import static net.splatcraft.forge.Splatcraft.MODID;
@@ -41,6 +42,7 @@ public class SplatcraftCommands
         StageCommand.register(dispatcher);
 
         SuperJumpCommand.register(dispatcher);
+        AbilityWhitelistCommand.register(dispatcher);
     }
 
     public static void registerArguments()

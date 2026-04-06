@@ -5,6 +5,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.splatcraft.forge.items.weapons.SubWeaponItem;
 import net.splatcraft.forge.items.weapons.WeaponBaseItem;
+import net.splatcraft.forge.util.AbilityAccessUtils;
 import net.splatcraft.forge.util.ColorUtils;
 import net.splatcraft.forge.util.CommonUtils;
 
@@ -13,6 +14,9 @@ public class UseStoredSubWeaponPacket extends PlayC2SPacket
     @Override
     public void execute(Player player)
     {
+        if (!AbilityAccessUtils.canUseInkAbilities(player))
+            return;
+
         if (CommonUtils.anyWeaponOnCooldown(player))
             return;
 

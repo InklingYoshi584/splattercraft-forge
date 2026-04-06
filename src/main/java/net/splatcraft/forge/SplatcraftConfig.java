@@ -12,12 +12,19 @@ import java.io.File;
 public class SplatcraftConfig
 {
     public static final ForgeConfigSpec clientConfig;
+    public static final ForgeConfigSpec serverConfig;
     private static final ForgeConfigSpec.Builder clientBuilder = new ForgeConfigSpec.Builder();
+    private static final ForgeConfigSpec.Builder serverBuilder = new ForgeConfigSpec.Builder();
+    private static CommentedFileConfig clientFile;
+    private static CommentedFileConfig serverFile;
 
     static
     {
         Client.init(clientBuilder);
         clientConfig = clientBuilder.build();
+
+        Server.init(serverBuilder);
+        serverConfig = serverBuilder.build();
     }
 
     public static void loadConfig(ForgeConfigSpec config, String path)
@@ -26,6 +33,17 @@ public class SplatcraftConfig
 
         file.load();
         config.setConfig(file);
+
+        if (config == clientConfig)
+            clientFile = file;
+        else if (config == serverConfig)
+            serverFile = file;
+    }
+
+    public static void saveServerConfig()
+    {
+        if (serverFile != null)
+            serverFile.save();
     }
 
     public enum InkIndicator {
@@ -77,6 +95,19 @@ public class SplatcraftConfig
         public static boolean getColorLock()
         {
             return false;
+        }
+    }
+
+    public static class Server
+    {
+        public static ForgeConfigSpec.ConfigValue<java.util.List<? extends String>> abilityWhitelist;
+
+        public static void init(ForgeConfigSpec.Builder server)
+        {
+            server.comment("Server ability access settings").push("abilities");
+            abilityWhitelist = server.comment("Players allowed to use ink and squid abilities. Empty means nobody is allowed. Entries are UUID strings.")
+                    .defineListAllowEmpty("whitelist", java.util.List.of(), value -> value instanceof String string && !string.isBlank());
+            server.pop();
         }
     }
 

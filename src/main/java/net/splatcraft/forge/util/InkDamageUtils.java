@@ -110,8 +110,10 @@ public class InkDamageUtils {
         }
 
         if (!(target instanceof SquidBumperEntity) && doDamage) {
+            boolean nonSquidEntity = !(target instanceof Player) && !(target instanceof IColoredEntity);
+            float damageScale = nonSquidEntity ? 0.4f : 1.0f;
             Vec3 deltaMovement = target.getDeltaMovement();
-            doDamage = target.hurt(damageSource, damage * (target instanceof Player || target instanceof IColoredEntity || damageMobs ? 1 : mobDmgPctg));
+            doDamage = target.hurt(damageSource, damage * damageScale * (target instanceof Player || target instanceof IColoredEntity || damageMobs ? 1 : mobDmgPctg));
             target.setDeltaMovement(deltaMovement); // trying to prevent knockback... (this game is so dumb)
             target.hurtMarked = false;
         }
@@ -119,9 +121,11 @@ public class InkDamageUtils {
         if ((targetColor <= -1 || canInk) && !target.isInWater() && !(target instanceof IColoredEntity && !((IColoredEntity) target).handleInkOverlay())) {
             if (InkOverlayCapability.hasCapability(target))
             {
+                boolean nonSquidEntity = !(target instanceof Player) && !(target instanceof IColoredEntity);
+                float overlayScale = nonSquidEntity ? 0.4f : 1.0f;
                 InkOverlayInfo info = InkOverlayCapability.get(target);
                 if (info.getAmount() < target.getMaxHealth() * 1.5)
-                    info.addAmount(damage * (target instanceof IColoredEntity || damageMobs ? 1 : Math.max(0.5f, mobDmgPctg)));
+                    info.addAmount(damage * overlayScale * (target instanceof IColoredEntity || damageMobs ? 1 : Math.max(0.5f, mobDmgPctg)));
                 info.setColor(color);
                 if (!level.isClientSide()) {
                     SplatcraftPacketHandler.sendToTrackersAndSelf(new UpdateInkOverlayPacket(target, info), target);

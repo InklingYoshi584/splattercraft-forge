@@ -8,6 +8,7 @@ import net.splatcraft.forge.data.capabilities.playerinfo.PlayerInfoCapability;
 import net.splatcraft.forge.network.SplatcraftPacketHandler;
 import net.splatcraft.forge.network.s2c.PlayerSetSquidS2CPacket;
 import net.splatcraft.forge.registries.SplatcraftSounds;
+import net.splatcraft.forge.util.AbilityAccessUtils;
 
 public class PlayerSetSquidC2SPacket extends PlayC2SPacket {
     private final boolean squid;
@@ -29,6 +30,9 @@ public class PlayerSetSquidC2SPacket extends PlayC2SPacket {
 
     @Override
     public void execute(Player player) {
+        if (!AbilityAccessUtils.canUseInkAbilities(player))
+            return;
+
         PlayerInfo target = PlayerInfoCapability.get(player);
         if (squid == target.isSquid()) {
             throw new IllegalStateException(String.format("Squid state did not change for %s (%s)", player.getGameProfile(), squid));

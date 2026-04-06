@@ -52,6 +52,7 @@ import net.splatcraft.forge.tileentities.container.WeaponLoadoutContainer;
 import net.splatcraft.forge.util.ClientUtils;
 import net.splatcraft.forge.util.ColorUtils;
 import net.splatcraft.forge.util.PlayerCooldown;
+import net.splatcraft.forge.util.AbilityAccessUtils;
 import net.splatcraft.forge.util.WeaponTooltip;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -417,6 +418,9 @@ public abstract class WeaponBaseItem<S extends AbstractWeaponSettings<S, ?>> ext
     @Override
     public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level level, Player player, @NotNull InteractionHand hand)
     {
+        if (!level.isClientSide && !AbilityAccessUtils.canUseInkAbilities(player))
+            return InteractionResultHolder.fail(player.getItemInHand(hand));
+
         if (hand == InteractionHand.MAIN_HAND && player.isCrouching())
         {
             if (!level.isClientSide && player instanceof ServerPlayer serverPlayer)
