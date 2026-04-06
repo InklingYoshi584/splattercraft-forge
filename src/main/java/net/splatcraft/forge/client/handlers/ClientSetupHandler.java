@@ -20,6 +20,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.splatcraft.forge.Splatcraft;
 import net.splatcraft.forge.SplatcraftConfig;
 import net.splatcraft.forge.client.gui.InkVatScreen;
+import net.splatcraft.forge.client.gui.WeaponLoadoutScreen;
 import net.splatcraft.forge.client.gui.WeaponWorkbenchScreen;
 import net.splatcraft.forge.data.SplatcraftTags;
 import net.splatcraft.forge.data.capabilities.playerinfo.PlayerInfoCapability;
@@ -60,6 +61,7 @@ public class ClientSetupHandler
     {
         MenuScreens.register(SplatcraftTileEntities.inkVatContainer.get(), InkVatScreen::new);
         MenuScreens.register(SplatcraftTileEntities.weaponWorkbenchContainer.get(), WeaponWorkbenchScreen::new);
+        MenuScreens.register(SplatcraftTileEntities.weaponLoadoutContainer.get(), WeaponLoadoutScreen::new);
     }
 
 

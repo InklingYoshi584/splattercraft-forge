@@ -80,6 +80,18 @@ public class SubWeaponItem extends WeaponBaseItem<SubWeaponSettings>
         return useSuper(level, player, hand);
     }
 
+    public boolean useFromMainWeapon(@NotNull Level level, @NotNull Player player, @NotNull ItemStack stack)
+    {
+        if (player.isSwimming() && !player.isInWater())
+            return false;
+
+        if (!enoughInk(player, this, getSettings(stack).inkConsumption, 0, true, true))
+            return false;
+
+        throwSub(stack, level, player);
+        return true;
+    }
+
     @Override
     public int getMaxStackSize(ItemStack stack) {
         return SubWeaponItem.singleUse(stack) ? 16 : 1;

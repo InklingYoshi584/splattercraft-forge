@@ -52,6 +52,8 @@ public class SplatcraftPacketHandler
         registerMessage(ReceivePlayerOverlayPacket.class, ReceivePlayerOverlayPacket::decode);
         registerMessage(UpdateInkPacket.class, UpdateInkPacket::decode);
         registerMessage(WatchInkPacket.class, WatchInkPacket::decode);
+        registerMessage(UseStoredSubWeaponPacket.class, UseStoredSubWeaponPacket::decode);
+        registerMessage(OpenWeaponLoadoutPacket.class, OpenWeaponLoadoutPacket::decode);
     }
 
     private static <MSG extends SplatcraftPacket> void registerMessage(Class<MSG> messageType, Function<FriendlyByteBuf, MSG> decoder)

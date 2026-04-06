@@ -27,8 +27,10 @@ import net.splatcraft.forge.data.capabilities.playerinfo.PlayerInfo;
 import net.splatcraft.forge.data.capabilities.playerinfo.PlayerInfoCapability;
 import net.splatcraft.forge.items.weapons.IChargeableWeapon;
 import net.splatcraft.forge.items.weapons.SubWeaponItem;
+import net.splatcraft.forge.items.weapons.WeaponBaseItem;
 import net.splatcraft.forge.mixin.MinecraftClientAccessor;
 import net.splatcraft.forge.network.SplatcraftPacketHandler;
+import net.splatcraft.forge.network.c2s.OpenWeaponLoadoutPacket;
 import net.splatcraft.forge.network.c2s.SwapSlotWithOffhandPacket;
 import net.splatcraft.forge.network.c2s.UpdateChargeStatePacket;
 import net.splatcraft.forge.util.ClientUtils;
@@ -45,6 +47,7 @@ public class SplatcraftKeyHandler {
     private static int autoSquidDelay = 0; //delays automatically returning into squid form after firing for balancing reasons and to allow packet-based weapons to fire (chargers and splatlings)
     private static ToggleableKey squidKey;
     private static ToggleableKey subWeaponHotkey;
+    private static ToggleableKey weaponLoadoutHotkey;
 
     private static int slot = -1;
 
@@ -58,6 +61,10 @@ public class SplatcraftKeyHandler {
         KeyMapping subWeaponMapping = new KeyMapping("key.subWeaponHotkey", -1, "key.categories.splatcraft");
         event.register(subWeaponMapping);
         subWeaponHotkey = new ToggleableKey(subWeaponMapping);
+
+        KeyMapping weaponLoadoutMapping = new KeyMapping("key.weaponLoadout", GLFW.GLFW_KEY_G, "key.categories.splatcraft");
+        event.register(weaponLoadoutMapping);
+        weaponLoadoutHotkey = new ToggleableKey(weaponLoadoutMapping);
     }
 
     public static boolean isSubWeaponHotkeyDown() {
@@ -96,6 +103,10 @@ public class SplatcraftKeyHandler {
 
         subWeaponHotkey.tick(KeyMode.HOLD, canHold);
         updatePressState(subWeaponHotkey, autoSquidDelay);
+
+        weaponLoadoutHotkey.tick(KeyMode.HOLD, canHold);
+        if (weaponLoadoutHotkey.pressed && player.getMainHandItem().getItem() instanceof WeaponBaseItem<?>)
+            SplatcraftPacketHandler.sendToServer(new OpenWeaponLoadoutPacket());
 
         if ((PlayerCooldown.hasPlayerCooldown(player) && !(PlayerCooldown.getPlayerCooldown(player).cancellable && squidKey.active))
                 || CommonUtils.anyWeaponOnCooldown(player))

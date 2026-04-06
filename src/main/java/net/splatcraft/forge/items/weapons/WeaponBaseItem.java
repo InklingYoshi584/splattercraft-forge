@@ -4,8 +4,11 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.cauldron.CauldronInteraction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
@@ -25,6 +28,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LayeredCauldronBlock;
+import net.minecraftforge.network.NetworkHooks;
 import net.splatcraft.forge.Splatcraft;
 import net.splatcraft.forge.SplatcraftConfig;
 import net.splatcraft.forge.blocks.InkedBlock;
@@ -43,6 +47,7 @@ import net.splatcraft.forge.registries.SplatcraftItemGroups;
 import net.splatcraft.forge.registries.SplatcraftItems;
 import net.splatcraft.forge.registries.SplatcraftSounds;
 import net.splatcraft.forge.tileentities.InkColorTileEntity;
+import net.splatcraft.forge.tileentities.container.WeaponLoadoutContainer;
 import net.splatcraft.forge.util.ClientUtils;
 import net.splatcraft.forge.util.ColorUtils;
 import net.splatcraft.forge.util.PlayerCooldown;
@@ -57,6 +62,8 @@ import java.util.List;
 public abstract class WeaponBaseItem<S extends AbstractWeaponSettings<S, ?>> extends Item implements IColoredItem
 {
     public static final int USE_DURATION = 72000;
+    public static final String TAG_SUB_WEAPON = "StoredSubWeapon";
+    public static final String TAG_SPECIAL_WEAPON = "StoredSpecialWeapon";
 
     public ResourceLocation settingsId;
     public boolean isSecret;
@@ -85,6 +92,55 @@ public abstract class WeaponBaseItem<S extends AbstractWeaponSettings<S, ?>> ext
     }
 
     public abstract Class<S> getSettingsClass();
+
+    public static ItemStack getStoredSubWeapon(ItemStack weaponStack)
+    {
+        return getStoredItem(weaponStack, TAG_SUB_WEAPON);
+    }
+
+    public static ItemStack getStoredSpecialWeapon(ItemStack weaponStack)
+    {
+        return getStoredItem(weaponStack, TAG_SPECIAL_WEAPON);
+    }
+
+    public static void setStoredSubWeapon(ItemStack weaponStack, ItemStack storedStack)
+    {
+        setStoredItem(weaponStack, TAG_SUB_WEAPON, storedStack);
+    }
+
+    public static void setStoredSpecialWeapon(ItemStack weaponStack, ItemStack storedStack)
+    {
+        setStoredItem(weaponStack, TAG_SPECIAL_WEAPON, storedStack);
+    }
+
+    private static ItemStack getStoredItem(ItemStack weaponStack, String tagKey)
+    {
+        if (!weaponStack.hasTag() || !weaponStack.getTag().contains(tagKey, Tag.TAG_COMPOUND))
+            return ItemStack.EMPTY;
+
+        return ItemStack.of(weaponStack.getTag().getCompound(tagKey));
+    }
+
+    private static void setStoredItem(ItemStack weaponStack, String tagKey, ItemStack storedStack)
+    {
+        CompoundTag tag = weaponStack.getOrCreateTag();
+        if (storedStack.isEmpty())
+        {
+            tag.remove(tagKey);
+            return;
+        }
+
+        ItemStack copy = storedStack.copy();
+        copy.setCount(1);
+        tag.put(tagKey, copy.save(new CompoundTag()));
+    }
+
+    public static void openLoadoutScreen(ServerPlayer player, InteractionHand hand)
+    {
+        NetworkHooks.openScreen(player,
+                WeaponLoadoutContainer.getMenuProvider(hand, player.getItemInHand(hand).getHoverName()),
+                buffer -> buffer.writeEnum(hand));
+    }
 
     private static final HashMap<Class<? extends AbstractWeaponSettings<?, ?>>, AbstractWeaponSettings<?, ?>> DEFAULTS = new HashMap<>() // a
     {{
@@ -203,6 +259,11 @@ public abstract class WeaponBaseItem<S extends AbstractWeaponSettings<S, ?>> ext
             tooltip.add(Component.literal(""));
         }
 
+        ItemStack storedSub = getStoredSubWeapon(stack);
+        ItemStack storedSpecial = getStoredSpecialWeapon(stack);
+        tooltip.add(Component.translatable("item.splatcraft.main_weapon.sub", storedSub.isEmpty() ? Component.translatable("gui.splatcraft.weapon_loadout.none") : storedSub.getHoverName()).withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.translatable("item.splatcraft.main_weapon.special", storedSpecial.isEmpty() ? Component.translatable("gui.splatcraft.weapon_loadout.none") : storedSpecial.getHoverName()).withStyle(ChatFormatting.GRAY));
+
         if(!stack.getOrCreateTag().getBoolean("HideTooltip"))
             getSettings(stack).addStatsToTooltip(tooltip, flag);
     }
@@ -298,6 +359,13 @@ public abstract class WeaponBaseItem<S extends AbstractWeaponSettings<S, ?>> ext
     @Override
     public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level level, Player player, @NotNull InteractionHand hand)
     {
+        if (hand == InteractionHand.MAIN_HAND && player.isCrouching())
+        {
+            if (!level.isClientSide && player instanceof ServerPlayer serverPlayer)
+                openLoadoutScreen(serverPlayer, hand);
+            return InteractionResultHolder.sidedSuccess(player.getItemInHand(hand), level.isClientSide());
+        }
+
         if(!(player.isSwimming() && !player.isInWater()))
             player.startUsingItem(hand);
         return useSuper(level, player, hand);

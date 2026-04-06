@@ -27,6 +27,7 @@
     "PlayerModelMixin",
     "RecipeCategoryMixin",
     "SheepWoolLayerMixin",
+    "WeaponHotkeyMixin$MinecraftAttackMixin",
     "WeaponHotkeyMixin$MinecraftInstance",
     "WeaponHotkeyMixin$PlayerControllerMix"
   ]

@@ -15,6 +15,7 @@ import net.splatcraft.forge.client.renderer.tileentity.RemotePedestalTileEntityR
 import net.splatcraft.forge.client.renderer.tileentity.StageBarrierTileEntityRenderer;
 import net.splatcraft.forge.tileentities.*;
 import net.splatcraft.forge.tileentities.container.InkVatContainer;
+import net.splatcraft.forge.tileentities.container.WeaponLoadoutContainer;
 import net.splatcraft.forge.tileentities.container.WeaponWorkbenchContainer;
 
 import static net.splatcraft.forge.Splatcraft.MODID;
@@ -37,6 +38,7 @@ public class SplatcraftTileEntities
 
     public static final RegistryObject<MenuType<InkVatContainer>> inkVatContainer = CONTAINER_REGISTRY.register("ink_vat", () -> IForgeMenuType.create(InkVatContainer::new));
     public static final RegistryObject<MenuType<WeaponWorkbenchContainer>> weaponWorkbenchContainer = registerContainer("weapon_workbench", WeaponWorkbenchContainer::new);
+    public static final RegistryObject<MenuType<WeaponLoadoutContainer>> weaponLoadoutContainer = CONTAINER_REGISTRY.register("weapon_loadout", () -> IForgeMenuType.create(WeaponLoadoutContainer::new));
 
     @SuppressWarnings("ConstantConditions")
     private static <T extends BlockEntity> RegistryObject<BlockEntityType<T>> registerTileEntity(String name, BlockEntityType.BlockEntitySupplier<T> factoryIn, RegistryObject<? extends Block>... allowedBlocks)
