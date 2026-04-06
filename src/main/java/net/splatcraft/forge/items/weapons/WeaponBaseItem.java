@@ -64,6 +64,7 @@ public abstract class WeaponBaseItem<S extends AbstractWeaponSettings<S, ?>> ext
     public static final int USE_DURATION = 72000;
     public static final String TAG_SUB_WEAPON = "StoredSubWeapon";
     public static final String TAG_SPECIAL_WEAPON = "StoredSpecialWeapon";
+    public static final String TAG_SPECIAL_POINTS = "SpecialPoints";
 
     public ResourceLocation settingsId;
     public boolean isSecret;
@@ -101,6 +102,57 @@ public abstract class WeaponBaseItem<S extends AbstractWeaponSettings<S, ?>> ext
     public static ItemStack getStoredSpecialWeapon(ItemStack weaponStack)
     {
         return getStoredItem(weaponStack, TAG_SPECIAL_WEAPON);
+    }
+
+    public static int getSpecialPoints(ItemStack weaponStack)
+    {
+        return weaponStack.hasTag() ? weaponStack.getTag().getInt(TAG_SPECIAL_POINTS) : 0;
+    }
+
+    public static void setSpecialPoints(ItemStack weaponStack, int points)
+    {
+        weaponStack.getOrCreateTag().putInt(TAG_SPECIAL_POINTS, Math.max(points, 0));
+    }
+
+    public static int getRequiredSpecialPoints(ItemStack weaponStack)
+    {
+        ItemStack specialStack = getStoredSpecialWeapon(weaponStack);
+        return specialStack.getItem() instanceof SpecialWeaponItem specialWeapon ? specialWeapon.getPointsRequired(specialStack) : 0;
+    }
+
+    public static void addSpecialPoints(ItemStack weaponStack, int points)
+    {
+        if (points <= 0)
+            return;
+
+        ItemStack specialStack = getStoredSpecialWeapon(weaponStack);
+        if (!(specialStack.getItem() instanceof SpecialWeaponItem specialWeapon))
+            return;
+
+        int max = specialWeapon.getPointsRequired(specialStack);
+        setSpecialPoints(weaponStack, Math.min(getSpecialPoints(weaponStack) + points, max));
+    }
+
+    public static boolean canUseStoredSpecial(ItemStack weaponStack)
+    {
+        ItemStack specialStack = getStoredSpecialWeapon(weaponStack);
+        return specialStack.getItem() instanceof SpecialWeaponItem specialWeapon && getSpecialPoints(weaponStack) >= specialWeapon.getPointsRequired(specialStack);
+    }
+
+    public static boolean tryUseStoredSpecial(Level level, Player player, ItemStack weaponStack)
+    {
+        ItemStack specialStack = getStoredSpecialWeapon(weaponStack);
+        if (!(specialStack.getItem() instanceof SpecialWeaponItem specialWeapon))
+            return false;
+
+        if (!specialWeapon.canUseSpecial(player, specialStack, weaponStack))
+            return false;
+
+        if (!specialWeapon.useSpecial(level, player, specialStack, weaponStack))
+            return false;
+
+        setSpecialPoints(weaponStack, 0);
+        return true;
     }
 
     public static void setStoredSubWeapon(ItemStack weaponStack, ItemStack storedStack)
@@ -263,6 +315,8 @@ public abstract class WeaponBaseItem<S extends AbstractWeaponSettings<S, ?>> ext
         ItemStack storedSpecial = getStoredSpecialWeapon(stack);
         tooltip.add(Component.translatable("item.splatcraft.main_weapon.sub", storedSub.isEmpty() ? Component.translatable("gui.splatcraft.weapon_loadout.none") : storedSub.getHoverName()).withStyle(ChatFormatting.GRAY));
         tooltip.add(Component.translatable("item.splatcraft.main_weapon.special", storedSpecial.isEmpty() ? Component.translatable("gui.splatcraft.weapon_loadout.none") : storedSpecial.getHoverName()).withStyle(ChatFormatting.GRAY));
+        if (!storedSpecial.isEmpty())
+            tooltip.add(Component.translatable("item.splatcraft.main_weapon.special_points", getSpecialPoints(stack), getRequiredSpecialPoints(stack)).withStyle(ChatFormatting.GRAY));
 
         if(!stack.getOrCreateTag().getBoolean("HideTooltip"))
             getSettings(stack).addStatsToTooltip(tooltip, flag);

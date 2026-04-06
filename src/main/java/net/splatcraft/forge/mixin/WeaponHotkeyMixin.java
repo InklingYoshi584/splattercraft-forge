@@ -8,6 +8,7 @@ import net.minecraft.world.item.ItemStack;
 import net.splatcraft.forge.client.handlers.SplatcraftKeyHandler;
 import net.splatcraft.forge.items.weapons.WeaponBaseItem;
 import net.splatcraft.forge.network.SplatcraftPacketHandler;
+import net.splatcraft.forge.network.c2s.UseStoredSpecialPacket;
 import net.splatcraft.forge.network.c2s.UseStoredSubWeaponPacket;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -58,6 +59,25 @@ public class WeaponHotkeyMixin
 			{
 				SplatcraftPacketHandler.sendToServer(new UseStoredSubWeaponPacket());
 				cir.setReturnValue(false);
+			}
+		}
+	}
+
+	@Mixin(Minecraft.class)
+	public static abstract class MinecraftPickMixin
+	{
+		@Inject(method = "pickBlock", at = @At("HEAD"), cancellable = true)
+		private void pickBlock(CallbackInfo ci)
+		{
+			Minecraft minecraft = (Minecraft) (Object) this;
+			if (minecraft.player == null || minecraft.screen != null || !SplatcraftKeyHandler.isSpecialWeaponHotkeyDown())
+				return;
+
+			ItemStack stack = minecraft.player.getMainHandItem();
+			if (stack.getItem() instanceof WeaponBaseItem<?> && WeaponBaseItem.canUseStoredSpecial(stack))
+			{
+				SplatcraftPacketHandler.sendToServer(new UseStoredSpecialPacket());
+				ci.cancel();
 			}
 		}
 	}

@@ -106,6 +106,10 @@ public class SuctionBombEntity extends AbstractSubWeaponEntity {
 
     public void setStickFacing()
     {
+        if (stickFacing == null)
+        {
+            stickFacing = Direction.UP;
+        }
 
         if(stickFacing.get2DDataValue() >= 0)
         {
@@ -162,6 +166,8 @@ public class SuctionBombEntity extends AbstractSubWeaponEntity {
         if(nbt.contains("StickFacing"))
             stickFacing = Direction.byName(nbt.getString("StickFacing"));
         inGround = nbt.getBoolean("InGround");
+        if (stickFacing == null && inGround)
+            stickFacing = Direction.UP;
         shakeTime = nbt.getInt("ShakeTime");
         if (nbt.contains("InBlockState", 10))
 			this.inBlockState = NbtUtils.readBlockState(level().registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.BLOCK), nbt.getCompound("inBlockState"));

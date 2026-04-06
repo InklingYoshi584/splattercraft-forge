@@ -29,6 +29,7 @@
     "SheepWoolLayerMixin",
     "WeaponHotkeyMixin$MinecraftAttackMixin",
     "WeaponHotkeyMixin$MinecraftInstance",
+    "WeaponHotkeyMixin$MinecraftPickMixin",
     "WeaponHotkeyMixin$PlayerControllerMix"
   ]
 }

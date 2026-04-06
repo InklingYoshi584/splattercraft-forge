@@ -28,6 +28,7 @@ import net.splatcraft.forge.data.capabilities.playerinfo.PlayerInfoCapability;
 import net.splatcraft.forge.data.capabilities.worldink.WorldInk;
 import net.splatcraft.forge.data.capabilities.worldink.WorldInkCapability;
 import net.splatcraft.forge.entities.SpawnShieldEntity;
+import net.splatcraft.forge.items.weapons.WeaponBaseItem;
 import net.splatcraft.forge.network.SplatcraftPacketHandler;
 import net.splatcraft.forge.network.s2c.UpdateInkPacket;
 import net.splatcraft.forge.registries.SplatcraftBlocks;
@@ -44,6 +45,10 @@ public class InkBlockUtils {
 
         if (player != null && inked == BlockInkedResult.SUCCESS) {
             player.awardStat(SplatcraftStats.BLOCKS_INKED);
+
+            ItemStack mainHand = player.getMainHandItem();
+            if (mainHand.getItem() instanceof WeaponBaseItem<?>)
+                WeaponBaseItem.addSpecialPoints(mainHand, 1);
         }
 
         return inked;

@@ -247,8 +247,10 @@
   "item.splatcraft.splash_wall": "Splash Wall",
   "item.splatcraft.dummy_special": "Dummy Special",
   "item.splatcraft.dummy_special.tooltip": "Placeholder special weapon for loadout testing.",
+  "item.splatcraft.special.points": "Points Needed: %s",
   "item.splatcraft.main_weapon.sub": "Sub: %s",
   "item.splatcraft.main_weapon.special": "Special: %s",
+  "item.splatcraft.main_weapon.special_points": "Special Points: %s / %s",
   "item.splatcraft.tooltip.single_use":"§7§oSingle Use",
 
   "item.splatcraft.ink_tank": "Ink Tank",
@@ -545,6 +547,7 @@
   "status.clear_ink.success": "Successfully cleared %s blocks",
   "status.change_color.out_of_world": "§cCannot clear ink outside of the world",
   "status.change_color.success": "Successfully recolored %s blocks to %s",
+  "status.special.dummy": "this special did sth",
 
   "status.blueprint.invalid": "This Blueprint is empty.",
   "status.blueprint.already_unlocked.single": "You already have this Blueprint.",

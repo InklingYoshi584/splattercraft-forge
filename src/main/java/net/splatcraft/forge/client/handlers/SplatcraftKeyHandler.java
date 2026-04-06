@@ -48,6 +48,7 @@ public class SplatcraftKeyHandler {
     private static ToggleableKey squidKey;
     private static ToggleableKey subWeaponHotkey;
     private static ToggleableKey weaponLoadoutHotkey;
+    private static ToggleableKey specialWeaponHotkey;
 
     private static int slot = -1;
 
@@ -65,10 +66,15 @@ public class SplatcraftKeyHandler {
         KeyMapping weaponLoadoutMapping = new KeyMapping("key.weaponLoadout", GLFW.GLFW_KEY_G, "key.categories.splatcraft");
         event.register(weaponLoadoutMapping);
         weaponLoadoutHotkey = new ToggleableKey(weaponLoadoutMapping);
+
+        specialWeaponHotkey = new ToggleableKey(Minecraft.getInstance().options.keyPickItem);
     }
 
     public static boolean isSubWeaponHotkeyDown() {
         return subWeaponHotkey.active;
+    }
+    public static boolean isSpecialWeaponHotkeyDown() {
+        return specialWeaponHotkey != null && specialWeaponHotkey.active;
     }
     public static boolean isSquidKeyDown() {
         return !pressState.isEmpty() && Iterables.getLast(pressState).equals(squidKey);
@@ -107,6 +113,9 @@ public class SplatcraftKeyHandler {
         weaponLoadoutHotkey.tick(KeyMode.HOLD, canHold);
         if (weaponLoadoutHotkey.pressed && player.getMainHandItem().getItem() instanceof WeaponBaseItem<?>)
             SplatcraftPacketHandler.sendToServer(new OpenWeaponLoadoutPacket());
+
+        if (specialWeaponHotkey != null)
+            specialWeaponHotkey.tick(KeyMode.HOLD, canHold);
 
         if ((PlayerCooldown.hasPlayerCooldown(player) && !(PlayerCooldown.getPlayerCooldown(player).cancellable && squidKey.active))
                 || CommonUtils.anyWeaponOnCooldown(player))
