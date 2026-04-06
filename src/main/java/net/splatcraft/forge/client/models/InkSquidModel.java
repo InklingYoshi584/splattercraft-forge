@@ -98,7 +98,7 @@ public class InkSquidModel extends EntityModel<LivingEntity> {
 			squid.xRot = (float) -Math.min(Math.PI / 2, Math.max(-Math.PI / 2, angle));
 		}
 
-		if (entitylivingbaseIn.isOnGround() || isSwimming)
+		if (entitylivingbaseIn.onGround() || isSwimming)
 		{
 			this.rightLimb.yRot = Mth.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount / (isSwimming ? 2.2f : 1.5f);
 			this.leftLimb.yRot = Mth.cos(limbSwing * 0.6662F + (float) Math.PI) * 1.4F * limbSwingAmount / (isSwimming ? 2.2f : 1.5f);

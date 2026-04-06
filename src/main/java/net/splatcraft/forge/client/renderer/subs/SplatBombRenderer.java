@@ -1,7 +1,7 @@
 package net.splatcraft.forge.client.renderer.subs;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
@@ -31,8 +31,8 @@ public class SplatBombRenderer extends SubWeaponRenderer<SplatBombEntity, SplatB
 		if(!entityIn.isItem)
 		{
 			poseStack.translate(0.0D, 0.2, 0.0D);
-			poseStack.mulPose(Vector3f.YP.rotationDegrees(Mth.lerp(partialTicks, entityIn.yRotO, entityIn.getYRot())*2 - 90f));
-			poseStack.mulPose(Vector3f.XP.rotationDegrees(Mth.lerp(partialTicks, entityIn.xRotO, entityIn.getXRot())*2 - 180f));
+			poseStack.mulPose(Axis.YP.rotationDegrees(Mth.lerp(partialTicks, entityIn.yRotO, entityIn.getYRot())*2 - 90f));
+			poseStack.mulPose(Axis.XP.rotationDegrees(Mth.lerp(partialTicks, entityIn.xRotO, entityIn.getXRot())*2 - 180f));
 
 			float f = entityIn.getFlashIntensity(partialTicks);
 			float f1 = 1.0F + Mth.sin(f * 100.0F) * f * 0.01F;

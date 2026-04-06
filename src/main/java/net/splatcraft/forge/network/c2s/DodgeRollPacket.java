@@ -32,7 +32,7 @@ public class DodgeRollPacket extends PlayC2SPacket
     @Override
     public void execute(Player player)
     {
-        Player target = player.level.getPlayerByUUID(this.target);
+        Player target = player.level().getPlayerByUUID(this.target);
         ((DualieItem) mainDualie.getItem()).performRoll(target, mainDualie, offhandDualie);
     }
 

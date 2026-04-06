@@ -1,7 +1,7 @@
 package net.splatcraft.forge.client.renderer.subs;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
@@ -33,8 +33,8 @@ public class CurlingBombRenderer extends SubWeaponRenderer<CurlingBombEntity, Cu
 
 		if(!entityIn.isItem)
 		{
-			matrixStackIn.mulPose(Vector3f.YP.rotationDegrees(lerp(partialTicks, entityIn.yRotO, entityIn.getYRot()) - 180.0F));
-			//matrixStackIn.mulPose(Vector3f.XP.rotationDegrees(MathHelper.lerp(partialTicks, entityIn.xRotO, entityIn.xRot)+90F));
+			matrixStackIn.mulPose(Axis.YP.rotationDegrees(lerp(partialTicks, entityIn.yRotO, entityIn.getYRot()) - 180.0F));
+			//matrixStackIn.mulPose(Axis.XP.rotationDegrees(MathHelper.lerp(partialTicks, entityIn.xRotO, entityIn.xRot)+90F));
 			//matrixStackIn.scale(1, -1, 1);
 
 			float f = entityIn.getFlashIntensity(partialTicks);

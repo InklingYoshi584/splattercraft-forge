@@ -5,6 +5,7 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
 
 import java.util.Objects;
 
@@ -12,7 +13,7 @@ public class ClientPlayerSound extends SimpleSoundInstance
 {
     public ClientPlayerSound(SoundEvent soundIn, SoundSource categoryIn, float volumeIn, float pitchIn)
     {
-        super(soundIn, categoryIn, volumeIn, pitchIn, new BlockPos(0, 0, 0));
+        super(soundIn, categoryIn, volumeIn, pitchIn, RandomSource.create(), new BlockPos(0, 0, 0));
     }
 
     @Override

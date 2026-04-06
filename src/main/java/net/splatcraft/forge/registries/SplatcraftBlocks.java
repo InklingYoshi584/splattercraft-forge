@@ -1,23 +1,47 @@
 package net.splatcraft.forge.registries;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.material.Material;
-import net.minecraft.world.level.material.MaterialColor;
-import net.minecraftforge.event.RegistryEvent;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
+import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.material.PushReaction;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.MissingMappingsEvent;
 import net.minecraftforge.registries.RegistryObject;
-import net.splatcraft.forge.blocks.*;
-
-import java.util.ArrayList;
-import java.util.HashMap;
+import net.splatcraft.forge.blocks.BarrierBarBlock;
+import net.splatcraft.forge.blocks.CanvasBlock;
+import net.splatcraft.forge.blocks.ColoredBarrierBlock;
+import net.splatcraft.forge.blocks.CrateBlock;
+import net.splatcraft.forge.blocks.DebrisBlock;
+import net.splatcraft.forge.blocks.EmptyInkwellBlock;
+import net.splatcraft.forge.blocks.GrateBlock;
+import net.splatcraft.forge.blocks.GrateRampBlock;
+import net.splatcraft.forge.blocks.InkStainedBlock;
+import net.splatcraft.forge.blocks.InkStainedSlabBlock;
+import net.splatcraft.forge.blocks.InkStainedStairBlock;
+import net.splatcraft.forge.blocks.InkVatBlock;
+import net.splatcraft.forge.blocks.InkedBlock;
+import net.splatcraft.forge.blocks.InkedCarpetBlock;
+import net.splatcraft.forge.blocks.InkedGlassBlock;
+import net.splatcraft.forge.blocks.InkedGlassPaneBlock;
+import net.splatcraft.forge.blocks.InkwellBlock;
+import net.splatcraft.forge.blocks.MetalBlock;
+import net.splatcraft.forge.blocks.OreBlock;
+import net.splatcraft.forge.blocks.RemotePedestalBlock;
+import net.splatcraft.forge.blocks.SpawnPadBlock;
+import net.splatcraft.forge.blocks.SplatSwitchBlock;
+import net.splatcraft.forge.blocks.StageBarrierBlock;
+import net.splatcraft.forge.blocks.TarpBlock;
+import net.splatcraft.forge.blocks.WeaponWorkbenchBlock;
 
 import static net.splatcraft.forge.Splatcraft.MODID;
 
@@ -32,29 +56,29 @@ public class SplatcraftBlocks
     public static final RegistryObject<InkedBlock> glowingInkedBlock = REGISTRY.register("glowing_inked_block", InkedBlock::glowing);
     public static final RegistryObject<InkedBlock> clearInkedBlock = REGISTRY.register("clear_inked_block", InkedBlock::new);
 
-    public static final RegistryObject<Block> sardiniumBlock = REGISTRY.register("sardinium_block", () -> new MetalBlock(Material.METAL, MaterialColor.TERRACOTTA_WHITE));
-    public static final RegistryObject<Block> rawSardiniumBlock = REGISTRY.register("raw_sardinium_block", () -> new Block(BlockBehaviour.Properties.of(Material.METAL, MaterialColor.TERRACOTTA_WHITE).requiresCorrectToolForDrops().strength(5, 6)));
+    public static final RegistryObject<Block> sardiniumBlock = REGISTRY.register("sardinium_block", () -> new MetalBlock(MapColor.TERRACOTTA_WHITE));
+    public static final RegistryObject<Block> rawSardiniumBlock = REGISTRY.register("raw_sardinium_block", () -> new Block(BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_WHITE).requiresCorrectToolForDrops().strength(5, 6)));
     public static final RegistryObject<Block> sardiniumOre = REGISTRY.register("sardinium_ore", OreBlock::new);
-    public static final RegistryObject<Block> powerEggBlock = REGISTRY.register("power_egg_block", () -> new Block(BlockBehaviour.Properties.of(Material.VEGETABLE, DyeColor.ORANGE).sound(SoundType.SLIME_BLOCK).strength(0.2f, 0).lightLevel((state) -> 9)));
-    public static final RegistryObject<CrateBlock> crate = REGISTRY.register("crate", () -> new CrateBlock("crate", false));
-    public static final RegistryObject<CrateBlock> sunkenCrate = REGISTRY.register("sunken_crate", () -> new CrateBlock("sunken_crate", true));
-    public static final RegistryObject<Block> ammoKnightsDebris = REGISTRY.register("ammo_knights_debris", () -> new DebrisBlock(Material.METAL, MaterialColor.EMERALD));
-    public static final RegistryObject<Block> coralite = REGISTRY.register("coralite", () -> new InkStainedBlock.WithUninkedVariant(BlockBehaviour.Properties.of(Material.STONE, MaterialColor.CLAY).strength(3, 3).requiresCorrectToolForDrops()));
-    public static final RegistryObject<Block> coraliteSlab = REGISTRY.register("coralite_slab", () -> new InkStainedSlabBlock.WithUninkedVariant(BlockBehaviour.Properties.of(Material.STONE, MaterialColor.CLAY).strength(3, 3).requiresCorrectToolForDrops()));
-    public static final RegistryObject<Block> coraliteStairs = REGISTRY.register("coralite_stairs", () -> new InkStainedStairBlock.WithUninkedVariant(() -> coralite.get().defaultBlockState(), BlockBehaviour.Properties.of(Material.STONE, MaterialColor.CLAY).strength(3, 3).requiresCorrectToolForDrops()));
+    public static final RegistryObject<Block> powerEggBlock = REGISTRY.register("power_egg_block", () -> new Block(BlockBehaviour.Properties.of().mapColor(DyeColor.ORANGE).pushReaction(PushReaction.DESTROY).sound(SoundType.SLIME_BLOCK).strength(0.2f, 0).lightLevel((state) -> 9)));
+    public static final RegistryObject<CrateBlock> crate = REGISTRY.register("crate", () -> new CrateBlock(false));
+    public static final RegistryObject<CrateBlock> sunkenCrate = REGISTRY.register("sunken_crate", () -> new CrateBlock(true));
+    public static final RegistryObject<Block> ammoKnightsDebris = REGISTRY.register("ammo_knights_debris", () -> new DebrisBlock(MapColor.EMERALD));
+    public static final RegistryObject<Block> coralite = REGISTRY.register("coralite", () -> new InkStainedBlock.WithUninkedVariant(BlockBehaviour.Properties.of().instrument(NoteBlockInstrument.BASEDRUM).mapColor(MapColor.CLAY).strength(3, 3).requiresCorrectToolForDrops()));
+    public static final RegistryObject<Block> coraliteSlab = REGISTRY.register("coralite_slab", () -> new InkStainedSlabBlock.WithUninkedVariant(BlockBehaviour.Properties.of().instrument(NoteBlockInstrument.BASEDRUM).mapColor(MapColor.CLAY).strength(3, 3).requiresCorrectToolForDrops()));
+    public static final RegistryObject<Block> coraliteStairs = REGISTRY.register("coralite_stairs", () -> new InkStainedStairBlock.WithUninkedVariant(() -> coralite.get().defaultBlockState(), BlockBehaviour.Properties.of().instrument(NoteBlockInstrument.BASEDRUM).mapColor(MapColor.CLAY).strength(3, 3).requiresCorrectToolForDrops()));
 
     public static final RegistryObject<Block> inkVat = REGISTRY.register("ink_vat", InkVatBlock::new);
-    public static final RegistryObject<Block> weaponWorkbench = REGISTRY.register("ammo_knights_workbench", () -> new WeaponWorkbenchBlock("ammo_knights_workbench"));
+    public static final RegistryObject<Block> weaponWorkbench = REGISTRY.register("ammo_knights_workbench", () -> new WeaponWorkbenchBlock());
     public static final RegistryObject<Block> remotePedestal = REGISTRY.register("remote_pedestal", RemotePedestalBlock::new);
 
-    public static final RegistryObject<Block> emptyInkwell = REGISTRY.register("empty_inkwell", () -> new EmptyInkwellBlock(Block.Properties.of(Material.GLASS).strength(0.3F).sound(SoundType.GLASS)));
+    public static final RegistryObject<Block> emptyInkwell = REGISTRY.register("empty_inkwell", () -> new EmptyInkwellBlock(Block.Properties.of().instrument(NoteBlockInstrument.HAT).isRedstoneConductor((blockState, blockGetter, blockPos) -> false).strength(0.3F).sound(SoundType.GLASS)));
     public static final RegistryObject<Block> inkwell = REGISTRY.register("inkwell", InkwellBlock::new);
 
-    public static final RegistryObject<Block> inkedWool = REGISTRY.register("ink_stained_wool", () -> new InkStainedBlock(BlockBehaviour.Properties.of(Material.WOOL).strength(0.8F).sound(SoundType.WOOL)));
-    public static final RegistryObject<Block> inkedCarpet = REGISTRY.register("ink_stained_carpet", () -> new InkedCarpetBlock("ink_stained_carpet"));
-    public static final RegistryObject<Block> inkedGlass = REGISTRY.register("ink_stained_glass", () -> new InkedGlassBlock("ink_stained_glass"));
+    public static final RegistryObject<Block> inkedWool = REGISTRY.register("ink_stained_wool", () -> new InkStainedBlock(BlockBehaviour.Properties.of().ignitedByLava().mapColor(MapColor.WOOL).strength(0.8F).sound(SoundType.WOOL)));
+    public static final RegistryObject<Block> inkedCarpet = REGISTRY.register("ink_stained_carpet", () -> new InkedCarpetBlock());
+    public static final RegistryObject<Block> inkedGlass = REGISTRY.register("ink_stained_glass", () -> new InkedGlassBlock());
     public static final RegistryObject<Block> inkedGlassPane = REGISTRY.register("ink_stained_glass_pane", InkedGlassPaneBlock::new);
-    public static final RegistryObject<Block> canvas = REGISTRY.register("canvas", () -> new CanvasBlock("canvas"));
+    public static final RegistryObject<Block> canvas = REGISTRY.register("canvas", CanvasBlock::new);
     public static final RegistryObject<Block> splatSwitch =  REGISTRY.register("splat_switch", SplatSwitchBlock::new);
     public static final RegistryObject<SpawnPadBlock> spawnPad =  REGISTRY.register("spawn_pad", SpawnPadBlock::new);
     public static final RegistryObject<Block> spawnPadEdge =  REGISTRY.register("spawn_pad_edge", () -> new SpawnPadBlock.Aux(spawnPad.get()));
@@ -92,7 +116,7 @@ public class SplatcraftBlocks
 
 
     @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
-    public static class Missmaps
+    public static class MissingMappingsEventSubscriber
     {
         private static final HashMap<String, RegistryObject<? extends Block>> remaps = new HashMap<>() {{
             put("inked_wool", inkedWool);
@@ -111,11 +135,11 @@ public class SplatcraftBlocks
         }};
 
         @SubscribeEvent
-        public static void onMissingMappings(final RegistryEvent.MissingMappings<Block> event)
+        public static void onMissingMappings(final MissingMappingsEvent event)
         {
-            for(RegistryEvent.MissingMappings.Mapping<Block> block : event.getMappings(MODID))
+            for(MissingMappingsEvent.Mapping<Block> block : event.getMappings(REGISTRY.getRegistryKey(), MODID))
             {
-                String key = block.key.getPath();
+                String key = block.getKey().getPath();
                 if(remaps.containsKey(key))
                     block.remap(remaps.get(key).get());
             }

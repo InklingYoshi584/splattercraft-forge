@@ -1,19 +1,17 @@
 package net.splatcraft.forge.loot;
 
-import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraftforge.common.loot.GlobalLootModifierSerializer;
+import net.minecraftforge.common.loot.IGlobalLootModifier;
 import net.minecraftforge.common.loot.LootModifier;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
-import java.util.Objects;
 
 public class ChestLootModifier extends LootModifier
 {
@@ -22,6 +20,14 @@ public class ChestLootModifier extends LootModifier
     protected final int countMax;
     protected final float chance;
     protected final ResourceLocation parentTable;
+
+    public static final Codec<ChestLootModifier> CODEC = RecordCodecBuilder.create(inst -> codecStart(inst).and(inst.group(
+            ForgeRegistries.ITEMS.getCodec().fieldOf("item").forGetter(ChestLootModifier::getItem),
+            Codec.INT.fieldOf("countMin").forGetter(ChestLootModifier::getCountMin),
+            Codec.INT.fieldOf("countMax").forGetter(ChestLootModifier::getCountMax),
+            Codec.FLOAT.fieldOf("chance").forGetter(ChestLootModifier::getChance),
+            ResourceLocation.CODEC.fieldOf("parent").forGetter(ChestLootModifier::getParentTable)
+    )).apply(inst, ChestLootModifier::new));
 
     /**
      * Constructs a LootModifier.
@@ -38,9 +44,29 @@ public class ChestLootModifier extends LootModifier
         this.parentTable = parentTable;
     }
 
+    public Item getItem() {
+        return item;
+    }
+
+    public int getCountMin() {
+        return countMin;
+    }
+
+    public int getCountMax() {
+        return countMax;
+    }
+
+    public float getChance() {
+        return chance;
+    }
+
+    public ResourceLocation getParentTable() {
+        return parentTable;
+    }
+
     @NotNull
     @Override
-    protected List<ItemStack> doApply(List<ItemStack> generatedLoot, LootContext context)
+    protected ObjectArrayList<ItemStack> doApply(ObjectArrayList<ItemStack> generatedLoot, LootContext context)
     {
         if (!context.getQueriedLootTableId().equals(parentTable))
         {
@@ -57,30 +83,8 @@ public class ChestLootModifier extends LootModifier
         return generatedLoot;
     }
 
-    public static class Serializer extends GlobalLootModifierSerializer<ChestLootModifier>
-    {
-        @Override
-        public ChestLootModifier read(ResourceLocation location, JsonObject object, LootItemCondition[] ailootcondition)
-        {
-            Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(GsonHelper.getAsString(object, "item")));
-            int countMin = GsonHelper.getAsInt(object, "countMin");
-            int countMax = GsonHelper.getAsInt(object, "countMax");
-            float chance = GsonHelper.getAsFloat(object, "chance");
-            ResourceLocation partentTable = new ResourceLocation(GsonHelper.getAsString(object, "parent"));
-            return new ChestLootModifier(ailootcondition, item, countMin, countMax, chance, partentTable);
-        }
-
-        @Override
-        public JsonObject write(ChestLootModifier instance)
-        {
-            JsonObject result = new JsonObject();
-            result.addProperty("item", Objects.requireNonNull(instance.item.getRegistryName()).toString());
-            result.addProperty("countMin", instance.countMin);
-            result.addProperty("countMax", instance.countMax);
-            result.addProperty("chance", instance.chance);
-            result.addProperty("parent", instance.parentTable.toString());
-
-            return result;
-        }
+    @Override
+    public Codec<? extends IGlobalLootModifier> codec() {
+        return CODEC;
     }
 }

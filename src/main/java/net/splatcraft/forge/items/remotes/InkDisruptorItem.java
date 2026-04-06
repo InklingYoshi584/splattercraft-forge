@@ -1,7 +1,7 @@
 package net.splatcraft.forge.items.remotes;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -19,7 +19,7 @@ public class InkDisruptorItem extends RemoteItem
 {
     public InkDisruptorItem()
     {
-        super(new Properties().tab(SplatcraftItemGroups.GROUP_GENERAL).stacksTo(1));
+        super(new Properties().stacksTo(1));
     }
 
     @Override
@@ -34,7 +34,7 @@ public class InkDisruptorItem extends RemoteItem
         BlockPos blockpos3 = new BlockPos(Math.max(posA.getX(), posB.getX()), Math.max(posB.getY(), posA.getY()), Math.max(posA.getZ(), posB.getZ()));
 
         if (!level.isInWorldBounds(blockpos2) || !level.isInWorldBounds(blockpos3))
-            return createResult(false, new TranslatableComponent("status.clear_ink.out_of_world"));
+            return createResult(false, Component.translatable("status.clear_ink.out_of_world"));
 
         /*
         for (int j = blockpos2.getZ(); j <= blockpos3.getZ(); j += 16)
@@ -43,7 +43,7 @@ public class InkDisruptorItem extends RemoteItem
             {
                 if (!level.isLoaded(new BlockPos(k, blockpos3.getY() - blockpos2.getY(), j)))
                 {
-                    return createResult(false, new TranslatableComponent("status.clear_ink.out_of_world"));
+                    return createResult(false, Component.translatable("status.clear_ink.out_of_world"));
                 }
             }
         }
@@ -69,6 +69,6 @@ public class InkDisruptorItem extends RemoteItem
             }
         }
 
-        return createResult(true, new TranslatableComponent("status.clear_ink." + (count > 0 ? "success" : "no_ink"), count)).setIntResults(count, count * 15 / blockTotal);
+        return createResult(true, Component.translatable("status.clear_ink." + (count > 0 ? "success" : "no_ink"), count)).setIntResults(count, count * 15 / blockTotal);
     }
 }

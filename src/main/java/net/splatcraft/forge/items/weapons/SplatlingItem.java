@@ -166,7 +166,7 @@ public class SplatlingItem extends WeaponBaseItem<SplatlingWeaponSettings> imple
 			{
 				InkProjectileEntity proj = new InkProjectileEntity(level, player, stack, InkBlockUtils.getInkType(player), firingData.projectileSize, settings);
 				proj.shootFromRotation(player, player.getXRot(), player.getYRot(), firingData.pitchCompensation, getScaledSettingFloat(settings, charge, FiringData::getProjectileSpeed),
-						player.isOnGround() ? firingData.groundInaccuracy : firingData.airInaccuracy);
+						player.onGround() ? firingData.groundInaccuracy : firingData.airInaccuracy);
 				proj.setSplatlingStats(settings, charge);
 				level.addFreshEntity(proj);
 			}
@@ -185,7 +185,7 @@ public class SplatlingItem extends WeaponBaseItem<SplatlingWeaponSettings> imple
 
 		int cooldownTime = (int) (getDecayTicks(stack) * charge);
 		reduceInk(player, this, Mth.lerp(charge * 0.5f, 0, settings.inkConsumption), cooldownTime + settings.inkRecoveryCooldown, true, true);
-		PlayerCooldown.setPlayerCooldown(player, new PlayerCooldown(stack, cooldownTime, player.getInventory().selected, player.getUsedItemHand(), true, false, !settings.canRechargeWhileFiring, player.isOnGround()).setCancellable());
+		PlayerCooldown.setPlayerCooldown(player, new PlayerCooldown(stack, cooldownTime, player.getInventory().selected, player.getUsedItemHand(), true, false, !settings.canRechargeWhileFiring, player.onGround()).setCancellable());
 	}
 
 	@Override
@@ -205,7 +205,7 @@ public class SplatlingItem extends WeaponBaseItem<SplatlingWeaponSettings> imple
 			if (!SplatcraftKeyHandler.isSquidKeyDown() && charge.charge > 0.05f) //checking for squid key press so it doesn't immediately release charge when squidding
 			{
 				SplatlingWeaponSettings settings = getSettings(stack);
-				PlayerCooldown.setPlayerCooldown(player, new PlayerCooldown(stack, (int) (settings.firingDuration * charge.charge), player.getInventory().selected, player.getUsedItemHand(), true, false, !settings.canRechargeWhileFiring, player.isOnGround()).setCancellable());
+				PlayerCooldown.setPlayerCooldown(player, new PlayerCooldown(stack, (int) (settings.firingDuration * charge.charge), player.getInventory().selected, player.getUsedItemHand(), true, false, !settings.canRechargeWhileFiring, player.onGround()).setCancellable());
 				SplatcraftPacketHandler.sendToServer(new ReleaseChargePacket(charge.charge, stack, false));
 			}
 

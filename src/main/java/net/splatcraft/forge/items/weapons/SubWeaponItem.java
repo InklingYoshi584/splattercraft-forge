@@ -7,7 +7,6 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.core.Position;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -19,7 +18,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DispenserBlock;
-import net.minecraftforge.client.IItemRenderProperties;
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.registries.RegistryObject;
 import net.splatcraft.forge.client.SplatcraftItemRenderer;
 import net.splatcraft.forge.entities.subs.AbstractSubWeaponEntity;
@@ -67,22 +66,9 @@ public class SubWeaponItem extends WeaponBaseItem<SubWeaponSettings>
     }
 
     @Override
-    public void fillItemCategory(@NotNull CreativeModeTab group, @NotNull NonNullList<ItemStack> list)
-    {
-        super.fillItemCategory(group, list);
-        if(!isSecret && group == CreativeModeTab.TAB_SEARCH)
-        {
-            ItemStack stack = new ItemStack(this);
-            stack.getOrCreateTag().putBoolean("SingleUse", true);
-            list.add(stack);
-        }
-
-    }
-
-    @Override
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
         if (SubWeaponItem.singleUse(stack))
-            tooltip.add(new TranslatableComponent("item.splatcraft.tooltip.single_use"));
+            tooltip.add(Component.translatable("item.splatcraft.tooltip.single_use"));
         super.appendHoverText(stack, level, tooltip, flag);
     }
 
@@ -95,7 +81,7 @@ public class SubWeaponItem extends WeaponBaseItem<SubWeaponSettings>
     }
 
     @Override
-    public int getItemStackLimit(ItemStack stack) {
+    public int getMaxStackSize(ItemStack stack) {
         return SubWeaponItem.singleUse(stack) ? 16 : 1;
     }
 
@@ -149,12 +135,12 @@ public class SubWeaponItem extends WeaponBaseItem<SubWeaponSettings>
     }
 
     @Override
-    public void initializeClient(Consumer<IItemRenderProperties> consumer)
+    public void initializeClient(Consumer<IClientItemExtensions> consumer)
     {
         super.initializeClient(consumer);
-        consumer.accept(new IItemRenderProperties() {
+        consumer.accept(new IClientItemExtensions() {
             @Override
-            public BlockEntityWithoutLevelRenderer getItemStackRenderer()
+            public BlockEntityWithoutLevelRenderer getCustomRenderer()
             {
                 return SplatcraftItemRenderer.INSTANCE;
             }
@@ -232,7 +218,7 @@ public class SubWeaponItem extends WeaponBaseItem<SubWeaponSettings>
             oldStack.getTag().remove("EntityData");
             newStack.getTag().remove("EntityData");
 
-            return !ItemStack.isSame(oldStack, newStack);
+            return !ItemStack.isSameItem(oldStack, newStack);
         }
 
         return super.shouldCauseReequipAnimation(oldStack, newStack, slotChanged);

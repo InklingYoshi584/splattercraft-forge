@@ -2,8 +2,8 @@ package net.splatcraft.forge.crafting;
 
 import com.google.gson.JsonArray;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
@@ -57,9 +57,9 @@ public abstract class AbstractWeaponWorkbenchRecipe implements Recipe<Container>
     }
 
     @Override
-    public @NotNull ItemStack assemble(@NotNull Container inv)
+    public @NotNull ItemStack assemble(@NotNull Container inv, RegistryAccess registryAccess)
     {
-        return recipeOutput;
+        return recipeOutput.copy();
     }
 
     @Override
@@ -69,9 +69,9 @@ public abstract class AbstractWeaponWorkbenchRecipe implements Recipe<Container>
     }
 
     @Override
-    public @NotNull ItemStack getResultItem()
+    public @NotNull ItemStack getResultItem(RegistryAccess registryAccess)
     {
-        return recipeOutput;
+        return recipeOutput.copy();
     }
 
     @Override
@@ -83,7 +83,7 @@ public abstract class AbstractWeaponWorkbenchRecipe implements Recipe<Container>
     @Override
     public @NotNull RecipeSerializer<?> getSerializer()
     {
-        return SplatcraftRecipeTypes.WEAPON_STATION;
+        return SplatcraftRecipeTypes.WEAPON_STATION.get();
     }
 
     @Override

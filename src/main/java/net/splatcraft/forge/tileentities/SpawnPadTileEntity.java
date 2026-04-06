@@ -42,6 +42,10 @@ public class SpawnPadTileEntity extends InkColorTileEntity
 
 	}
 
+	public void addToStages()
+	{
+	}
+
 	@Override
 	public @NotNull void saveAdditional(CompoundTag nbt)
 	{

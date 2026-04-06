@@ -175,7 +175,7 @@ public class InkExplosion {
             }
         }
 
-        Collections.shuffle(this.affectedBlockPositions, this.level.random);
+		Collections.shuffle(this.affectedBlockPositions, new java.util.Random(this.level.random.nextLong()));
 
         for (BlockPos blockpos : this.affectedBlockPositions)
         {

@@ -15,9 +15,9 @@ public class CraftWeaponTrigger  extends SimpleCriterionTrigger<CraftWeaponTrigg
 		return ID;
 	}
 
-	public CraftWeaponTrigger.TriggerInstance createInstance(JsonObject json, EntityPredicate.Composite composite, DeserializationContext context) {
+	public CraftWeaponTrigger.TriggerInstance createInstance(JsonObject json, ContextAwarePredicate predicate, DeserializationContext context) {
 		ItemPredicate itempredicate = ItemPredicate.fromJson(json.get("item"));
-		return new CraftWeaponTrigger.TriggerInstance(composite, itempredicate);
+		return new CraftWeaponTrigger.TriggerInstance(predicate, itempredicate);
 	}
 
 	public void trigger(ServerPlayer player, ItemStack stack) {
@@ -27,8 +27,8 @@ public class CraftWeaponTrigger  extends SimpleCriterionTrigger<CraftWeaponTrigg
 	public static class TriggerInstance extends AbstractCriterionTriggerInstance {
 		private final ItemPredicate item;
 
-		public TriggerInstance(EntityPredicate.Composite p_27688_, ItemPredicate item) {
-			super(CraftWeaponTrigger.ID, p_27688_);
+		public TriggerInstance(ContextAwarePredicate predicate, ItemPredicate item) {
+			super(CraftWeaponTrigger.ID, predicate);
 			this.item = item;
 		}
 

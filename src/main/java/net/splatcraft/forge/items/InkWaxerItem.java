@@ -27,7 +27,7 @@ public class InkWaxerItem extends Item
 {
     public InkWaxerItem()
     {
-        super(new Properties().durability(256).tab(SplatcraftItemGroups.GROUP_GENERAL));
+        super(new Properties().durability(256));
     }
 
     public void onBlockStartBreak(ItemStack itemstack, BlockPos pos, Level level)

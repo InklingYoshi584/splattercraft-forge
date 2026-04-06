@@ -3,7 +3,6 @@ package net.splatcraft.forge.client.particles;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.*;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.material.Material;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
@@ -39,7 +38,7 @@ public class InkExplosionParticle extends TextureSheetParticle
         this.xo = this.x;
         this.yo = this.y;
         this.zo = this.z;
-        if (this.age++ >= this.lifetime || this.level.getBlockState(new BlockPos(this.x, this.y, this.z)).getMaterial() == Material.WATER)
+        if (this.age++ >= this.lifetime || this.level.getFluidState(BlockPos.containing(this.x, this.y, this.z)).isSource())
         {
             this.remove();
         } else

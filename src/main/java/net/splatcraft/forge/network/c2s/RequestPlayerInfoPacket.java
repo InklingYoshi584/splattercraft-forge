@@ -35,7 +35,7 @@ public class RequestPlayerInfoPacket extends PlayC2SPacket
     @Override
     public void execute(Player player)
     {
-        ServerPlayer target = (ServerPlayer) player.level.getPlayerByUUID(this.target);
+        ServerPlayer target = (ServerPlayer) player.level().getPlayerByUUID(this.target);
         if (target != null)
         {
             SplatcraftPacketHandler.sendToPlayer(new UpdatePlayerInfoPacket(target), (ServerPlayer) player);

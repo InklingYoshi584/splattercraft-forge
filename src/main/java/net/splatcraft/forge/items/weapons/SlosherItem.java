@@ -52,7 +52,7 @@ public class SlosherItem extends WeaponBaseItem<SlosherWeaponSettings>
         if (entity instanceof Player && getUseDuration(stack) - timeLeft < settings.startupTicks) {
             ItemCooldowns cooldownTracker = ((Player) entity).getCooldowns();
             if (!cooldownTracker.isOnCooldown(this)) {
-                PlayerCooldown.setPlayerCooldown((Player) entity, new PlayerCooldown(stack, settings.startupTicks, ((Player) entity).getInventory().selected, entity.getUsedItemHand(), true, false, true, entity.isOnGround()));
+                PlayerCooldown.setPlayerCooldown((Player) entity, new PlayerCooldown(stack, settings.startupTicks, ((Player) entity).getInventory().selected, entity.getUsedItemHand(), true, false, true, entity.onGround()));
                 if (!level.isClientSide && settings.endlagTicks > 0) {
                     cooldownTracker.addCooldown(this, settings.endlagTicks);
                 }

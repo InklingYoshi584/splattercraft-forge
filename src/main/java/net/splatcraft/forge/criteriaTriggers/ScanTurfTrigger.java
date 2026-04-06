@@ -18,9 +18,9 @@ public class ScanTurfTrigger extends SimpleCriterionTrigger<ScanTurfTrigger.Trig
 		return ID;
 	}
 
-	public ScanTurfTrigger.TriggerInstance createInstance(JsonObject json, EntityPredicate.Composite composite, DeserializationContext context)
+	public ScanTurfTrigger.TriggerInstance createInstance(JsonObject json, ContextAwarePredicate predicate, DeserializationContext context)
 	{
-		return new ScanTurfTrigger.TriggerInstance(composite, GsonHelper.getAsInt(json, "blocks_inked", 0), GsonHelper.getAsBoolean(json, "winner", false));
+		return new ScanTurfTrigger.TriggerInstance(predicate, GsonHelper.getAsInt(json, "blocks_inked", 0), GsonHelper.getAsBoolean(json, "winner", false));
 	}
 
 	public void trigger(ServerPlayer player, int blocksInked, boolean winner) {
@@ -31,9 +31,9 @@ public class ScanTurfTrigger extends SimpleCriterionTrigger<ScanTurfTrigger.Trig
 		private final int blocksInked;
 		private final boolean winner;
 
-		public TriggerInstance(EntityPredicate.Composite p_27688_, int blocksInked, boolean winner)
+		public TriggerInstance(ContextAwarePredicate predicate, int blocksInked, boolean winner)
 		{
-			super(ScanTurfTrigger.ID, p_27688_);
+			super(ScanTurfTrigger.ID, predicate);
 			this.blocksInked = blocksInked;
 			this.winner = winner;
 		}

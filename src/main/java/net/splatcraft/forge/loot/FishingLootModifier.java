@@ -1,9 +1,10 @@
 package net.splatcraft.forge.loot;
 
-import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import java.util.Objects;
 import net.minecraft.advancements.critereon.FishingHookPredicate;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.FishingHook;
@@ -13,13 +14,10 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraftforge.common.loot.GlobalLootModifierSerializer;
+import net.minecraftforge.common.loot.IGlobalLootModifier;
 import net.minecraftforge.common.loot.LootModifier;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
-import java.util.Objects;
 
 public class FishingLootModifier extends LootModifier
 {
@@ -29,6 +27,16 @@ public class FishingLootModifier extends LootModifier
     protected final float chance;
     protected final int quality;
     protected final boolean isTreasure;
+
+    public static final Codec<FishingLootModifier> CODEC = RecordCodecBuilder.create(inst -> codecStart(inst).and(
+            inst.group(
+            ForgeRegistries.ITEMS.getCodec().fieldOf("item").forGetter(FishingLootModifier::getItem),
+            Codec.INT.fieldOf("countMin").forGetter(FishingLootModifier::getCountMin),
+            Codec.INT.fieldOf("countMax").forGetter(FishingLootModifier::getCountMax),
+            Codec.FLOAT.fieldOf("chance").forGetter(FishingLootModifier::getChance),
+            Codec.INT.fieldOf("quality").forGetter(FishingLootModifier::getQuality),
+            Codec.BOOL.fieldOf("isTreasure").forGetter(FishingLootModifier::isTreasure)
+                    )).apply(inst, FishingLootModifier::new));
 
     /**
      * Constructs a LootModifier.
@@ -46,11 +54,36 @@ public class FishingLootModifier extends LootModifier
         this.isTreasure = isTreasure;
     }
 
-    @NotNull
+    public Item getItem() {
+        return item;
+    }
+
+    public int getCountMin() {
+        return countMin;
+    }
+
+    public int getCountMax() {
+        return countMax;
+    }
+
+    public float getChance() {
+        return chance;
+    }
+
+    public int getQuality() {
+        return quality;
+    }
+
+    public boolean isTreasure() {
+        return isTreasure;
+    }
+
+
     @Override
-    protected List<ItemStack> doApply(List<ItemStack> generatedLoot, LootContext context)
+    protected @NotNull ObjectArrayList<ItemStack> doApply(ObjectArrayList<ItemStack> generatedLoot, LootContext context)
     {
-        if (!(context.getParamOrNull(LootContextParams.THIS_ENTITY) instanceof FishingHook) || isTreasure && !FishingHookPredicate.inOpenWater(true).matches(Objects.requireNonNull(context.getParamOrNull(LootContextParams.THIS_ENTITY))))
+        if (!(context.getParamOrNull(LootContextParams.THIS_ENTITY) instanceof FishingHook) || isTreasure &&
+                !FishingHookPredicate.inOpenWater(true).matches(Objects.requireNonNull(context.getParamOrNull(LootContextParams.THIS_ENTITY)), context.getLevel(), context.getParamOrNull(LootContextParams.ORIGIN)))
         {
             return generatedLoot;
         }
@@ -82,29 +115,8 @@ public class FishingLootModifier extends LootModifier
         return generatedLoot;
     }
 
-    public static class Serializer extends GlobalLootModifierSerializer<FishingLootModifier>
-    {
-
-        @Override
-        public FishingLootModifier read(ResourceLocation location, JsonObject object, LootItemCondition[] ailootcondition)
-        {
-            Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(GsonHelper.getAsString(object, "item")));
-            int countMin = GsonHelper.getAsInt(object, "countMin");
-            int countMax = GsonHelper.getAsInt(object, "countMax");
-            float chance = GsonHelper.getAsFloat(object, "chance");
-            int quality = GsonHelper.getAsInt(object, "quality");
-            boolean isTreasure = GsonHelper.isBooleanValue(object, "isTreasure") && GsonHelper.getAsBoolean(object, "isTreasure");
-            return new FishingLootModifier(ailootcondition, item, countMin, countMax, chance, quality, isTreasure);
-        }
-
-        @Override
-        public JsonObject write(FishingLootModifier instance)
-        {
-            JsonObject result = new JsonObject();
-            result.addProperty("item", Objects.requireNonNull(instance.item.getRegistryName()).toString());
-            result.addProperty("countMin", instance.countMin);
-            result.addProperty("countMax", instance.countMax);
-            return result;
-        }
+    @Override
+    public Codec<? extends IGlobalLootModifier> codec() {
+        return CODEC;
     }
 }

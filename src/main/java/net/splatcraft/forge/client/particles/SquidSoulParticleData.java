@@ -5,6 +5,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.network.FriendlyByteBuf;
@@ -62,7 +63,7 @@ public class SquidSoulParticleData implements ParticleOptions
     @Override
     public ParticleType<?> getType()
     {
-        return SplatcraftParticleTypes.SQUID_SOUL;
+        return SplatcraftParticleTypes.SQUID_SOUL.get();
     }
 
     @Override
@@ -76,7 +77,7 @@ public class SquidSoulParticleData implements ParticleOptions
     @Override
     public String writeToString()
     {
-        return String.format(Locale.ROOT, "%s %.2f %.2f %.2f", Registry.PARTICLE_TYPE.getKey(this.getType()), this.red, this.green, this.blue);
+        return String.format(Locale.ROOT, "%s %.2f %.2f %.2f", BuiltInRegistries.PARTICLE_TYPE.getKey(this.getType()), this.red, this.green, this.blue);
     }
 
     @OnlyIn(Dist.CLIENT)

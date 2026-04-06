@@ -89,7 +89,7 @@ public class ReplaceColorCommand
     {
         RemoteItem.RemoteResult result = ColorChangerItem.replaceColor(source.getLevel(), from, to, color, mode, affectedColor, affectedStage, affectedTeam);
 
-        source.sendSuccess(result.getOutput(), true);
+        source.sendSuccess(() -> result.getOutput(), true);
         return result.getCommandResult();
     }
 }

@@ -1,6 +1,6 @@
 package net.splatcraft.forge.commands.arguments;
 
-import com.google.gson.JsonObject;
+import net.minecraft.network.chat.Component;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -10,9 +10,6 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
-import net.minecraft.commands.synchronization.ArgumentSerializer;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.splatcraft.forge.Splatcraft;
 import net.splatcraft.forge.registries.SplatcraftInkColors;
@@ -28,7 +25,7 @@ import java.util.function.Function;
 public class InkColorArgument implements ArgumentType<Integer>
 {
 
-    public static final DynamicCommandExceptionType COLOR_NOT_FOUND = new DynamicCommandExceptionType(p_208663_0_ -> new TranslatableComponent("arg.inkColor.notFound", p_208663_0_));
+    public static final DynamicCommandExceptionType COLOR_NOT_FOUND = new DynamicCommandExceptionType(p_208663_0_ -> Component.translatable("arg.inkColor.notFound", p_208663_0_));
     public static final int max = 0xFFFFFF;
     private static final Collection<String> EXAMPLES = Arrays.asList("splatcraft:orange", "blue", "#C83D79", "4234555");
 
@@ -162,26 +159,5 @@ public class InkColorArgument implements ArgumentType<Integer>
     public Collection<String> getExamples()
     {
         return EXAMPLES;
-    }
-
-    public static class Serializer implements ArgumentSerializer<InkColorArgument>
-    {
-        @Override
-        public void serializeToNetwork(InkColorArgument argument, FriendlyByteBuf buffer)
-        {
-
-        }
-
-        @Override
-        public InkColorArgument deserializeFromNetwork(FriendlyByteBuf buffer)
-        {
-            return null;
-        }
-
-        @Override
-        public void serializeToJson(InkColorArgument p_212244_1_, JsonObject p_212244_2_)
-        {
-
-        }
     }
 }

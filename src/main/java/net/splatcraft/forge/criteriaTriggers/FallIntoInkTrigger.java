@@ -19,9 +19,9 @@ public class FallIntoInkTrigger extends SimpleCriterionTrigger<FallIntoInkTrigge
 		return ID;
 	}
 
-	public FallIntoInkTrigger.TriggerInstance createInstance(JsonObject json, EntityPredicate.Composite composite, DeserializationContext context)
+	public FallIntoInkTrigger.TriggerInstance createInstance(JsonObject json, ContextAwarePredicate predicate, DeserializationContext context)
 	{
-		return new FallIntoInkTrigger.TriggerInstance(composite, GsonHelper.getAsFloat(json, "distance", 0));
+		return new FallIntoInkTrigger.TriggerInstance(predicate, GsonHelper.getAsFloat(json, "distance", 0));
 	}
 
 	public void trigger(ServerPlayer player, float distance) {
@@ -31,9 +31,9 @@ public class FallIntoInkTrigger extends SimpleCriterionTrigger<FallIntoInkTrigge
 	public static class TriggerInstance extends AbstractCriterionTriggerInstance {
 		private final float distance;
 
-		public TriggerInstance(EntityPredicate.Composite p_27688_, float distance)
+		public TriggerInstance(ContextAwarePredicate predicate, float distance)
 		{
-			super(FallIntoInkTrigger.ID, p_27688_);
+			super(FallIntoInkTrigger.ID, predicate);
 			this.distance = distance;
 		}
 

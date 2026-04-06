@@ -1,5 +1,6 @@
 package net.splatcraft.forge.blocks;
 
+import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.EntityType;
@@ -12,7 +13,11 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.SimpleWaterloggedBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -21,7 +26,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraft.world.level.material.Material;
+import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.HitResult;
@@ -29,16 +34,17 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.splatcraft.forge.data.Stage;
 import net.splatcraft.forge.entities.SpawnShieldEntity;
 import net.splatcraft.forge.registries.SplatcraftBlocks;
 import net.splatcraft.forge.registries.SplatcraftTileEntities;
 import net.splatcraft.forge.tileentities.InkColorTileEntity;
 import net.splatcraft.forge.tileentities.SpawnPadTileEntity;
 import net.splatcraft.forge.util.ColorUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Optional;
-
+@SuppressWarnings("deprecation")
 public class SpawnPadBlock extends Block implements IColoredBlock, SimpleWaterloggedBlock, EntityBlock
 {
 	public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
@@ -50,21 +56,31 @@ public class SpawnPadBlock extends Block implements IColoredBlock, SimpleWaterlo
 
 	public SpawnPadBlock()
 	{
-		super(Properties.of(Material.METAL).strength(2.0f).requiresCorrectToolForDrops());
+        super(Properties.of().mapColor(MapColor.METAL).strength(2.0f).requiresCorrectToolForDrops());
 		this.registerDefaultState(this.getStateDefinition().any().setValue(WATERLOGGED, false).setValue(DIRECTION, Direction.NORTH));
 
 		SplatcraftBlocks.inkColoredBlocks.add(this);
 	}
 	@Nullable
 	@Override
-	public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+    public BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state)
+	{
 		return SplatcraftTileEntities.spawnPadTileEntity.get().create(pos, state);
 	}
 
 	@Override
-	public VoxelShape getShape(BlockState state, BlockGetter levelIn, BlockPos pos, CollisionContext context)
+    public @NotNull VoxelShape getShape(@NotNull BlockState state, @NotNull BlockGetter levelIn, @NotNull BlockPos pos, @NotNull CollisionContext context)
 	{
 		return SHAPE;
+	}
+
+	@Override
+    public void onRemove(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull BlockState newState, boolean p_60519_)
+	{
+		if(level.getBlockEntity(pos) instanceof SpawnPadTileEntity spawnPad)
+			for (Stage stage : Stage.getStagesForPosition(level, new Vec3(pos.getX(), pos.getY(), pos.getZ())))
+				stage.removeSpawnPad(spawnPad);
+		super.onRemove(state, level, pos, newState, p_60519_);
 	}
 
 	@Override
@@ -87,7 +103,7 @@ public class SpawnPadBlock extends Block implements IColoredBlock, SimpleWaterlo
 
 	@Nullable
 	@Override
-	public BlockState getStateForPlacement(BlockPlaceContext context)
+    public BlockState getStateForPlacement(@NotNull BlockPlaceContext context)
 	{
 		for(Direction dir : Direction.values()) {
 			if (dir.get2DDataValue() < 0)
@@ -107,13 +123,13 @@ public class SpawnPadBlock extends Block implements IColoredBlock, SimpleWaterlo
 	}
 
 	@Override
-	public FluidState getFluidState(BlockState state)
+    public @NotNull FluidState getFluidState(BlockState state)
 	{
 		return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
 	}
 
 	@Override
-	public BlockState updateShape(BlockState stateIn, Direction facing, BlockState facingState, LevelAccessor levelIn, BlockPos currentPos, BlockPos facingPos)
+    public @NotNull BlockState updateShape(BlockState stateIn, @NotNull Direction facing, @NotNull BlockState facingState, @NotNull LevelAccessor levelIn, @NotNull BlockPos currentPos, @NotNull BlockPos facingPos)
 	{
 		if (stateIn.getValue(WATERLOGGED))
 		{
@@ -130,37 +146,38 @@ public class SpawnPadBlock extends Block implements IColoredBlock, SimpleWaterlo
 	}
 
 	@Override
-	public ItemStack getCloneItemStack(BlockGetter reader, BlockPos pos, BlockState state)
+    public @NotNull ItemStack getCloneItemStack(@NotNull BlockGetter reader, @NotNull BlockPos pos, @NotNull BlockState state)
 	{
 		ItemStack stack = super.getCloneItemStack(reader, pos, state);
 
-		if (reader.getBlockEntity(pos) instanceof InkColorTileEntity)
-			ColorUtils.setColorLocked(ColorUtils.setInkColor(stack, ColorUtils.getInkColor(reader.getBlockEntity(pos))), true);
+        if (reader.getBlockEntity(pos) instanceof InkColorTileEntity te) {
+            ColorUtils.setColorLocked(ColorUtils.setInkColor(stack, ColorUtils.getInkColor(te)), true);
+        }
 
 		return stack;
 	}
 
 	@Override
-	public boolean isPathfindable(BlockState p_196266_1_, BlockGetter p_196266_2_, BlockPos p_196266_3_, PathComputationType p_196266_4_) {
+    public boolean isPathfindable(@NotNull BlockState p_196266_1_, @NotNull BlockGetter p_196266_2_, @NotNull BlockPos p_196266_3_, @NotNull PathComputationType p_196266_4_) {
 		return false;
 	}
 
 	@Override
-	public boolean isPossibleToRespawnInThis()
+    public boolean isPossibleToRespawnInThis(@NotNull BlockState pState)
 	{
 		return true;
 	}
 
 	@Override
-	public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity entity, ItemStack stack)
+    public void setPlacedBy(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state, @Nullable LivingEntity entity, ItemStack stack)
 	{
-		if (stack.getTag() != null && level.getBlockEntity(pos) instanceof SpawnPadTileEntity)
+		if (stack.getTag() != null && level.getBlockEntity(pos) instanceof SpawnPadTileEntity spawnPad)
 		{
-			ColorUtils.setInkColor(level.getBlockEntity(pos), ColorUtils.getInkColor(stack));
+			ColorUtils.setInkColor(spawnPad, ColorUtils.getInkColor(stack));
+			spawnPad.addToStages();
 
 			SpawnShieldEntity shield = new SpawnShieldEntity(level, pos, ColorUtils.getInkColorOrInverted(stack));
-			((SpawnPadTileEntity) level.getBlockEntity(pos)).setSpawnShield(shield);
-
+			spawnPad.setSpawnShield(shield);
 			level.addFreshEntity(shield);
 		}
 
@@ -185,12 +202,6 @@ public class SpawnPadBlock extends Block implements IColoredBlock, SimpleWaterlo
 	}
 
 	@Override
-	public void playerWillDestroy(Level p_176208_1_, BlockPos p_176208_2_, BlockState p_176208_3_, Player p_176208_4_)
-	{
-		super.playerWillDestroy(p_176208_1_, p_176208_2_, p_176208_3_, p_176208_4_);
-	}
-
-	@Override
 	public boolean canClimb()
 	{
 		return false;
@@ -211,14 +222,9 @@ public class SpawnPadBlock extends Block implements IColoredBlock, SimpleWaterlo
 	@Override
 	public int getColor(Level level, BlockPos pos)
 	{
-		if (level.getBlockEntity(pos) instanceof InkColorTileEntity)
-		{
-			InkColorTileEntity tileEntity = (InkColorTileEntity) level.getBlockEntity(pos);
-			if (tileEntity != null)
-			{
-				return tileEntity.getColor();
-			}
-		}
+        if (level.getBlockEntity(pos) instanceof InkColorTileEntity tileEntity) {
+            return tileEntity.getColor();
+        }
 		return -1;
 	}
 
@@ -265,7 +271,7 @@ public class SpawnPadBlock extends Block implements IColoredBlock, SimpleWaterlo
 
 
 		@Override
-		public VoxelShape getShape(BlockState state, BlockGetter reader, BlockPos pos, CollisionContext context)
+        public @NotNull VoxelShape getShape(BlockState state, @NotNull BlockGetter reader, @NotNull BlockPos pos, @NotNull CollisionContext context)
 		{
 			int i = state.getValue(DIRECTION).get2DDataValue()*2 + (state.getValue(IS_CORNER) ? 1 : 0);
 
@@ -302,13 +308,13 @@ public class SpawnPadBlock extends Block implements IColoredBlock, SimpleWaterlo
 		}
 
 		@Override
-		public FluidState getFluidState(BlockState state)
+        public @NotNull FluidState getFluidState(BlockState state)
 		{
 			return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
 		}
 
 		@Override
-		public BlockState updateShape(BlockState stateIn, Direction facing, BlockState facingState, LevelAccessor levelIn, BlockPos currentPos, BlockPos facingPos)
+        public @NotNull BlockState updateShape(@NotNull BlockState stateIn, @NotNull Direction facing, @NotNull BlockState facingState, LevelAccessor levelIn, @NotNull BlockPos currentPos, @NotNull BlockPos facingPos)
 		{
 			if(levelIn.getBlockState(getParentPos(stateIn, currentPos)).getBlock() != parent)
 				return Blocks.AIR.defaultBlockState();
@@ -321,13 +327,14 @@ public class SpawnPadBlock extends Block implements IColoredBlock, SimpleWaterlo
 			return super.updateShape(stateIn, facing, facingState, levelIn, currentPos, facingPos);
 		}
 
+
 		@Override
-		public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos pos, Player player, boolean willHarvest, FluidState fluid)
+        public void onRemove(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull BlockState newState, boolean bool)
 		{
 			BlockPos parentPos = getParentPos(state, pos);
 			if(level.getBlockState(parentPos).getBlock() == parent)
-				level.destroyBlock(parentPos, willHarvest);
-			return super.onDestroyedByPlayer(state, level, pos, player, willHarvest, fluid);
+				level.destroyBlock(parentPos, false);
+			super.onRemove(state, level, pos, newState, bool);
 		}
 
 		@Override
@@ -364,7 +371,7 @@ public class SpawnPadBlock extends Block implements IColoredBlock, SimpleWaterlo
 		}
 
 		@Override
-		public boolean isPathfindable(BlockState p_196266_1_, BlockGetter p_196266_2_, BlockPos p_196266_3_, PathComputationType p_196266_4_) {
+        public boolean isPathfindable(@NotNull BlockState p_196266_1_, @NotNull BlockGetter p_196266_2_, @NotNull BlockPos p_196266_3_, @NotNull PathComputationType p_196266_4_) {
 			return false;
 		}
 
@@ -376,14 +383,14 @@ public class SpawnPadBlock extends Block implements IColoredBlock, SimpleWaterlo
 		}
 
 		@Override
-		public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state)
+        public @NotNull ItemStack getCloneItemStack(@NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull BlockState state)
 		{
 			BlockPos parentPos = getParentPos(state, pos);
 			return parent.getCloneItemStack(level, parentPos, level.getBlockState(parentPos));
 		}
 
 		@Override
-		public RenderShape getRenderShape(BlockState state) {
+        public @NotNull RenderShape getRenderShape(@NotNull BlockState state) {
 			return RenderShape.INVISIBLE;
 		}
 	}

@@ -31,10 +31,10 @@ public class WeaponHandler {
 
 	@SubscribeEvent
 	public static void onLivingDeath(LivingDeathEvent event) {
-		if (event.getEntityLiving() instanceof Player target && !event.getEntityLiving().isSpectator()) {
+		if (event.getEntity() instanceof Player target && !event.getEntity().isSpectator()) {
 
 			int color = ColorUtils.getPlayerColor(target);
-			((ServerLevel) target.level).sendParticles(new SquidSoulParticleData(color), target.getX(), target.getY() + 0.5f, target.getZ(), 1, 0, 0, 0, 1.5f);
+			((ServerLevel) target.level()).sendParticles(new SquidSoulParticleData(color), target.getX(), target.getY() + 0.5f, target.getZ(), 1, 0, 0, 0, 1.5f);
 
 			if (ScoreboardHandler.hasColorCriterion(color)) {
 				target.getScoreboard().forAllObjectives(ScoreboardHandler.getDeathsAsColor(color), target.getScoreboardName(), score -> score.add(1));
@@ -71,7 +71,7 @@ public class WeaponHandler {
 			ItemStack stack = cooldown.storedStack;
 
 			if (stack.getItem() instanceof WeaponBaseItem weapon)
-				weapon.onPlayerCooldownEnd(player.level, player, stack, cooldown);
+				weapon.onPlayerCooldownEnd(player.level(), player, stack, cooldown);
 			PlayerCooldown.setPlayerCooldown(player, null);
 		}
         else if (PlayerCooldown.shrinkCooldownTime(player, 1) != null) {
@@ -84,15 +84,15 @@ public class WeaponHandler {
 	        if (stack.getItem() instanceof WeaponBaseItem<?> weapon)
 			{
 				if (cooldown.getTime() == 1)
-					weapon.onPlayerCooldownEnd(player.level, player, stack, cooldown);
+					weapon.onPlayerCooldownEnd(player.level(), player, stack, cooldown);
 				else if (cooldown.getTime() > 1)
-					weapon.onPlayerCooldownTick(player.level, player, stack, cooldown);
+					weapon.onPlayerCooldownTick(player.level(), player, stack, cooldown);
 			}
 		}
 		if (canUseWeapon && player.getUseItemRemainingTicks() > 0 && !CommonUtils.anyWeaponOnCooldown(player)) {
 			ItemStack stack = player.getItemInHand(player.getUsedItemHand());
 			if (stack.getItem() instanceof WeaponBaseItem<?> weapon) {
-				weapon.weaponUseTick(player.level, player, stack, player.getUseItemRemainingTicks());
+				weapon.weaponUseTick(player.level(), player, stack, player.getUseItemRemainingTicks());
 				player.setSprinting(false);
 			}
 		} else {

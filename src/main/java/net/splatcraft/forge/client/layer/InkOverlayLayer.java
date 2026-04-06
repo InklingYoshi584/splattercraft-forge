@@ -24,8 +24,7 @@ public class InkOverlayLayer<E extends LivingEntity, M extends EntityModel<E>> e
 			RenderType.entitySmoothCutout(new ResourceLocation(Splatcraft.MODID, "textures/entity/ink_overlay_" + 0 + ".png")),
 			RenderType.entitySmoothCutout(new ResourceLocation(Splatcraft.MODID, "textures/entity/ink_overlay_" + 1 + ".png")),
 			RenderType.entitySmoothCutout(new ResourceLocation(Splatcraft.MODID, "textures/entity/ink_overlay_" + 2 + ".png")),
-			RenderType.entitySmoothCutout(new ResourceLocation(Splatcraft.MODID, "textures/entity/ink_overlay_" + 3 + ".png")),
-			RenderType.entitySmoothCutout(new ResourceLocation(Splatcraft.MODID, "textures/entity/ink_overlay_" + 4 + ".png"))
+			RenderType.entitySmoothCutout(new ResourceLocation(Splatcraft.MODID, "textures/entity/ink_overlay_" + 3 + ".png"))
 	);
 
 	public InkOverlayLayer(RenderLayerParent<E, M> parent) {

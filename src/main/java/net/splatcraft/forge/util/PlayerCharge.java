@@ -77,7 +77,7 @@ public class PlayerCharge {
     }
 
     public static boolean chargeMatches(Player player, ItemStack stack) {
-        return hasCharge(player) && getCharge(player).chargedWeapon.sameItem(stack);
+        return hasCharge(player) && ItemStack.isSameItem(getCharge(player).chargedWeapon, stack);
     }
 
     public static void addChargeValue(Player player, ItemStack stack, float value, boolean storePartial)
@@ -127,7 +127,7 @@ public class PlayerCharge {
 
     public static void dischargeWeapon(Player player)
     {
-        if (!player.level.isClientSide || !hasCharge(player))
+        if (!player.level().isClientSide || !hasCharge(player))
             return;
 
         PlayerCharge charge = getCharge(player);

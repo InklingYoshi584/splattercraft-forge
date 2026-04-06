@@ -3,9 +3,9 @@ package net.splatcraft.forge.handlers;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3f;
-import com.mojang.math.Vector4f;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -29,7 +29,10 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.event.world.*;
+import net.minecraftforge.event.level.BlockEvent;
+import net.minecraftforge.event.level.ChunkDataEvent;
+import net.minecraftforge.event.level.ChunkWatchEvent;
+import net.minecraftforge.event.level.PistonEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.splatcraft.forge.Splatcraft;
@@ -57,7 +60,7 @@ public class WorldInkHandler
 	@SubscribeEvent //Ink Removal
 	public static void onBlockUpdate(BlockEvent.NeighborNotifyEvent event)
 	{
-		if(event.getWorld() instanceof Level level)
+		if(event.getLevel() instanceof Level level)
 		{
 			checkForInkRemoval(level, event.getPos());
 			event.getNotifiedSides().forEach(direction -> checkForInkRemoval(level, event.getPos().relative(direction)));
@@ -76,11 +79,11 @@ public class WorldInkHandler
 	@SubscribeEvent //prevent foliage placement on ink if inkDestroysFoliage is on
 	public static void onBlockPlace(PlayerInteractEvent.RightClickBlock event)
 	{
-		if(SplatcraftGameRules.getLocalizedRule(event.getWorld(), event.getPos(), SplatcraftGameRules.INK_DESTROYS_FOLIAGE) &&
-				InkBlockUtils.isInked(event.getWorld(), event.getPos().relative(event.getFace() == null ? Direction.UP : event.getFace()).below()) &&
+		if(SplatcraftGameRules.getLocalizedRule(event.getLevel(), event.getPos(), SplatcraftGameRules.INK_DESTROYS_FOLIAGE) &&
+				InkBlockUtils.isInked(event.getLevel(), event.getPos().relative(event.getFace() == null ? Direction.UP : event.getFace()).below()) &&
 				event.getItemStack().getItem() instanceof BlockItem blockItem)
 		{
-			BlockPlaceContext context = blockItem.updatePlacementContext(new BlockPlaceContext(event.getWorld(), event.getPlayer(), event.getHand(), event.getItemStack(), event.getHitVec()));
+			BlockPlaceContext context = blockItem.updatePlacementContext(new BlockPlaceContext(event.getLevel(), event.getEntity(), event.getHand(), event.getItemStack(), event.getHitVec()));
 			if(context != null)
 			{
 				BlockState state = blockItem.getBlock().getStateForPlacement(context);
@@ -93,14 +96,14 @@ public class WorldInkHandler
 	private static final int MAX_DECAYABLE_PER_CHUNK = 3;
 	private static final int MAX_DECAYABLE_CHUNKS = 10;
 	@SubscribeEvent //Ink Decay
-	public static void onWorldTick(TickEvent.WorldTickEvent event)
+	public static void onWorldTick(TickEvent.LevelTickEvent event)
 	{
-		if(event.phase == TickEvent.Phase.START && !event.world.players().isEmpty())
+		if(event.phase == TickEvent.Phase.START && !event.level.players().isEmpty())
 		{
-			if(event.world instanceof ServerLevel level)
+			if(event.level instanceof ServerLevel level)
 			{
-				List<LevelChunk> chunks = StreamSupport.stream(level.getChunkSource().chunkMap.getChunks().spliterator(), false).map(ChunkHolder::getTickingChunk)
-						.filter(Objects::nonNull).filter(chunk -> !WorldInkCapability.get(chunk).getInkInChunk().isEmpty()).toList();
+				List<LevelChunk> chunks = level.players().stream().map(player -> level.getChunkAt(player.blockPosition())).distinct()
+						.filter(chunk -> !WorldInkCapability.get(chunk).getInkInChunk().isEmpty()).toList();
 				int maxChunkCheck = Math.min(level.random.nextInt(MAX_DECAYABLE_CHUNKS), chunks.size());
 
 				for (int i = 0; i < maxChunkCheck; i++) {
@@ -137,12 +140,12 @@ public class WorldInkHandler
 					}
 				}
 			}
-			else if(event.world.isClientSide)
+			else if(event.level.isClientSide())
 			{
 				new ArrayList<>(INK_CACHE.keySet()).forEach(chunkPos ->
 				{
-					if(event.world.getChunk(chunkPos.x, chunkPos.z, ChunkStatus.FULL, false) instanceof LevelChunk chunk)
-						updateClientInkForChunk(event.world, chunk);
+					if(event.level.getChunk(chunkPos.x, chunkPos.z, ChunkStatus.FULL, false) instanceof LevelChunk chunk)
+						updateClientInkForChunk(event.level, chunk);
 				});
 			}
 		}
@@ -151,7 +154,7 @@ public class WorldInkHandler
 	//@SubscribeEvent
 	public static void onPistonPush(PistonEvent.Pre event)
 	{
-		if(!(event.getWorld() instanceof Level level) || event.getStructureHelper() == null)
+		if(!(event.getLevel() instanceof Level level) || event.getStructureHelper() == null)
 			return;
 
 		HashMap<BlockPos, WorldInk.Entry> inkToPush = new HashMap<>();
@@ -168,7 +171,7 @@ public class WorldInkHandler
 	@SubscribeEvent
 	public static void onChunkWatch(ChunkWatchEvent.Watch event)
 	{
-		if(event.getWorld().getChunk(event.getPos().x, event.getPos().z, ChunkStatus.FULL, false) instanceof LevelChunk chunk)
+		if(event.getLevel().getChunk(event.getPos().x, event.getPos().z, ChunkStatus.FULL, false) instanceof LevelChunk chunk)
 		{
 			WorldInk worldInk = WorldInkCapability.get(chunk);
 			if(!worldInk.getInkInChunk().isEmpty())
@@ -269,7 +272,7 @@ public class WorldInkHandler
 			Vec3i vec3i = bakedQuad.getDirection().getNormal();
 			Vector3f vector3f = new Vector3f((float)vec3i.getX(), (float)vec3i.getY(), (float)vec3i.getZ());
 			Matrix4f matrix4f = pose.pose();
-			vector3f.transform(pose.normal());
+			vector3f.mul(pose.normal());
 			int i = 8;
 			int j = aint1.length / 8;
 			MemoryStack memorystack = MemoryStack.stackPush();
@@ -343,7 +346,7 @@ public class WorldInkHandler
 					}
 					 */
 
-					vector4f.transform(matrix4f);
+					vector4f.mul(matrix4f);
 					consumer.applyBakedNormals(vector3f, bytebuffer, pose.normal());
 					consumer.vertex(vector4f.x(), vector4f.y(), vector4f.z(), f3, f4, f5, 1.0F, texU, texV, packedOverlay, l, vector3f.x(), vector3f.y(), vector3f.z());
 				}

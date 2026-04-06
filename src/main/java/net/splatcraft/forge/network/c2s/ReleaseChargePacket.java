@@ -38,7 +38,7 @@ public class ReleaseChargePacket extends PlayC2SPacket
         }
 
         if (stack.getItem() instanceof IChargeableWeapon weapon) {
-            weapon.onReleaseCharge(player.level, player, stack, charge);
+            weapon.onReleaseCharge(player.level(), player, stack, charge);
         }
 
         if(resetCharge)

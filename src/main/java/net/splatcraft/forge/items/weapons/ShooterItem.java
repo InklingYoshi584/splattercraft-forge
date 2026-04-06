@@ -54,7 +54,7 @@ public class ShooterItem extends WeaponBaseItem<ShooterWeaponSettings>
         if(time <= 0)
         {
             if (settings.startupTicks > 0 && entity instanceof Player player)
-                PlayerCooldown.setPlayerCooldown(player, new PlayerCooldown(stack, settings.startupTicks, player.getInventory().selected, player.getUsedItemHand(), true, false, true, player.isOnGround()));
+                PlayerCooldown.setPlayerCooldown(player, new PlayerCooldown(stack, settings.startupTicks, player.getInventory().selected, player.getUsedItemHand(), true, false, true, player.onGround()));
         } else time -= settings.startupTicks;
 
         if (!level.isClientSide && settings.firingSpeed > 0 && (time - 1) % settings.firingSpeed == 0)
@@ -64,7 +64,7 @@ public class ShooterItem extends WeaponBaseItem<ShooterWeaponSettings>
                 for(int i = 0; i < settings.projectileCount; i++)
                 {
                     InkProjectileEntity proj = new InkProjectileEntity(level, entity, stack, InkBlockUtils.getInkType(entity), settings.projectileSize, settings);
-                    proj.shootFromRotation(entity, entity.getXRot(), entity.getYRot(), settings.pitchCompensation, settings.projectileSpeed, entity.isOnGround() ? settings.groundInaccuracy : settings.airInaccuracy);
+                    proj.shootFromRotation(entity, entity.getXRot(), entity.getYRot(), settings.pitchCompensation, settings.projectileSpeed, entity.onGround() ? settings.groundInaccuracy : settings.airInaccuracy);
                     proj.setShooterStats(settings);
                     level.addFreshEntity(proj);
                 }

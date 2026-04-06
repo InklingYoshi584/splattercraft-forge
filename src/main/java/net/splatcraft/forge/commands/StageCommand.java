@@ -18,9 +18,8 @@ import net.minecraft.commands.arguments.coordinates.Coordinates;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextColor;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -45,12 +44,12 @@ import java.util.HashMap;
 public class StageCommand
 {
 
-	private static final DynamicCommandExceptionType NO_SPAWN_PADS_FOUND = new DynamicCommandExceptionType(p_208663_0_ -> new TranslatableComponent("arg.stageWarp.noSpawnPads", p_208663_0_));
-	private static final DynamicCommandExceptionType NO_PLAYERS_FOUND = new DynamicCommandExceptionType(p_208663_0_ -> new TranslatableComponent("arg.stageWarp.noPlayers", p_208663_0_));
-	public static final DynamicCommandExceptionType TEAM_NOT_FOUND = new DynamicCommandExceptionType(p_208663_0_ -> new TranslatableComponent("arg.stageTeam.notFound", ((Object[])p_208663_0_)[0], ((Object[])p_208663_0_)[1]));
-	public static final DynamicCommandExceptionType STAGE_NOT_FOUND = new DynamicCommandExceptionType(p_208663_0_ -> new TranslatableComponent("arg.stage.notFound", p_208663_0_));
-	public static final DynamicCommandExceptionType STAGE_ALREADY_EXISTS = new DynamicCommandExceptionType(p_208663_0_ -> new TranslatableComponent("arg.stage.alreadyExists", p_208663_0_));
-	public static final DynamicCommandExceptionType SETTING_NOT_FOUND = new DynamicCommandExceptionType(p_208663_0_ -> new TranslatableComponent("arg.stageSetting.notFound", p_208663_0_));
+	private static final DynamicCommandExceptionType NO_SPAWN_PADS_FOUND = new DynamicCommandExceptionType(p_208663_0_ -> Component.translatable("arg.stageWarp.noSpawnPads", p_208663_0_));
+	private static final DynamicCommandExceptionType NO_PLAYERS_FOUND = new DynamicCommandExceptionType(p_208663_0_ -> Component.translatable("arg.stageWarp.noPlayers", p_208663_0_));
+	public static final DynamicCommandExceptionType TEAM_NOT_FOUND = new DynamicCommandExceptionType(p_208663_0_ -> Component.translatable("arg.stageTeam.notFound", ((Object[])p_208663_0_)[0], ((Object[])p_208663_0_)[1]));
+	public static final DynamicCommandExceptionType STAGE_NOT_FOUND = new DynamicCommandExceptionType(p_208663_0_ -> Component.translatable("arg.stage.notFound", p_208663_0_));
+	public static final DynamicCommandExceptionType STAGE_ALREADY_EXISTS = new DynamicCommandExceptionType(p_208663_0_ -> Component.translatable("arg.stage.alreadyExists", p_208663_0_));
+	public static final DynamicCommandExceptionType SETTING_NOT_FOUND = new DynamicCommandExceptionType(p_208663_0_ -> Component.translatable("arg.stageSetting.notFound", p_208663_0_));
 
 
 	public static void register(CommandDispatcher<CommandSourceStack> dispatcher)
@@ -199,7 +198,7 @@ public class StageCommand
 
 		stages.put(stageId, new Stage(source.getLevel(), from, to));
 
-		source.sendSuccess(new TranslatableComponent("commands.stage.add.success", stageId), true);
+		source.sendSuccess(() -> Component.translatable("commands.stage.add.success", stageId), true);
 
 		SplatcraftPacketHandler.sendToAll(new UpdateStageListPacket(stages));
 
@@ -214,7 +213,7 @@ public class StageCommand
 
 		stages.remove(stageId);
 
-		source.sendSuccess(new TranslatableComponent("commands.stage.remove.success", stageId), true);
+		source.sendSuccess(() -> Component.translatable("commands.stage.remove.success", stageId), true);
 
 		SplatcraftPacketHandler.sendToAll(new UpdateStageListPacket(stages));
 
@@ -236,8 +235,8 @@ public class StageCommand
 		stage.applySetting(setting, value);
 
 		if(value == null)
-			source.sendSuccess(new TranslatableComponent("commands.stage.setting.success.default", setting, stageId), true);
-		else source.sendSuccess(new TranslatableComponent("commands.stage.setting.success", setting, stageId, value), true);
+			source.sendSuccess(() -> Component.translatable("commands.stage.setting.success.default", setting, stageId), true);
+		else source.sendSuccess(() -> Component.translatable("commands.stage.setting.success", setting, stageId, value), true);
 
 		SplatcraftPacketHandler.sendToAll(new UpdateStageListPacket(stages));
 
@@ -258,8 +257,8 @@ public class StageCommand
 
 
 		if(!stage.hasSetting(setting))
-			source.sendSuccess(new TranslatableComponent("commands.stage.setting.get.default", setting, stageId), true);
-		else source.sendSuccess(new TranslatableComponent("commands.stage.setting.get", setting, stageId, stage.getSetting(setting)), true);
+			source.sendSuccess(() -> Component.translatable("commands.stage.setting.get.default", setting, stageId), true);
+		else source.sendSuccess(() -> Component.translatable("commands.stage.setting.get", setting, stageId, stage.getSetting(setting)), true);
 
 		return 1;
 	}
@@ -272,7 +271,7 @@ public class StageCommand
 			throw STAGE_NOT_FOUND.create(stageId);
 
 		Stage stage = stages.get(stageId);
-		Level stageLevel = source.getServer().getLevel(ResourceKey.create(Registry.DIMENSION_REGISTRY, stage.dimID));
+		Level stageLevel = source.getServer().getLevel(ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION, stage.dimID));
 
 		BlockPos blockpos2 = new BlockPos(Math.min(stage.cornerA.getX(), stage.cornerB.getX()), Math.min(stage.cornerB.getY(), stage.cornerA.getY()), Math.min(stage.cornerA.getZ(), stage.cornerB.getZ()));
 		BlockPos blockpos3 = new BlockPos(Math.max(stage.cornerA.getX(), stage.cornerB.getX()), Math.max(stage.cornerB.getY(), stage.cornerA.getY()), Math.max(stage.cornerA.getZ(), stage.cornerB.getZ()));
@@ -297,7 +296,8 @@ public class StageCommand
 				}
 
 		stage.setTeamColor(teamId, teamColor);
-		source.sendSuccess(new TranslatableComponent("commands.stage.teams.set.success", affectedBlocks, stageId, new TextComponent(teamId).withStyle(Style.EMPTY.withColor(TextColor.fromRgb(teamColor)))), true);
+		int totalAffectedBlocks = affectedBlocks;
+		source.sendSuccess(() -> Component.translatable("commands.stage.teams.set.success", totalAffectedBlocks, stageId, Component.literal(teamId).withStyle(Style.EMPTY.withColor(TextColor.fromRgb(teamColor)))), true);
 
 		SplatcraftPacketHandler.sendToAll(new UpdateStageListPacket(stages));
 
@@ -317,7 +317,7 @@ public class StageCommand
 
 		int teamColor = stage.getTeamColor(teamId);
 
-		source.sendSuccess(new TranslatableComponent("commands.stage.teams.get.success", teamId, stageId, ColorUtils.getFormatedColorName(teamColor, false)), true);
+		source.sendSuccess(() -> Component.translatable("commands.stage.teams.get.success", teamId, stageId, ColorUtils.getFormatedColorName(teamColor, false)), true);
 		return teamColor;
 	}
 
@@ -335,7 +335,7 @@ public class StageCommand
 		int teamColor = stage.getTeamColor(teamId);
 
 
-		Level stageLevel = source.getServer().getLevel(ResourceKey.create(Registry.DIMENSION_REGISTRY, stage.dimID));
+		Level stageLevel = source.getServer().getLevel(ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION, stage.dimID));
 		BlockPos blockpos2 = new BlockPos(Math.min(stage.cornerA.getX(), stage.cornerB.getX()), Math.min(stage.cornerB.getY(), stage.cornerA.getY()), Math.min(stage.cornerA.getZ(), stage.cornerB.getZ()));
 		BlockPos blockpos3 = new BlockPos(Math.max(stage.cornerA.getX(), stage.cornerB.getX()), Math.max(stage.cornerB.getY(), stage.cornerA.getY()), Math.max(stage.cornerA.getZ(), stage.cornerB.getZ()));
 
@@ -360,7 +360,8 @@ public class StageCommand
 
 		stage.removeTeam(teamId);
 
-		source.sendSuccess(new TranslatableComponent("commands.stage.teams.remove.success", new TextComponent(teamId).withStyle(Style.EMPTY.withColor(TextColor.fromRgb(teamColor))), stageId, affectedBlocks), true);
+		int totalAffectedBlocks = affectedBlocks;
+		source.sendSuccess(() -> Component.translatable("commands.stage.teams.remove.success", Component.literal(teamId).withStyle(Style.EMPTY.withColor(TextColor.fromRgb(teamColor))), stageId, totalAffectedBlocks), true);
 		return teamColor;
 	}
 
@@ -377,7 +378,7 @@ public class StageCommand
 			throw STAGE_NOT_FOUND.create(stageId);
 
 		Stage stage = stages.get(stageId);
-		Level stageLevel = source.getServer().getLevel(ResourceKey.create(Registry.DIMENSION_REGISTRY, stage.dimID));
+		Level stageLevel = source.getServer().getLevel(ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION, stage.dimID));
 
 
 		BlockPos blockpos2 = new BlockPos(Math.min(stage.cornerA.getX(), stage.cornerB.getX()), Math.min(stage.cornerB.getY(), stage.cornerA.getY()), Math.min(stage.cornerA.getZ(), stage.cornerB.getZ()));
@@ -414,13 +415,13 @@ public class StageCommand
 
 				float pitch = te.getLevel().getBlockState(te.getBlockPos()).getValue(SpawnPadBlock.DIRECTION).toYRot();
 
-				if (stageLevel == player.level)
+				if (stageLevel == player.level())
 					player.connection.teleport(te.getBlockPos().getX() + .5, te.getBlockPos().getY() + .5, te.getBlockPos().getZ() + .5, pitch, 0);
 				else
 					player.teleportTo((ServerLevel) stageLevel, te.getBlockPos().getX() + .5, te.getBlockPos().getY() + .5, te.getBlockPos().getZ(), pitch, 0);
 
 				if(setSpawn)
-					player.setRespawnPosition(player.level.dimension(), te.getBlockPos(), player.level.getBlockState(te.getBlockPos()).getValue(SpawnPadBlock.DIRECTION).toYRot(), false, true);
+					player.setRespawnPosition(player.level().dimension(), te.getBlockPos(), player.level().getBlockState(te.getBlockPos()).getValue(SpawnPadBlock.DIRECTION).toYRot(), false, true);
 
 				playersTeleported.put(playerColor, playersTeleported.get(playerColor) + 1);
 			}
@@ -433,7 +434,8 @@ public class StageCommand
 		if(result == 0)
 			throw NO_PLAYERS_FOUND.create(stageId);
 
-		source.sendSuccess(new TranslatableComponent("commands.stage.warp.success", result, stageId), true);
+		int playersWarped = result;
+		source.sendSuccess(() -> Component.translatable("commands.stage.warp.success", playersWarped, stageId), true);
 		return result;
 	}
 
@@ -445,7 +447,7 @@ public class StageCommand
 			throw STAGE_NOT_FOUND.create(stageId);
 
 		Stage stage = stages.get(stageId);
-		Level stageLevel = source.getServer().getLevel(ResourceKey.create(Registry.DIMENSION_REGISTRY, stage.dimID));
+		Level stageLevel = source.getServer().getLevel(ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION, stage.dimID));
 
 
 		BlockPos blockpos2 = new BlockPos(Math.min(stage.cornerA.getX(), stage.cornerB.getX()), Math.min(stage.cornerB.getY(), stage.cornerA.getY()), Math.min(stage.cornerA.getZ(), stage.cornerB.getZ()));
@@ -473,13 +475,13 @@ public class StageCommand
 
 				float pitch = te.getLevel().getBlockState(te.getBlockPos()).getValue(SpawnPadBlock.DIRECTION).toYRot();
 
-				if (stageLevel == player.level)
+				if (stageLevel == player.level())
 					player.connection.teleport(te.getBlockPos().getX() + .5, te.getBlockPos().getY() + .5, te.getBlockPos().getZ() + .5, pitch, 0);
 				else
 					player.teleportTo((ServerLevel) stageLevel, te.getBlockPos().getX() + .5, te.getBlockPos().getY() + .5, te.getBlockPos().getZ(), pitch, 0);
 
 				if(setSpawn)
-					player.setRespawnPosition(player.level.dimension(), te.getBlockPos(), player.level.getBlockState(te.getBlockPos()).getValue(SpawnPadBlock.DIRECTION).toYRot(), false, true);
+					player.setRespawnPosition(player.level().dimension(), te.getBlockPos(), player.level().getBlockState(te.getBlockPos()).getValue(SpawnPadBlock.DIRECTION).toYRot(), false, true);
 
 				playersTeleported++;
 
@@ -490,7 +492,7 @@ public class StageCommand
 		if(result == 0)
 			throw NO_PLAYERS_FOUND.create(stageId);
 
-		source.sendSuccess(new TranslatableComponent("commands.stage.warp.success", result, stageId), true);
+		source.sendSuccess(() -> Component.translatable("commands.stage.warp.success", result, stageId), true);
 		return result;
 	}
 
@@ -507,7 +509,7 @@ public class StageCommand
 		else stage.cornerB = pos;
 
 		SplatcraftPacketHandler.sendToAll(new UpdateStageListPacket(stages));
-		source.sendSuccess(new TranslatableComponent("commands.stage.setting.area.success", isCornerA ? "A" : "B", stageId, pos.getX(), pos.getY(), pos.getZ()), true);
+		source.sendSuccess(() -> Component.translatable("commands.stage.setting.area.success", isCornerA ? "A" : "B", stageId, pos.getX(), pos.getY(), pos.getZ()), true);
 		return 1;
 	}
 
@@ -521,7 +523,7 @@ public class StageCommand
 
 		BlockPos pos = isCornerA ? stage.cornerA : stage.cornerB;
 
-		source.sendSuccess(new TranslatableComponent("commands.stage.setting.area.get", isCornerA ? "A" : "B", stageId, pos.getX(), pos.getY(), pos.getZ()), true);
+		source.sendSuccess(() -> Component.translatable("commands.stage.setting.area.get", isCornerA ? "A" : "B", stageId, pos.getX(), pos.getY(), pos.getZ()), true);
 
 		return 1;
 	}

@@ -5,8 +5,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -64,7 +62,7 @@ public abstract class WeaponBaseItem<S extends AbstractWeaponSettings<S, ?>> ext
     public boolean isSecret;
 
     public WeaponBaseItem(String settingsId) {
-        super(new Properties().stacksTo(1).tab(SplatcraftItemGroups.GROUP_WEAPONS));
+        super(new Properties().stacksTo(1));
         SplatcraftItems.inkColoredItems.add(this);
         SplatcraftItems.weapons.add(this);
         this.settingsId = settingsId.contains(":") ? new ResourceLocation(settingsId) : new ResourceLocation(Splatcraft.MODID, settingsId);
@@ -144,9 +142,9 @@ public abstract class WeaponBaseItem<S extends AbstractWeaponSettings<S, ?>> ext
 
     public static boolean enoughInk(LivingEntity player, Item item, float consumption, int recoveryCooldown, boolean sendMessage, boolean sub) {
         ItemStack tank = player.getItemBySlot(EquipmentSlot.CHEST);
-        if (!SplatcraftGameRules.getLocalizedRule(player.level, player.blockPosition(), SplatcraftGameRules.REQUIRE_INK_TANK)
+        if (!SplatcraftGameRules.getLocalizedRule(player.level(), player.blockPosition(), SplatcraftGameRules.REQUIRE_INK_TANK)
                 || player instanceof Player && ((Player) player).isCreative()
-                && SplatcraftGameRules.getBooleanRuleValue(player.level, SplatcraftGameRules.INFINITE_INK_IN_CREATIVE)) {
+                && SplatcraftGameRules.getBooleanRuleValue(player.level(), SplatcraftGameRules.INFINITE_INK_IN_CREATIVE)) {
             return true;
         }
         if (tank.getItem() instanceof InkTankItem) {
@@ -166,9 +164,9 @@ public abstract class WeaponBaseItem<S extends AbstractWeaponSettings<S, ?>> ext
     public static boolean hasInkInTank(LivingEntity player, Item item)
     {
         ItemStack tank = player.getItemBySlot(EquipmentSlot.CHEST);
-        if (!SplatcraftGameRules.getLocalizedRule(player.level, player.blockPosition(), SplatcraftGameRules.REQUIRE_INK_TANK)
+        if (!SplatcraftGameRules.getLocalizedRule(player.level(), player.blockPosition(), SplatcraftGameRules.REQUIRE_INK_TANK)
                 || player instanceof Player && ((Player) player).isCreative()
-                && SplatcraftGameRules.getBooleanRuleValue(player.level, SplatcraftGameRules.INFINITE_INK_IN_CREATIVE)) {
+                && SplatcraftGameRules.getBooleanRuleValue(player.level(), SplatcraftGameRules.INFINITE_INK_IN_CREATIVE)) {
             return true;
         }
 
@@ -180,7 +178,7 @@ public abstract class WeaponBaseItem<S extends AbstractWeaponSettings<S, ?>> ext
     {
         if (entity instanceof Player)
         {
-            ((Player) entity).displayClientMessage(new TranslatableComponent("status.no_ink").withStyle(ChatFormatting.RED), true);
+            ((Player) entity).displayClientMessage(Component.translatable("status.no_ink").withStyle(ChatFormatting.RED), true);
             if (sound != null)
                 playNoInkSound(entity, sound);
         }
@@ -188,8 +186,8 @@ public abstract class WeaponBaseItem<S extends AbstractWeaponSettings<S, ?>> ext
 
     public static void playNoInkSound(LivingEntity entity, SoundEvent sound)
     {
-        entity.level.playSound(null, entity.getX(), entity.getY(), entity.getZ(), sound, SoundSource.PLAYERS, 0.8F,
-                ((entity.level.getRandom().nextFloat() - entity.level.getRandom().nextFloat()) * 0.1F + 1.0F) * 0.95F);
+        entity.level().playSound(null, entity.getX(), entity.getY(), entity.getZ(), sound, SoundSource.PLAYERS, 0.8F,
+                ((entity.level().getRandom().nextFloat() - entity.level().getRandom().nextFloat()) * 0.1F + 1.0F) * 0.95F);
     }
 
     @Override
@@ -202,19 +200,11 @@ public abstract class WeaponBaseItem<S extends AbstractWeaponSettings<S, ?>> ext
             tooltip.add(ColorUtils.getFormatedColorName(ColorUtils.getInkColor(stack), true));
         } else
         {
-            tooltip.add(new TextComponent(""));
+            tooltip.add(Component.literal(""));
         }
 
         if(!stack.getOrCreateTag().getBoolean("HideTooltip"))
             getSettings(stack).addStatsToTooltip(tooltip, flag);
-    }
-
-    @Override
-    public void fillItemCategory(@NotNull CreativeModeTab group, @NotNull NonNullList<ItemStack> list)
-    {
-        if (!isSecret) {
-            super.fillItemCategory(group, list);
-        }
     }
 
     @Override
@@ -247,15 +237,15 @@ public abstract class WeaponBaseItem<S extends AbstractWeaponSettings<S, ?>> ext
     {
         BlockPos pos = entity.blockPosition().below();
 
-        if (entity.level.getBlockState(pos).getBlock() instanceof InkwellBlock) {
-            InkColorTileEntity te = (InkColorTileEntity) entity.level.getBlockEntity(pos);
+        if (entity.level().getBlockState(pos).getBlock() instanceof InkwellBlock) {
+            InkColorTileEntity te = (InkColorTileEntity) entity.level().getBlockEntity(pos);
 
-            if (ColorUtils.getInkColor(stack) != ColorUtils.getInkColorOrInverted(entity.level, pos)) {
-                ColorUtils.setInkColor(entity.getItem(), ColorUtils.getInkColorOrInverted(entity.level, pos));
+            if (ColorUtils.getInkColor(stack) != ColorUtils.getInkColorOrInverted(entity.level(), pos)) {
+                ColorUtils.setInkColor(entity.getItem(), ColorUtils.getInkColorOrInverted(entity.level(), pos));
                 ColorUtils.setColorLocked(entity.getItem(), true);
             }
         } else if ((stack.getItem() instanceof SubWeaponItem && !SubWeaponItem.singleUse(stack) || !(stack.getItem() instanceof SubWeaponItem))
-                && InkedBlock.causesClear(entity.level, pos, entity.level.getBlockState(pos)) && ColorUtils.getInkColor(stack) != 0xFFFFFF) {
+                && InkedBlock.causesClear(entity.level(), pos, entity.level().getBlockState(pos)) && ColorUtils.getInkColor(stack) != 0xFFFFFF) {
             ColorUtils.setInkColor(stack, 0xFFFFFF);
             ColorUtils.setColorLocked(stack, false);
         }

@@ -25,7 +25,7 @@ public class SubWeaponItemRenderer { /* extends GeoItemRenderer<SubWeaponItem>
 	@Override
 	public void render(GeoModel model, SubWeaponItem animatable, float partialTick, RenderType type, PoseStack poseStack, @Nullable MultiBufferSource bufferSource, @Nullable VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha)
 	{
-		AbstractSubWeaponEntity sub = animatable.entityType.get().create(Minecraft.getInstance().level);
+		AbstractSubWeaponEntity sub = animatable.entityType.get().create(Minecraft.getInstance().level());
 		sub.readItemData(currentItemStack.getOrCreateTag().getCompound("EntityData"));
 		sub.isItem = true;
 		Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(sub).render(sub, 0, Minecraft.getInstance().getDeltaFrameTime(), poseStack, bufferSource, packedLight);

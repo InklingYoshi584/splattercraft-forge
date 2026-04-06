@@ -3,7 +3,7 @@ package net.splatcraft.forge.client.renderer.tileentity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.world.item.ItemStack;
@@ -26,7 +26,7 @@ public class RemotePedestalTileEntityRenderer implements BlockEntityRenderer<Rem
             matrixStack.pushPose();
             matrixStack.translate(0.5F, 1F, 0.5F);
             //matrixStack.rotate(Vector3f.YP.rotation(f);
-            Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemTransforms.TransformType.GROUND, combinedLight, combinedOverlay, matrixStack, buffer, (int) remotePedestalTileEntity.getBlockPos().asLong());
+			Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemDisplayContext.GROUND, combinedLight, combinedOverlay, matrixStack, buffer, remotePedestalTileEntity.getLevel(), 0);
             matrixStack.popPose();
         }
     }

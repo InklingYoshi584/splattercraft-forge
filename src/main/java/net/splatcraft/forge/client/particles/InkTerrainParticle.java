@@ -22,7 +22,7 @@ public class InkTerrainParticle extends TextureSheetParticle {
 	private final float vo;
 
 	public InkTerrainParticle(ClientLevel p_108282_, double p_108283_, double p_108284_, double p_108285_, double p_108286_, double p_108287_, double p_108288_, float r, float g, float b) {
-		this(p_108282_, p_108283_, p_108284_, p_108285_, p_108286_, p_108287_, p_108288_, new BlockPos(p_108283_, p_108284_, p_108285_), r, g, b);
+		this(p_108282_, p_108283_, p_108284_, p_108285_, p_108286_, p_108287_, p_108288_, BlockPos.containing(p_108283_, p_108284_, p_108285_), r, g, b);
 	}
 
 	public InkTerrainParticle(ClientLevel p_172451_, double p_172452_, double p_172453_, double p_172454_, double p_172455_, double p_172456_, double p_172457_, BlockPos p_172459_, float r, float g, float b) {

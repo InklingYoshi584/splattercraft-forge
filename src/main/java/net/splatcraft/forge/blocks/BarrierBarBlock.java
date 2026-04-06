@@ -12,25 +12,20 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.*;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraft.world.level.material.Material;
-import net.minecraft.world.level.material.MaterialColor;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jetbrains.annotations.NotNull;
 
+@SuppressWarnings("deprecation")
 public class BarrierBarBlock extends Block implements SimpleWaterloggedBlock
 {
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
     public static final EnumProperty<Half> HALF = BlockStateProperties.HALF;
     public static final EnumProperty<StairsShape> SHAPE = BlockStateProperties.STAIRS_SHAPE;
     public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
-
-    protected static final AABB STRAIGHT_AABB = new AABB(0, 13 / 16f, 13 / 16f, 1, 1, 1);
-    protected static final AABB EDGE_AABB = new AABB(0, 13 / 16f, 13 / 16f, 3 / 16f, 1, 1);
-    protected static final AABB ROTATED_STRAIGHT_AABB = modifyShapeForDirection(Direction.EAST, Shapes.create(STRAIGHT_AABB)).bounds();
-    protected static final AABB TOP_AABB = new AABB(0, 13 / 16f, 0, 1, 1, 1);
 
     protected static final VoxelShape NU_STRAIGHT = Block.box(0, 13, 0, 16, 16, 3);
     protected static final VoxelShape SU_STRAIGHT = modifyShapeForDirection(Direction.SOUTH, NU_STRAIGHT);
@@ -56,7 +51,7 @@ public class BarrierBarBlock extends Block implements SimpleWaterloggedBlock
 
     public BarrierBarBlock()
     {
-        super(BlockBehaviour.Properties.of(Material.METAL, MaterialColor.NONE).strength(3.0f).requiresCorrectToolForDrops());
+        super(BlockBehaviour.Properties.of().strength(3.0f).requiresCorrectToolForDrops());
         this.registerDefaultState(this.getStateDefinition().any().setValue(FACING, Direction.NORTH).setValue(HALF, Half.BOTTOM).setValue(SHAPE, StairsShape.STRAIGHT).setValue(WATERLOGGED, false));
     }
 
@@ -64,16 +59,12 @@ public class BarrierBarBlock extends Block implements SimpleWaterloggedBlock
     {
         AABB bb = shape.bounds();
 
-        switch (facing)
-        {
-            case EAST:
-                return Shapes.create(new AABB(1 - bb.maxZ, bb.minY, bb.minX, 1 - bb.minZ, bb.maxY, bb.maxX));
-            case SOUTH:
-                return Shapes.create(new AABB(1 - bb.maxX, bb.minY, 1 - bb.maxZ, 1 - bb.minX, bb.maxY, 1 - bb.minZ));
-            case WEST:
-                return Shapes.create(new AABB(bb.minZ, bb.minY, 1 - bb.maxX, bb.maxZ, bb.maxY, 1 - bb.minX));
-        }
-        return shape;
+        return switch (facing) {
+            case EAST -> Shapes.create(new AABB(1 - bb.maxZ, bb.minY, bb.minX, 1 - bb.minZ, bb.maxY, bb.maxX));
+            case SOUTH -> Shapes.create(new AABB(1 - bb.maxX, bb.minY, 1 - bb.maxZ, 1 - bb.minX, bb.maxY, 1 - bb.minZ));
+            case WEST -> Shapes.create(new AABB(bb.minZ, bb.minY, 1 - bb.maxX, bb.maxZ, bb.maxY, 1 - bb.minX));
+            default -> shape;
+        };
     }
 
     public static VoxelShape mirrorShapeY(VoxelShape shape)
@@ -81,13 +72,6 @@ public class BarrierBarBlock extends Block implements SimpleWaterloggedBlock
         AABB bb = shape.bounds();
 
         return Shapes.create(new AABB(bb.minX, 1 - bb.minY, bb.minZ, bb.maxX, 1 - bb.maxY, bb.maxZ));
-    }
-
-    public static VoxelShape mirrorShapeX(VoxelShape shape)
-    {
-        AABB bb = shape.bounds();
-
-        return Shapes.create(new AABB(1 - bb.minX, bb.minY, bb.minZ, 1 - bb.maxX, bb.maxY, bb.maxZ));
     }
 
     /**
@@ -141,32 +125,25 @@ public class BarrierBarBlock extends Block implements SimpleWaterloggedBlock
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, BlockGetter levelIn, BlockPos pos, CollisionContext context)
+    public @NotNull VoxelShape getShape(BlockState state, @NotNull BlockGetter levelIn, @NotNull BlockPos pos, @NotNull CollisionContext context)
     {
         VoxelShape[] shapeArray = state.getValue(HALF).equals(Half.TOP) ? TOP_SHAPES : BOTTOM_SHAPES;
         int dirIndex = state.getValue(FACING).ordinal() - 2;
         int rotatedDirIndex = state.getValue(FACING).getClockWise().ordinal() - 2;
         int rotatedCCWDirIndex = state.getValue(FACING).getCounterClockWise().ordinal() - 2;
 
-        switch (state.getValue(SHAPE))
-        {
-            case STRAIGHT:
-                return shapeArray[dirIndex];
-            case OUTER_LEFT:
-                return shapeArray[dirIndex + 4];
-            case OUTER_RIGHT:
-                return shapeArray[rotatedDirIndex + 4];
-            case INNER_LEFT:
-                return Shapes.or(shapeArray[dirIndex], shapeArray[rotatedCCWDirIndex]);
-            case INNER_RIGHT:
-                return Shapes.or(shapeArray[dirIndex], shapeArray[rotatedDirIndex]);
-        }
+        return switch (state.getValue(SHAPE)) {
+            case STRAIGHT -> shapeArray[dirIndex];
+            case OUTER_LEFT -> shapeArray[dirIndex + 4];
+            case OUTER_RIGHT -> shapeArray[rotatedDirIndex + 4];
+            case INNER_LEFT -> Shapes.or(shapeArray[dirIndex], shapeArray[rotatedCCWDirIndex]);
+            case INNER_RIGHT -> Shapes.or(shapeArray[dirIndex], shapeArray[rotatedDirIndex]);
+        };
 
-        return Block.box(1, 1, 1, 15, 15, 15);
     }
 
     @Override
-    public boolean useShapeForLightOcclusion(BlockState state)
+    public boolean useShapeForLightOcclusion(@NotNull BlockState state)
     {
         return true;
     }
@@ -182,7 +159,7 @@ public class BarrierBarBlock extends Block implements SimpleWaterloggedBlock
     }
 
     @Override
-    public BlockState updateShape(BlockState stateIn, Direction facing, BlockState facingState, LevelAccessor levelIn, BlockPos currentPos, BlockPos facingPos)
+    public @NotNull BlockState updateShape(BlockState stateIn, @NotNull Direction facing, @NotNull BlockState facingState, @NotNull LevelAccessor levelIn, @NotNull BlockPos currentPos, @NotNull BlockPos facingPos)
     {
         if (stateIn.getValue(WATERLOGGED))
         {
@@ -193,13 +170,13 @@ public class BarrierBarBlock extends Block implements SimpleWaterloggedBlock
     }
 
     @Override
-    public BlockState rotate(BlockState state, Rotation rot)
+    public @NotNull BlockState rotate(BlockState state, Rotation rot)
     {
         return state.setValue(FACING, rot.rotate(state.getValue(FACING)));
     }
 
     @Override
-    public BlockState mirror(BlockState state, Mirror mirrorIn)
+    public @NotNull BlockState mirror(BlockState state, Mirror mirrorIn)
     {
         Direction direction = state.getValue(FACING);
         StairsShape stairsshape = state.getValue(SHAPE);
@@ -208,37 +185,32 @@ public class BarrierBarBlock extends Block implements SimpleWaterloggedBlock
             case LEFT_RIGHT:
                 if (direction.getAxis() == Direction.Axis.Z)
                 {
-                    switch (stairsshape)
-                    {
-                        case INNER_LEFT:
-                            return state.rotate(Rotation.CLOCKWISE_180).setValue(SHAPE, StairsShape.INNER_RIGHT);
-                        case INNER_RIGHT:
-                            return state.rotate(Rotation.CLOCKWISE_180).setValue(SHAPE, StairsShape.INNER_LEFT);
-                        case OUTER_LEFT:
-                            return state.rotate(Rotation.CLOCKWISE_180).setValue(SHAPE, StairsShape.OUTER_RIGHT);
-                        case OUTER_RIGHT:
-                            return state.rotate(Rotation.CLOCKWISE_180).setValue(SHAPE, StairsShape.OUTER_LEFT);
-                        default:
-                            return state.rotate(Rotation.CLOCKWISE_180);
-                    }
+                    return switch (stairsshape) {
+                        case INNER_LEFT ->
+                                state.rotate(Rotation.CLOCKWISE_180).setValue(SHAPE, StairsShape.INNER_RIGHT);
+                        case INNER_RIGHT ->
+                                state.rotate(Rotation.CLOCKWISE_180).setValue(SHAPE, StairsShape.INNER_LEFT);
+                        case OUTER_LEFT ->
+                                state.rotate(Rotation.CLOCKWISE_180).setValue(SHAPE, StairsShape.OUTER_RIGHT);
+                        case OUTER_RIGHT ->
+                                state.rotate(Rotation.CLOCKWISE_180).setValue(SHAPE, StairsShape.OUTER_LEFT);
+                        default -> state.rotate(Rotation.CLOCKWISE_180);
+                    };
                 }
                 break;
             case FRONT_BACK:
                 if (direction.getAxis() == Direction.Axis.X)
                 {
-                    switch (stairsshape)
-                    {
-                        case INNER_LEFT:
-                            return state.rotate(Rotation.CLOCKWISE_180).setValue(SHAPE, StairsShape.INNER_LEFT);
-                        case INNER_RIGHT:
-                            return state.rotate(Rotation.CLOCKWISE_180).setValue(SHAPE, StairsShape.INNER_RIGHT);
-                        case OUTER_LEFT:
-                            return state.rotate(Rotation.CLOCKWISE_180).setValue(SHAPE, StairsShape.OUTER_RIGHT);
-                        case OUTER_RIGHT:
-                            return state.rotate(Rotation.CLOCKWISE_180).setValue(SHAPE, StairsShape.OUTER_LEFT);
-                        case STRAIGHT:
-                            return state.rotate(Rotation.CLOCKWISE_180);
-                    }
+                    return switch (stairsshape) {
+                        case INNER_LEFT -> state.rotate(Rotation.CLOCKWISE_180).setValue(SHAPE, StairsShape.INNER_LEFT);
+                        case INNER_RIGHT ->
+                                state.rotate(Rotation.CLOCKWISE_180).setValue(SHAPE, StairsShape.INNER_RIGHT);
+                        case OUTER_LEFT ->
+                                state.rotate(Rotation.CLOCKWISE_180).setValue(SHAPE, StairsShape.OUTER_RIGHT);
+                        case OUTER_RIGHT ->
+                                state.rotate(Rotation.CLOCKWISE_180).setValue(SHAPE, StairsShape.OUTER_LEFT);
+                        case STRAIGHT -> state.rotate(Rotation.CLOCKWISE_180);
+                    };
                 }
         }
 
@@ -252,13 +224,13 @@ public class BarrierBarBlock extends Block implements SimpleWaterloggedBlock
     }
 
     @Override
-    public FluidState getFluidState(BlockState state)
+    public @NotNull FluidState getFluidState(BlockState state)
     {
         return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
     }
 
     @Override
-    public boolean isPathfindable(BlockState state, BlockGetter levelIn, BlockPos pos, PathComputationType type)
+    public boolean isPathfindable(@NotNull BlockState state, @NotNull BlockGetter levelIn, @NotNull BlockPos pos, @NotNull PathComputationType type)
     {
         return false;
     }

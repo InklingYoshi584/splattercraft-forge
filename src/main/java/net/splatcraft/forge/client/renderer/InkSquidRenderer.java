@@ -2,7 +2,7 @@ package net.splatcraft.forge.client.renderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Matrix4f;
+import org.joml.Matrix4f;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -73,7 +73,7 @@ public class InkSquidRenderer extends LivingEntityRenderer<LivingEntity, InkSqui
 		poseStack.pushPose();
 		Vec3 vec3 = holder.getRopeHoldPosition(partialTicks);
 		double d0 = (double)(Mth.lerp(partialTicks, squid.yBodyRot, squid.yBodyRotO) * ((float)Math.PI / 180F)) + (Math.PI / 2D);
-		Vec3 vec31 = squid.getLeashOffset();
+		Vec3 vec31 = new Vec3(0.0D, squid.getBbHeight() * 0.5F, squid.getBbWidth() * 0.4F);
 		double d1 = Math.cos(d0) * vec31.z + Math.sin(d0) * vec31.x;
 		double d2 = Math.sin(d0) * vec31.z - Math.cos(d0) * vec31.x;
 		double d3 = Mth.lerp((double)partialTicks, squid.xo, squid.getX()) + d1;
@@ -86,15 +86,15 @@ public class InkSquidRenderer extends LivingEntityRenderer<LivingEntity, InkSqui
 		float f3 = 0.025F;
 		VertexConsumer vertexconsumer = bufferSource.getBuffer(RenderType.leash());
 		Matrix4f matrix4f = poseStack.last().pose();
-		float f4 = Mth.fastInvSqrt(f * f + f2 * f2) * 0.025F / 2.0F;
+		float f4 = (float) (Mth.fastInvSqrt(f * f + f2 * f2) * 0.025F / 2.0F);
 		float f5 = f2 * f4;
 		float f6 = f * f4;
-		BlockPos blockpos = new BlockPos(squid.getEyePosition(partialTicks));
-		BlockPos blockpos1 = new BlockPos(holder.getEyePosition(partialTicks));
+		BlockPos blockpos = BlockPos.containing(squid.getEyePosition(partialTicks));
+		BlockPos blockpos1 = BlockPos.containing(holder.getEyePosition(partialTicks));
 		int i = this.getBlockLightLevel(squid, blockpos);
 		int j = getHolderBlockLightLevel(holder, blockpos1);
-		int k = squid.level.getBrightness(LightLayer.SKY, blockpos);
-		int l = squid.level.getBrightness(LightLayer.SKY, blockpos1);
+		int k = squid.level().getBrightness(LightLayer.SKY, blockpos);
+		int l = squid.level().getBrightness(LightLayer.SKY, blockpos1);
 
 		for(int i1 = 0; i1 <= 24; ++i1) {
 			addVertexPair(vertexconsumer, matrix4f, f, f1, f2, i, j, k, l, 0.025F, 0.025F, f5, f6, i1, false);
@@ -109,7 +109,7 @@ public class InkSquidRenderer extends LivingEntityRenderer<LivingEntity, InkSqui
 
 
 	protected int getHolderBlockLightLevel(Entity p_114496_, BlockPos p_114497_) {
-		return p_114496_.isOnFire() ? 15 : p_114496_.level.getBrightness(LightLayer.BLOCK, p_114497_);
+		return p_114496_.isOnFire() ? 15 : p_114496_.level().getBrightness(LightLayer.BLOCK, p_114497_);
 	}
 
 	private static void addVertexPair(VertexConsumer p_174308_, Matrix4f p_174309_, float p_174310_, float p_174311_, float p_174312_, int p_174313_, int p_174314_, int p_174315_, int p_174316_, float p_174317_, float p_174318_, float p_174319_, float p_174320_, int p_174321_, boolean p_174322_) {

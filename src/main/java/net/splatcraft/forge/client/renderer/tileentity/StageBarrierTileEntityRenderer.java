@@ -81,7 +81,8 @@ public class StageBarrierTileEntityRenderer implements BlockEntityRenderer<Stage
             return;
         }
 
-        ResourceLocation textureLoc = new ResourceLocation(Splatcraft.MODID, "blocks/" + block.getRegistryName().getPath() + (Minecraft.getInstance().options.graphicsMode.getId() > 0 ? "_fancy" : ""));
+        ResourceLocation blockId = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block);
+        ResourceLocation textureLoc = new ResourceLocation(Splatcraft.MODID, "blocks/" + blockId.getPath() + (Minecraft.getInstance().options.graphicsMode().get().getId() > 0 ? "_fancy" : ""));
 
         TextureAtlasSprite sprite = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(textureLoc);
         VertexConsumer builder = buffer.getBuffer(Minecraft.useShaderTransparency() ? RenderType.translucentMovingBlock() : RenderType.translucentNoCrumbling());

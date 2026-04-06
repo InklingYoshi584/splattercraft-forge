@@ -56,7 +56,7 @@ public class SuctionBombEntity extends AbstractSubWeaponEntity {
     @Override
     public void tick() {
         super.tick();
-        BlockState state = this.level.getBlockState(blockPosition());
+        BlockState state = this.level().getBlockState(blockPosition());
         SubWeaponSettings settings = getSettings();
 
         if (shakeTime > 0)
@@ -67,20 +67,20 @@ public class SuctionBombEntity extends AbstractSubWeaponEntity {
         if (isActivated()) {
             fuseTime++;
             if (fuseTime >= settings.fuseTime) {
-                InkExplosion.createInkExplosion(level, getOwner(), blockPosition(), settings.explosionSize, settings.propDamage, settings.indirectDamage, settings.directDamage, bypassMobDamageMultiplier, getColor(), inkType, sourceWeapon);
-                level.broadcastEntityEvent(this, (byte) 1);
-                level.playSound(null, getX(), getY(), getZ(), SplatcraftSounds.subDetonate, SoundSource.PLAYERS, 0.8F, ((level.getRandom().nextFloat() - level.getRandom().nextFloat()) * 0.1F + 1.0F) * 0.95F);
-                if(!level.isClientSide())
+				InkExplosion.createInkExplosion(level(), getOwner(), blockPosition(), settings.explosionSize, settings.propDamage, settings.indirectDamage, settings.directDamage, bypassMobDamageMultiplier, getColor(), inkType, sourceWeapon);
+                level().broadcastEntityEvent(this, (byte) 1);
+                level().playSound(null, getX(), getY(), getZ(), SplatcraftSounds.subDetonate, SoundSource.PLAYERS, 0.8F, ((level().getRandom().nextFloat() - level().getRandom().nextFloat()) * 0.1F + 1.0F) * 0.95F);
+                if(!level().isClientSide())
                     discard();
                 return;
             } else if (fuseTime >= settings.fuseTime - FLASH_DURATION && !playedActivationSound) {
-                level.playSound(null, getX(), getY(), getZ(), SplatcraftSounds.subDetonating, SoundSource.PLAYERS, 0.8F, 1f);
+                level().playSound(null, getX(), getY(), getZ(), SplatcraftSounds.subDetonating, SoundSource.PLAYERS, 0.8F, 1f);
                 playedActivationSound = true;
             }
         }
 
         if(inGround)
-            if(inBlockState != state && this.level.noCollision((new AABB(this.position(), this.position())).inflate(0.06D)))
+            if(inBlockState != state && this.level().noCollision((new AABB(this.position(), this.position())).inflate(0.06D)))
             {
                 this.inGround = false;
                 Vec3 vector3d = this.getDeltaMovement();
@@ -101,7 +101,7 @@ public class SuctionBombEntity extends AbstractSubWeaponEntity {
     {
         super.handleEntityEvent(id);
         if (id == 1)
-            level.addAlwaysVisibleParticle(new InkExplosionParticleData(getColor(), getSettings().explosionSize * 2), this.getX(), this.getY(), this.getZ(), 0, 0, 0);
+            level().addAlwaysVisibleParticle(new InkExplosionParticleData(getColor(), getSettings().explosionSize * 2), this.getX(), this.getY(), this.getZ(), 0, 0, 0);
     }
 
     public void setStickFacing()
@@ -134,7 +134,7 @@ public class SuctionBombEntity extends AbstractSubWeaponEntity {
         {
             shakeTime = 7;
             inGround = true;
-            inBlockState = level.getBlockState(result.getBlockPos());
+            inBlockState = level().getBlockState(result.getBlockPos());
 
             setActivated(true);
 
@@ -164,7 +164,7 @@ public class SuctionBombEntity extends AbstractSubWeaponEntity {
         inGround = nbt.getBoolean("InGround");
         shakeTime = nbt.getInt("ShakeTime");
         if (nbt.contains("InBlockState", 10))
-            this.inBlockState = NbtUtils.readBlockState(nbt.getCompound("inBlockState"));
+			this.inBlockState = NbtUtils.readBlockState(level().registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.BLOCK), nbt.getCompound("inBlockState"));
 
         fuseTime = nbt.getInt("FuseTime");
         prevFuseTime = fuseTime;

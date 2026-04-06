@@ -1,5 +1,6 @@
 package net.splatcraft.forge.commands;
 
+import net.minecraft.network.chat.Component;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -9,7 +10,6 @@ import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
@@ -44,7 +44,7 @@ public class SuperJumpCommand
 
 		PlayerCooldown.setPlayerCooldown(player, new SuperJump(player.getInventory().selected, target, player.position(), player.noPhysics));
 
-		player.displayClientMessage(new TextComponent("pchoooooo"), false);
+		player.displayClientMessage(Component.literal("pchoooooo"), false);
 		SplatcraftPacketHandler.sendToPlayer(new UpdatePlayerInfoPacket(player), player);
 
 		return 0;
@@ -54,9 +54,9 @@ public class SuperJumpCommand
 	public static class Subscriber
 	{
 		@SubscribeEvent
-		public static void playerTick(LivingEvent.LivingUpdateEvent event)
+		public static void playerTick(LivingEvent.LivingTickEvent event)
 		{
-			if(!(event.getEntityLiving() instanceof Player player))
+			if(!(event.getEntity() instanceof Player player))
 				return;
 
 			if(!PlayerCooldown.hasPlayerCooldown(player))
@@ -84,7 +84,7 @@ public class SuperJumpCommand
 
 				if (distancePctg > .2f != info.isSquid()) {
 					info.setIsSquid(!info.isSquid());
-					if (!player.level.isClientSide()) {
+					if (!player.level().isClientSide()) {
 						SplatcraftPacketHandler.sendToTrackers(new PlayerSetSquidS2CPacket(player.getUUID(), info.isSquid()), player);
 					}
 				}

@@ -171,9 +171,5 @@ public class InkStainedBlock extends Block implements IColoredBlock, EntityBlock
             return super.getStateForPlacement(context).setValue(COLORED, ColorUtils.getInkColor(context.getItemInHand()) >= 0);
         }
 
-        @Override
-        public List<ItemStack> getDrops(BlockState p_60537_, LootContext.Builder p_60538_) {
-            return super.getDrops(p_60537_, p_60538_);
-        }
-    }
+	}
 }

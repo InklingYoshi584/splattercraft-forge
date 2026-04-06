@@ -62,7 +62,7 @@ import static net.splatcraft.forge.Splatcraft.MODID;
 
 @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class SplatcraftEntities {
-    protected static final DeferredRegister<EntityType<?>> REGISTRY = DeferredRegister.create(ForgeRegistries.ENTITIES, MODID);
+    protected static final DeferredRegister<EntityType<?>> REGISTRY = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, MODID);
 
     public static final RegistryObject<EntityType<InkSquidEntity>> INK_SQUID = create("ink_squid", InkSquidEntity::new, MobCategory.AMBIENT, 0.6f, 0.5f);
 

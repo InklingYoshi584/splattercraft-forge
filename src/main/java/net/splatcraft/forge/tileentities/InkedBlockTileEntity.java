@@ -74,7 +74,7 @@ public class InkedBlockTileEntity extends InkColorTileEntity
     public void load(@NotNull CompoundTag nbt)
     {
         super.load(nbt);
-        savedState = NbtUtils.readBlockState(nbt.getCompound("SavedState"));
+        savedState = NbtUtils.readBlockState(level.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.BLOCK), nbt.getCompound("SavedState"));
         savedColor = nbt.getInt("SavedColor");
 
         if(nbt.contains("PermanentColor"))

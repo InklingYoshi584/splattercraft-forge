@@ -14,8 +14,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Material;
-import net.minecraft.world.level.material.MaterialColor;
+import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -32,7 +31,7 @@ public class StageBarrierBlock extends Block implements EntityBlock
 
     public StageBarrierBlock(boolean damagesPlayer)
     {
-        super(Properties.of(Material.BARRIER, MaterialColor.NONE).strength(-1.0F, 3600000.8F).noDrops().noOcclusion());
+        super(Properties.of().pushReaction(PushReaction.BLOCK).strength(-1.0F, 3600000.8F).noLootTable().noOcclusion());
         this.damagesPlayer = damagesPlayer;
 
     }
@@ -61,12 +60,10 @@ public class StageBarrierBlock extends Block implements EntityBlock
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter levelIn, BlockPos pos, CollisionContext context)
     {
-        if (Minecraft.getInstance().player.isCreative() || !(levelIn.getBlockEntity(pos) instanceof StageBarrierTileEntity))
+        if (Minecraft.getInstance().player.isCreative() || !(levelIn.getBlockEntity(pos) instanceof StageBarrierTileEntity te))
         {
             return Shapes.block();
         }
-
-        StageBarrierTileEntity te = (StageBarrierTileEntity) levelIn.getBlockEntity(pos);
 
         return te.getActiveTime() > 5 ? super.getShape(state, levelIn, pos, context) : Shapes.empty();
     }

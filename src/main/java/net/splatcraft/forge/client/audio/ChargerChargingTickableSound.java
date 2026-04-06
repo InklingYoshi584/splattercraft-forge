@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.splatcraft.forge.data.capabilities.playerinfo.PlayerInfo;
@@ -17,7 +18,7 @@ public class ChargerChargingTickableSound extends AbstractTickableSoundInstance
 
     public ChargerChargingTickableSound(Player player, SoundEvent sound)
     {
-        super(sound, SoundSource.PLAYERS);
+        super(sound, SoundSource.PLAYERS, RandomSource.create());
         this.attenuation = Attenuation.NONE;
         this.looping = true;
         this.delay = 0;

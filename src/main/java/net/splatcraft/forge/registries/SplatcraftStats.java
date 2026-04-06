@@ -2,6 +2,7 @@ package net.splatcraft.forge.registries;
 
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.stats.StatFormatter;
 import net.minecraft.stats.Stats;
@@ -32,7 +33,7 @@ public class SplatcraftStats
     private static ResourceLocation register(String key, StatFormatter formatter)
     {
         ResourceLocation resourcelocation = new ResourceLocation(Splatcraft.MODID, key);
-        Registry.register(Registry.CUSTOM_STAT, new ResourceLocation(Splatcraft.MODID, key), resourcelocation);
+        Registry.register(BuiltInRegistries.CUSTOM_STAT, new ResourceLocation(Splatcraft.MODID, key), resourcelocation);
         Stats.CUSTOM.get(resourcelocation, formatter);
         return resourcelocation;
     }

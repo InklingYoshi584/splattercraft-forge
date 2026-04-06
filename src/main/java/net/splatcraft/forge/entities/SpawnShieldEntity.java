@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -61,10 +62,10 @@ public class SpawnShieldEntity extends Entity implements IColoredEntity
 	{
 		super.tick();
 
-		if(level.isClientSide())
+		if(level().isClientSide())
 			return;
 
-		if(!(getSpawnPadPos() != null && level.getBlockEntity(getSpawnPadPos()) instanceof SpawnPadTileEntity spawnPad &&
+		if(!(getSpawnPadPos() != null && level().getBlockEntity(getSpawnPadPos()) instanceof SpawnPadTileEntity spawnPad &&
 				spawnPad.isSpawnShield(this)))
 		{
 			discard();
@@ -77,15 +78,15 @@ public class SpawnShieldEntity extends Entity implements IColoredEntity
 		if (getActiveTime() > 0)
 			setActiveTime(getActiveTime()-1);
 
-		for (Entity entity : level.getEntitiesOfClass(Entity.class, getBoundingBox()))
+		for (Entity entity : level().getEntitiesOfClass(Entity.class, getBoundingBox()))
 		{
-			if(!(entity.getType().is(SplatcraftTags.EntityTypes.BYPASSES_SPAWN_SHIELD) || ColorUtils.colorEquals(level, blockPosition(), ColorUtils.getEntityColor(entity), getColor())))
+			if(!(entity.getType().is(SplatcraftTags.EntityTypes.BYPASSES_SPAWN_SHIELD) || ColorUtils.colorEquals(level(), blockPosition(), ColorUtils.getEntityColor(entity), getColor())))
 			{
 				setActiveTime(MAX_ACTIVE_TIME);
 
 				if(entity instanceof AbstractSubWeaponEntity || entity instanceof InkProjectileEntity)
 				{
-					level.broadcastEntityEvent(entity, (byte) -1);
+					level().broadcastEntityEvent(entity, (byte) -1);
 					entity.discard();
 				}
 				else
@@ -143,7 +144,7 @@ public class SpawnShieldEntity extends Entity implements IColoredEntity
 
 
 	@Override
-	public Packet<?> getAddEntityPacket()
+	public Packet<ClientGamePacketListener> getAddEntityPacket()
 	{
 		return NetworkHooks.getEntitySpawningPacket(this);
 	}

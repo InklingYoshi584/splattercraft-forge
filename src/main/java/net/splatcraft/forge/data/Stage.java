@@ -6,6 +6,9 @@ import net.minecraft.nbt.NbtUtils;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
+import net.splatcraft.forge.data.capabilities.saveinfo.SaveInfoCapability;
+import net.splatcraft.forge.tileentities.SpawnPadTileEntity;
 import net.splatcraft.forge.registries.SplatcraftGameRules;
 import org.jetbrains.annotations.Nullable;
 
@@ -139,5 +142,33 @@ public class Stage
 	public static void registerGameruleSetting(GameRules.Key<GameRules.BooleanValue> rule)
 	{
 		VALID_SETTINGS.add(rule.toString().replace("splatcraft.", ""));
+	}
+
+	public static List<Stage> getStagesForPosition(Level level, Vec3 pos)
+	{
+		if(level.getServer() == null)
+			return Collections.emptyList();
+
+		ArrayList<Stage> result = new ArrayList<>();
+		for (Stage stage : SaveInfoCapability.get(level.getServer()).getStages().values())
+		{
+			if(!stage.dimID.equals(level.dimension().location()))
+				continue;
+
+			int minX = Math.min(stage.cornerA.getX(), stage.cornerB.getX());
+			int minY = Math.min(stage.cornerA.getY(), stage.cornerB.getY());
+			int minZ = Math.min(stage.cornerA.getZ(), stage.cornerB.getZ());
+			int maxX = Math.max(stage.cornerA.getX(), stage.cornerB.getX());
+			int maxY = Math.max(stage.cornerA.getY(), stage.cornerB.getY());
+			int maxZ = Math.max(stage.cornerA.getZ(), stage.cornerB.getZ());
+
+			if(pos.x >= minX && pos.x <= maxX && pos.y >= minY && pos.y <= maxY && pos.z >= minZ && pos.z <= maxZ)
+				result.add(stage);
+		}
+		return result;
+	}
+
+	public void removeSpawnPad(SpawnPadTileEntity spawnPad)
+	{
 	}
 }

@@ -4,9 +4,6 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import java.util.Iterator;
-import java.util.Random;
-import java.util.Set;
 import net.minecraft.client.renderer.ChunkBufferBuilderPack;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
@@ -34,8 +31,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 //TODO use RenderLevelStageEvent to render ink over blocks instead of overriding block rendering with mixins,
 // this may have been a bad idea for compatibility
@@ -64,16 +59,7 @@ public class BlockRenderMixin
 		@Unique
 		private static boolean splatcraft$renderAsCube;
 
-		@Inject(method = "compile", locals = LocalCapture.CAPTURE_FAILHARD, at = @At(value = "INVOKE",
-				target = "Lnet/minecraft/client/renderer/chunk/RenderChunkRegion;getBlockState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;"))
-		public void getBlockData(float p_112866_, float p_112867_, float p_112868_, ChunkRenderDispatcher.CompiledChunk p_112869_, ChunkBufferBuilderPack p_112870_, CallbackInfoReturnable<Set<BlockEntity>> cir, int i, BlockPos blockpos, BlockPos blockpos1, VisGraph visgraph, Set<BlockEntity> set, RenderChunkRegion renderchunkregion, PoseStack posestack, Random random, BlockRenderDispatcher blockrenderdispatcher, Iterator<BlockPos> var15, BlockPos blockpos2)
-		{
-			splatcraft$level = ((ChunkRegionAccessor)renderchunkregion).getLevel();
-			splatcraft$blockPos = blockpos2;
-			splatcraft$renderAsCube = InkBlockUtils.isInked(splatcraft$level, splatcraft$blockPos) && splatcraft$level.getBlockState(splatcraft$blockPos).is(SplatcraftTags.Blocks.RENDER_AS_CUBE);
-		}
-
-		@WrapOperation(method = "compile", at = @At(value = "INVOKE",
+		@WrapOperation(method = "compile", at = @At(value = "INVOKE", remap = false,
 				target = "Lnet/minecraft/client/renderer/ItemBlockRenderTypes;canRenderInLayer(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/client/renderer/RenderType;)Z"))
 		public boolean canRenderInLayer(BlockState state, RenderType type, Operation<Boolean> original)
 		{
@@ -92,6 +78,9 @@ public class BlockRenderMixin
 		@WrapOperation(method = "compile", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/chunk/RenderChunkRegion;getBlockState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;"))
 		public BlockState getBlockState(RenderChunkRegion region, BlockPos pos, Operation<BlockState> original)
 		{
+			splatcraft$level = ((ChunkRegionAccessor)region).getLevel();
+			splatcraft$blockPos = pos;
+			splatcraft$renderAsCube = InkBlockUtils.isInked(splatcraft$level, splatcraft$blockPos) && splatcraft$level.getBlockState(splatcraft$blockPos).is(SplatcraftTags.Blocks.RENDER_AS_CUBE);
 			return splatcraft$renderAsCube ? SplatcraftBlocks.inkedBlock.get().defaultBlockState() : original.call(region, pos);
 		}
 	}

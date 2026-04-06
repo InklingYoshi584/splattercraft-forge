@@ -3,6 +3,7 @@ package net.splatcraft.forge.client.audio;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -20,7 +21,7 @@ public class RollerRollTickableSound extends AbstractTickableSoundInstance
 
     public RollerRollTickableSound(Player player, boolean isBrush)
     {
-        super(isBrush ? SplatcraftSounds.brushRoll : SplatcraftSounds.rollerRoll, SoundSource.PLAYERS);
+        super(isBrush ? SplatcraftSounds.brushRoll : SplatcraftSounds.rollerRoll, SoundSource.PLAYERS, RandomSource.create());
         this.looping = true;
         this.delay = 0;
 

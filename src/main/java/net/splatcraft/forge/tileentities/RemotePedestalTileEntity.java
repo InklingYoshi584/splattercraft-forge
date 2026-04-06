@@ -121,7 +121,7 @@ public class RemotePedestalTileEntity extends InkColorTileEntity implements Worl
     @Override
     public boolean stillValid(Player player)
     {
-        if (this.level.getBlockEntity(this.getBlockPos()) != this)
+        if (this.getLevel().getBlockEntity(this.getBlockPos()) != this)
             return false;
         return !(player.distanceToSqr((double) this.getBlockPos().getX() + 0.5D, (double) this.getBlockPos().getY() + 0.5D, (double) this.getBlockPos().getZ() + 0.5D) > 64.0D);
     }
@@ -163,8 +163,8 @@ public class RemotePedestalTileEntity extends InkColorTileEntity implements Worl
         return signal;
     }
 
-    @Override
-    public void sendMessage(Component p_145747_1_, UUID p_145747_2_) {}
+	@Override
+	public void sendSystemMessage(Component pComponent) {}
 
     @Override
     public boolean acceptsSuccess() {

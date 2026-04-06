@@ -37,7 +37,7 @@ public class UpdateWeaponSettingsPacket extends PlayS2CPacket
 			ResourceLocation key = buffer.readResourceLocation();
 			try {
 				AbstractWeaponSettings<?, ?> setting = DataHandler.WeaponStatsListener.SETTING_TYPES.get(buffer.readUtf()).getConstructor(String.class).newInstance(key.toString());
-				setting.castAndDeserialize(buffer.readWithCodec(setting.getCodec()));
+				setting.castAndDeserialize(buffer.readWithCodec(net.minecraft.nbt.NbtOps.INSTANCE, setting.getCodec()));
 
 				setting.registerStatTooltips();
 				settings.put(key, setting);

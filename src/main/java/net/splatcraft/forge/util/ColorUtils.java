@@ -8,9 +8,8 @@ import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextColor;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -88,7 +87,7 @@ public class ColorUtils
 
     public static int getPlayerColor(LivingEntity player)
     {
-        if(player.level.isClientSide)
+        if(player.level().isClientSide)
             return ClientUtils.getClientPlayerColor(player.getDisplayName().getString());
         if(PlayerInfoCapability.hasCapability(player))
             return PlayerInfoCapability.get(player).getColor();
@@ -107,7 +106,7 @@ public class ColorUtils
 
         }
 
-        Level level = player.level;
+        Level level = player.level();
         if (!level.isClientSide && updateClient)
         {
             SplatcraftPacketHandler.sendToAll(new PlayerColorPacket(player, color));
@@ -223,10 +222,10 @@ public class ColorUtils
         try
         {
             fallbackUnloc = "ink_color." + String.format("%06X", color).toLowerCase();
-            fallbackName = new TranslatableComponent(fallbackUnloc).getString();
+            fallbackName = Component.translatable(fallbackUnloc).getString();
             if (!fallbackName.equals(fallbackName))
             {
-                return new TextComponent(fallbackUnloc);
+                return Component.literal(fallbackUnloc);
             }
         } catch (NoClassDefFoundError ignored)
         {
@@ -236,24 +235,24 @@ public class ColorUtils
         colorObj = InkColor.getByHex(0xFFFFFF - color);
         if (colorObj != null)
         {
-            return new TranslatableComponent("ink_color.invert", colorObj.getLocalizedName());
+            return Component.translatable("ink_color.invert", colorObj.getLocalizedName());
         }
 
         try
         {
             fallbackUnloc = "ink_color." + String.format("%06X", 0xFFFFFF - color).toLowerCase();
-            fallbackName = new TranslatableComponent(fallbackUnloc).getString();
+            fallbackName = Component.translatable(fallbackUnloc).getString();
 
             if (!fallbackName.equals(fallbackUnloc))
             {
-                return new TranslatableComponent("ink_color.invert", fallbackName);
+                return Component.translatable("ink_color.invert", fallbackName);
             }
         } catch (NoClassDefFoundError ignored)
         {
         }
 
 
-        return new TextComponent("#" + String.format("%06X", color).toUpperCase());
+        return Component.literal("#" + String.format("%06X", color).toUpperCase());
 
     }
 
@@ -268,7 +267,7 @@ public class ColorUtils
     public static MutableComponent getFormatedColorName(int color, boolean colorless)
     {
         return color == ColorUtils.DEFAULT
-                ? new TextComponent((colorless ? ChatFormatting.GRAY : "") + getColorName(color).getString())
+                ? Component.literal((colorless ? ChatFormatting.GRAY : "") + getColorName(color).getString())
                 : getColorName(color).withStyle(getColorName(color).getStyle().withColor(TextColor.fromRgb(color)));
     }
 
@@ -287,7 +286,7 @@ public class ColorUtils
 
         if (entityColor == -1 || inkColor == -1)
             return false;
-        return colorEquals(entity.level, te.getBlockPos(), entityColor, inkColor);
+        return colorEquals(entity.level(), te.getBlockPos(), entityColor, inkColor);
     }
 
     public static boolean colorEquals(LivingEntity entity, ItemStack stack)
@@ -297,7 +296,7 @@ public class ColorUtils
 
         if (entityColor == -1 || inkColor == -1)
             return false;
-        return colorEquals(entity.level, entity.blockPosition(), entityColor, inkColor);
+        return colorEquals(entity.level(), entity.blockPosition(), entityColor, inkColor);
     }
 
     public static ItemStack setColorLocked(ItemStack stack, boolean isLocked)
@@ -361,8 +360,8 @@ public class ColorUtils
         BlockPos pos = InkBlockUtils.getBlockStandingOnPos(entity);
         if(InkBlockUtils.isInked(level, pos))
             color = InkBlockUtils.getInk(level, pos).color();
-        else if (entity.level.getBlockState(pos).getBlock() instanceof IColoredBlock)
-            color = ((IColoredBlock) entity.level.getBlockState(pos).getBlock()).getColor(level, pos);
+        else if (entity.level().getBlockState(pos).getBlock() instanceof IColoredBlock)
+            color = ((IColoredBlock) entity.level().getBlockState(pos).getBlock()).getColor(level, pos);
         addInkSplashParticle(level, color, entity.getX() + (level.getRandom().nextFloat() * 0.8 - 0.4), entity.getY(level.getRandom().nextFloat() * 0.3f), entity.getZ() + (level.getRandom().nextFloat() * 0.8 - 0.4), size + (level.getRandom().nextFloat() * 0.2f - 0.1f));
     }
 
@@ -415,7 +414,7 @@ public class ColorUtils
 
 
                         addInkTerrainParticle(level, color, (double)pos.getX() + d7, (double)pos.getY() + d8, (double)pos.getZ() + d9, d4 - 0.5D, d5 - 0.5D, d6 - 0.5D, 1);
-                        //this.add(new TerrainParticle(this.level, (double)p_107356_.getX() + d7, (double)p_107356_.getY() + d8, (double)p_107356_.getZ() + d9, d4 - 0.5D, d5 - 0.5D, d6 - 0.5D, p_107357_, p_107356_).updateSprite(p_107357_, p_107356_));
+                        //this.add(new TerrainParticle(this.level(), (double)p_107356_.getX() + d7, (double)p_107356_.getY() + d8, (double)p_107356_.getZ() + d9, d4 - 0.5D, d5 - 0.5D, d6 - 0.5D, p_107357_, p_107356_).updateSprite(p_107357_, p_107356_));
                     }
                 }
             }

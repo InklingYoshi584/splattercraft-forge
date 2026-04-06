@@ -33,7 +33,7 @@ public class UpdateBlockColorPacket extends PlayC2SPacket
     @Override
     public void execute(Player player)
     {
-        BlockEntity te = player.level.getBlockEntity(pos);
+        BlockEntity te = player.level().getBlockEntity(pos);
 
         if (te instanceof InkVatTileEntity)
         {

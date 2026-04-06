@@ -3,7 +3,6 @@ package net.splatcraft.forge.items;
 import com.google.common.collect.Lists;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
@@ -24,7 +23,7 @@ public class FilterItem extends Item
 
     public FilterItem(Rarity rarity, boolean isGlowing, boolean isOmni)
     {
-        super(new Properties().tab(SplatcraftItemGroups.GROUP_GENERAL).stacksTo(1).rarity(rarity));
+        super(new Properties().stacksTo(1).rarity(rarity));
 
         this.isGlowing = isGlowing;
         this.isOmni = isOmni;
@@ -42,7 +41,7 @@ public class FilterItem extends Item
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltip, @NotNull TooltipFlag isAdvanced)
     {
         super.appendHoverText(stack, level, tooltip, isAdvanced);
-        tooltip.add(new TranslatableComponent("item.splatcraft.filter.tooltip").withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.translatable("item.splatcraft.filter.tooltip").withStyle(ChatFormatting.GRAY));
     }
 
     @Override

@@ -2,8 +2,8 @@ package net.splatcraft.forge.blocks;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
@@ -21,17 +21,20 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraft.world.level.material.Material;
+import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.splatcraft.forge.tileentities.container.WeaponWorkbenchContainer;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+@SuppressWarnings("deprecation")
 public class WeaponWorkbenchBlock extends HorizontalDirectionalBlock implements SimpleWaterloggedBlock
 {
 
@@ -43,11 +46,11 @@ public class WeaponWorkbenchBlock extends HorizontalDirectionalBlock implements 
     protected static final VoxelShape DETAIL = box(0, 8, 0, 16, 10, 16);
     protected static final VoxelShape HANDLE = box(5, 11, 0, 11, 12, 1);
     public static final VoxelShape[] SHAPES = createVoxelShapes(BOTTOM_LEFT, BOTTOM_RIGHT, BASE, DETAIL, HANDLE);
-    private static final MutableComponent CONTAINER_NAME = new TranslatableComponent("container.ammo_knights_workbench");
+    private static final MutableComponent CONTAINER_NAME = Component.translatable("container.ammo_knights_workbench");
 
-    public WeaponWorkbenchBlock(String name)
+    public WeaponWorkbenchBlock()
     {
-        super(Properties.of(Material.STONE).strength(2.0f).requiresCorrectToolForDrops());
+        super(Properties.of().mapColor(MapColor.STONE).instrument(NoteBlockInstrument.BASEDRUM).strength(2.0f).requiresCorrectToolForDrops());
         registerDefaultState(defaultBlockState().setValue(FACING, Direction.NORTH).setValue(WATERLOGGED, false));
     }
 
@@ -55,16 +58,12 @@ public class WeaponWorkbenchBlock extends HorizontalDirectionalBlock implements 
     {
         AABB bb = shape.bounds();
 
-        switch (facing)
-        {
-            case EAST:
-                return Shapes.create(new AABB(1 - bb.minZ, bb.minY, 1 - bb.minX, 1 - bb.maxZ, bb.maxY, 1 - bb.maxX));
-            case SOUTH:
-                return Shapes.create(new AABB(1 - bb.maxX, bb.minY, 1 - bb.maxZ, 1 - bb.minX, bb.maxY, 1 - bb.minZ));
-            case WEST:
-                return Shapes.create(new AABB(bb.minZ, bb.minY, bb.minX, bb.maxZ, bb.maxY, bb.maxX));
-        }
-        return shape;
+        return switch (facing) {
+            case EAST -> Shapes.create(new AABB(1 - bb.minZ, bb.minY, 1 - bb.minX, 1 - bb.maxZ, bb.maxY, 1 - bb.maxX));
+            case SOUTH -> Shapes.create(new AABB(1 - bb.maxX, bb.minY, 1 - bb.maxZ, 1 - bb.minX, bb.maxY, 1 - bb.minZ));
+            case WEST -> Shapes.create(new AABB(bb.minZ, bb.minY, bb.minX, bb.maxZ, bb.maxY, bb.maxX));
+            default -> shape;
+        };
     }
 
     public static VoxelShape[] createVoxelShapes(VoxelShape... shapes)
@@ -85,9 +84,9 @@ public class WeaponWorkbenchBlock extends HorizontalDirectionalBlock implements 
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level levelIn, BlockPos pos, Player player, InteractionHand handIn, BlockHitResult hit)
+    public @NotNull InteractionResult use(@NotNull BlockState state, Level levelIn, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand handIn, @NotNull BlockHitResult hit)
     {
-        if (levelIn.isClientSide)
+        if (levelIn.isClientSide())
         {
             return InteractionResult.SUCCESS;
         }
@@ -97,7 +96,7 @@ public class WeaponWorkbenchBlock extends HorizontalDirectionalBlock implements 
     }
 
     @Override
-    public MenuProvider getMenuProvider(BlockState state, Level levelIn, BlockPos pos)
+    public MenuProvider getMenuProvider(@NotNull BlockState state, @NotNull Level levelIn, @NotNull BlockPos pos)
     {
         return new SimpleMenuProvider((id, inventory, player) -> new WeaponWorkbenchContainer(inventory, ContainerLevelAccess.create(levelIn, pos), id), CONTAINER_NAME);
     }
@@ -118,13 +117,13 @@ public class WeaponWorkbenchBlock extends HorizontalDirectionalBlock implements 
     }
 
     @Override
-    public FluidState getFluidState(BlockState state)
+    public @NotNull FluidState getFluidState(BlockState state)
     {
         return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, BlockGetter levelIn, BlockPos pos, CollisionContext context)
+    public @NotNull VoxelShape getShape(BlockState state, @NotNull BlockGetter levelIn, @NotNull BlockPos pos, @NotNull CollisionContext context)
     {
         return SHAPES[state.getValue(FACING).get2DDataValue()];
     }

@@ -23,8 +23,8 @@ import static net.splatcraft.forge.registries.SplatcraftBlocks.*;
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class SplatcraftTileEntities
 {
-    protected static final DeferredRegister<BlockEntityType<?>> REGISTRY = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITIES, MODID);
-    protected static final DeferredRegister<MenuType<?>> CONTAINER_REGISTRY = DeferredRegister.create(ForgeRegistries.CONTAINERS, MODID);
+    protected static final DeferredRegister<BlockEntityType<?>> REGISTRY = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, MODID);
+    protected static final DeferredRegister<MenuType<?>> CONTAINER_REGISTRY = DeferredRegister.create(ForgeRegistries.MENU_TYPES, MODID);
 
     public static final RegistryObject<BlockEntityType<InkColorTileEntity>> colorTileEntity = registerTileEntity("color", InkColorTileEntity::new, inkedWool, inkedGlass, inkedGlassPane, inkedCarpet, canvas, splatSwitch, inkwell);
     public static final RegistryObject<BlockEntityType<InkedBlockTileEntity>> inkedTileEntity = registerTileEntity("inked_block", InkedBlockTileEntity::new, inkedBlock, glowingInkedBlock, clearInkedBlock);
@@ -53,7 +53,7 @@ public class SplatcraftTileEntities
 
     private static <T extends AbstractContainerMenu> RegistryObject<MenuType<T>> registerContainer(String name, MenuType.MenuSupplier<T> factoryIn)
     {
-        return CONTAINER_REGISTRY.register(name, () -> new MenuType<>(factoryIn));
+        return CONTAINER_REGISTRY.register(name, () -> new MenuType<>(factoryIn, net.minecraft.world.flag.FeatureFlags.DEFAULT_FLAGS));
     }
 
     /*

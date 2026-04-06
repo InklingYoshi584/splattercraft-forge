@@ -22,7 +22,7 @@ public class ChangeInkColorTrigger extends SimpleCriterionTrigger<ChangeInkColor
 		return ID;
 	}
 
-	public ChangeInkColorTrigger.TriggerInstance createInstance(JsonObject json, EntityPredicate.Composite composite, DeserializationContext context)
+	public ChangeInkColorTrigger.TriggerInstance createInstance(JsonObject json, ContextAwarePredicate predicate, DeserializationContext context)
 	{
 		int color = -1;
 
@@ -39,7 +39,7 @@ public class ChangeInkColorTrigger extends SimpleCriterionTrigger<ChangeInkColor
 				}
 			} else color = Mth.clamp(GsonHelper.getAsInt(json, "color"), 0, 0xFFFFFF);
 		}
-		return new ChangeInkColorTrigger.TriggerInstance(composite, color);
+		return new ChangeInkColorTrigger.TriggerInstance(predicate, color);
 	}
 
 	public void trigger(ServerPlayer player) {
@@ -49,9 +49,9 @@ public class ChangeInkColorTrigger extends SimpleCriterionTrigger<ChangeInkColor
 	public static class TriggerInstance extends AbstractCriterionTriggerInstance {
 		private final int color;
 
-		public TriggerInstance(EntityPredicate.Composite p_27688_, int color)
+		public TriggerInstance(ContextAwarePredicate predicate, int color)
 		{
-			super(ChangeInkColorTrigger.ID, p_27688_);
+			super(ChangeInkColorTrigger.ID, predicate);
 			this.color = color;
 		}
 

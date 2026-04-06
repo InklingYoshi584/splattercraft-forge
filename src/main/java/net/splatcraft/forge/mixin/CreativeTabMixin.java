@@ -7,7 +7,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
@@ -26,22 +25,22 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(CreativeModeInventoryScreen.class)
 public abstract class CreativeTabMixin implements AbstractContainerAccessor<CreativeModeInventoryScreen.ItemPickerMenu> {
-	@Shadow private static int selectedTab;
+	@Shadow private static CreativeModeTab selectedTab;
 
 	@Shadow private EditBox searchBox;
 
 	@Shadow private float scrollOffs;
 
-	@Inject(cancellable = true, method = "refreshSearchResults", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/CreativeModeTab;fillItemList(Lnet/minecraft/core/NonNullList;)V", shift = At.Shift.AFTER))
+	@Inject(cancellable = true, method = "refreshSearchResults", at = @At(value = "INVOKE", remap = false, target = "Ljava/util/List;addAll(Ljava/util/Collection;)Z", shift = At.Shift.AFTER))
 	private void applySearchResults(CallbackInfo ci)
 	{
-		CreativeModeTab tab = CreativeModeTab.TABS[selectedTab];
+		CreativeModeTab tab = selectedTab;
 		String searchValue = searchBox.getValue().toLowerCase();
-		if(tab == SplatcraftItemGroups.GROUP_COLORS && !searchValue.isEmpty())
+		if(tab == SplatcraftItemGroups.GROUP_COLORS.get() && !searchValue.isEmpty())
 		{
 			CreativeModeInventoryScreen.ItemPickerMenu menu = this.getMenu();
 
-			String invertedStr = ChatFormatting.stripFormatting(new TranslatableComponent("ink_color.invert", "%s").getString()).toLowerCase(Locale.ROOT);
+			String invertedStr = ChatFormatting.stripFormatting(Component.translatable("ink_color.invert", "%s").getString()).toLowerCase(Locale.ROOT);
 			boolean inverted = false;
 
 			if(!invertedStr.isEmpty())
@@ -112,11 +111,11 @@ public abstract class CreativeTabMixin implements AbstractContainerAccessor<Crea
 	}
 
 	@Unique
-	private static final Component splatcraft$label = new TranslatableComponent("itemGroup.splatcraft_colors.label");
-	@ModifyArg(method = "renderLabels", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Font;draw(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/network/chat/Component;FFI)I"), index = 1)
+	private static final Component splatcraft$label = Component.translatable("itemGroup.splatcraft_colors.label");
+	@ModifyArg(method = "renderLabels", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)I"), index = 1)
 	private Component injectTabLabel(Component original)
 	{
-		return CreativeModeTab.TABS[selectedTab] == SplatcraftItemGroups.GROUP_COLORS ? splatcraft$label : original;
+		return selectedTab == SplatcraftItemGroups.GROUP_COLORS.get() ? splatcraft$label : original;
 	}
 
 

@@ -1,0 +1,10 @@
+{
+  "type": "forge:add_features",
+  "biomes": "#minecraft:is_ocean",
+  "features": [
+    "splatcraft:crate_small",
+    "splatcraft:crate_large",
+    "splatcraft:sardinium_deposit"
+  ],
+  "step": "underground_ores"
+}

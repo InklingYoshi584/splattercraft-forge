@@ -10,7 +10,6 @@ import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -23,7 +22,6 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.registries.ForgeRegistryEntry;
 import net.splatcraft.forge.data.SplatcraftTags;
 import net.splatcraft.forge.items.weapons.*;
 import net.splatcraft.forge.registries.SplatcraftItemGroups;
@@ -57,7 +55,7 @@ public class BlueprintItem extends Item
 
 	public BlueprintItem()
 	{
-		super(new Properties().stacksTo(16).tab(SplatcraftItemGroups.GROUP_GENERAL));
+		super(new Properties().stacksTo(16));
 	}
 
 	@OnlyIn(Dist.CLIENT)
@@ -75,34 +73,24 @@ public class BlueprintItem extends Item
 
 			if(nbt.contains("Advancements"))
 			{
-				components.add(new TranslatableComponent("item.splatcraft.blueprint.tooltip"));
+				components.add(Component.translatable("item.splatcraft.blueprint.tooltip"));
 				return;
 			}
 
 			if(nbt.contains("Pools"))
 			{
-				components.add(new TranslatableComponent("item.splatcraft.blueprint.tooltip"));
+				components.add(Component.translatable("item.splatcraft.blueprint.tooltip"));
 				nbt.getList("Pools", Tag.TAG_STRING).forEach((weaponType) ->
-						components.add(new TranslatableComponent("item.splatcraft.blueprint.tooltip." + weaponType.getAsString())
+						components.add(Component.translatable("item.splatcraft.blueprint.tooltip." + weaponType.getAsString())
 								.withStyle(Style.EMPTY.withColor(ChatFormatting.BLUE).withItalic(false)))
 				);
 				return;
 			}
 		}
 
-		components.add(new TranslatableComponent("item.splatcraft.blueprint.tooltip.empty"));
+		components.add(Component.translatable("item.splatcraft.blueprint.tooltip.empty"));
 	}
 
-	@Override
-	public void fillItemCategory(CreativeModeTab tab, NonNullList<ItemStack> list)
-	{
-		if(tab == CreativeModeTab.TAB_SEARCH)
-			weaponPools.forEach((key, value) -> list.add(setPoolFromWeaponType(new ItemStack(this), key)));
-		else if(allowdedIn(tab))
-		{
-			list.add(setPoolFromWeaponType(new ItemStack(this), "wildcard"));
-		}
-	}
 	public static ItemStack addToAdvancementPool(ItemStack blueprint, String... advancementIds)
 	{
 		return addToAdvancementPool(blueprint, Arrays.stream(advancementIds));
@@ -125,7 +113,7 @@ public class BlueprintItem extends Item
 		Predicate<Item> predicate = weaponPools.get(weaponType);
 
 		ListTag lore = new ListTag();
-		lore.add(StringTag.valueOf(Component.Serializer.toJson(new TranslatableComponent("item.splatcraft.blueprint.tooltip." + weaponType)
+		lore.add(StringTag.valueOf(Component.Serializer.toJson(Component.translatable("item.splatcraft.blueprint.tooltip." + weaponType)
 				.withStyle(Style.EMPTY.withColor(ChatFormatting.BLUE).withItalic(false)))));
 
 		blueprint.getOrCreateTagElement("display").put("Lore",lore);
@@ -166,7 +154,7 @@ public class BlueprintItem extends Item
 					tag ->
 					{
 						SplatcraftItems.weapons.stream().filter(weaponPools.get(tag.getAsString()).and(item ->
-								!item.builtInRegistryHolder().is(SplatcraftTags.Items.BLUEPRINT_EXCLUDED))).map(ForgeRegistryEntry::getRegistryName).map(registryName ->
+								!item.builtInRegistryHolder().is(SplatcraftTags.Items.BLUEPRINT_EXCLUDED))).map(net.minecraftforge.registries.ForgeRegistries.ITEMS::getKey).map(registryName ->
 								new ResourceLocation(registryName.getNamespace(), "unlocks/" + registryName.getPath())).map(level.getServer().getAdvancements()::getAdvancement)
 								.filter(Objects::nonNull).forEach(output::add);
 					}
@@ -200,19 +188,19 @@ public class BlueprintItem extends Item
 						serverPlayer.getAdvancements().award(advancement, key);
 
 					if (advancement.getDisplay() != null && !advancement.getDisplay().shouldShowToast())
-						player.displayClientMessage(new TranslatableComponent("status.blueprint.unlock", advancement.getDisplay().getTitle()), true);
+						player.displayClientMessage(Component.translatable("status.blueprint.unlock", advancement.getDisplay().getTitle()), true);
 
 					stack.shrink(1);
 					return InteractionResultHolder.consume(stack);
 				}
 
-				player.displayClientMessage(new TranslatableComponent("status.blueprint.already_unlocked" + (count > 1 ? "" : ".single")), true);
+				player.displayClientMessage(Component.translatable("status.blueprint.already_unlocked" + (count > 1 ? "" : ".single")), true);
 				return super.use(level, player, hand);
 			}
 		}
 
 
-		player.displayClientMessage(new TranslatableComponent("status.blueprint.invalid"), true);
+		player.displayClientMessage(Component.translatable("status.blueprint.invalid"), true);
 		return super.use(level, player, hand);
 	}
 }

@@ -1,45 +1,52 @@
 package net.splatcraft.forge.crafting;
 
-
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.*;
-import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.IForgeRegistry;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.ShapedRecipe;
+import net.minecraft.world.item.crafting.SimpleCraftingRecipeSerializer;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 import net.splatcraft.forge.Splatcraft;
 
-public class SplatcraftRecipeTypes
-{
-    public static final RecipeSerializer<InkVatColorRecipe> INK_VAT_COLOR_CRAFTING = new InkVatColorRecipe.InkVatColorSerializer("ink_vat_color");
-    public static final RecipeSerializer<WeaponWorkbenchTab> WEAPON_STATION_TAB = new WeaponWorkbenchTab.WeaponWorkbenchTabSerializer("weapon_workbench_tab");
-    public static final RecipeSerializer<WeaponWorkbenchRecipe> WEAPON_STATION = new WeaponWorkbenchRecipe.Serializer("weapon_workbench");
-    public static final RecipeSerializer<SingleUseSubRecipe> SINGLE_USE_SUB = new SimpleRecipeSerializer<>(SingleUseSubRecipe::new);
-    public static final RecipeSerializer<ShapedRecipe> COLORED_SHAPED_CRAFTING = new ColoredShapedRecipe.Serializer("colored_crafting_shaped");
-    public static RecipeType<AbstractWeaponWorkbenchRecipe> WEAPON_STATION_TYPE;
-    public static RecipeType<WeaponWorkbenchTab> WEAPON_STATION_TAB_TYPE;
-    public static RecipeType<InkVatColorRecipe> INK_VAT_COLOR_CRAFTING_TYPE;
+public class SplatcraftRecipeTypes {
+    public static final DeferredRegister<RecipeSerializer<?>> REGISTRY = DeferredRegister.create(ForgeRegistries.RECIPE_SERIALIZERS, Splatcraft.MODID);
 
-    public static boolean getItem(Player player, Ingredient ingredient, int count, boolean takeItems)
-    {
-        for (int i = 0; i < player.getInventory().getContainerSize(); ++i)
-        {
+    public static final RegistryObject<RecipeSerializer<InkVatColorRecipe>> INK_VAT_COLOR_CRAFTING = REGISTRY.register("ink_vat_color", InkVatColorRecipe.InkVatColorSerializer::new);
+    public static final RegistryObject<RecipeSerializer<WeaponWorkbenchTab>> WEAPON_STATION_TAB = REGISTRY.register("weapon_workbench_tab", WeaponWorkbenchTab.WeaponWorkbenchTabSerializer::new);
+    public static final RegistryObject<RecipeSerializer<WeaponWorkbenchRecipe>> WEAPON_STATION = REGISTRY.register("weapon_workbench", WeaponWorkbenchRecipe.Serializer::new);
+    public static final RegistryObject<RecipeSerializer<SingleUseSubRecipe>> SINGLE_USE_SUB = REGISTRY.register("single_use_sub", () -> new SimpleCraftingRecipeSerializer<>(SingleUseSubRecipe::new));
+    public static final RegistryObject<RecipeSerializer<ShapedRecipe>> COLORED_SHAPED_CRAFTING = REGISTRY.register("colored_crafting_shaped", ColoredShapedRecipe.Serializer::new);
+
+    public static final RecipeType<AbstractWeaponWorkbenchRecipe> WEAPON_STATION_TYPE = registerType("weapon_workbench");
+    public static final RecipeType<WeaponWorkbenchTab> WEAPON_STATION_TAB_TYPE = registerType("weapon_workbench_tab");
+    public static final RecipeType<InkVatColorRecipe> INK_VAT_COLOR_CRAFTING_TYPE = registerType("ink_vat_color");
+
+    private static <T extends Recipe<?>> RecipeType<T> registerType(String id) {
+        return new RecipeType<>() {
+            @Override
+            public String toString() {
+                return Splatcraft.MODID + ":" + id;
+            }
+        };
+    }
+
+    public static boolean getItem(Player player, Ingredient ingredient, int count, boolean takeItems) {
+        for (int i = 0; i < player.getInventory().getContainerSize(); ++i) {
             ItemStack invStack = player.getInventory().getItem(i);
-            if (!takeItems)
-            {
+            if (!takeItems) {
                 invStack = invStack.copy();
             }
 
-            if (ingredient.test(invStack))
-            {
-                if (count > invStack.getCount())
-                {
+            if (ingredient.test(invStack)) {
+                if (count > invStack.getCount()) {
                     count -= invStack.getCount();
                     invStack.setCount(0);
-                } else
-                {
+                } else {
                     invStack.setCount(invStack.getCount() - count);
                     return true;
                 }
@@ -47,26 +54,4 @@ public class SplatcraftRecipeTypes
         }
         return false;
     }
-
-    @Mod.EventBusSubscriber(modid = Splatcraft.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
-    public static class Subscriber
-    {
-        @SubscribeEvent
-        public static void registerSerializers(final RegistryEvent.Register<RecipeSerializer<?>> event)
-        {
-            IForgeRegistry<RecipeSerializer<?>> registry = event.getRegistry();
-
-            INK_VAT_COLOR_CRAFTING_TYPE = RecipeType.register(Splatcraft.MODID + ":ink_vat_color");
-            WEAPON_STATION_TAB_TYPE = RecipeType.register(Splatcraft.MODID + ":weapon_workbench_tab");
-            WEAPON_STATION_TYPE = RecipeType.register(Splatcraft.MODID + ":weapon_workbench");
-
-            registry.register(INK_VAT_COLOR_CRAFTING);
-            registry.register(WEAPON_STATION_TAB);
-            registry.register(WEAPON_STATION);
-            registry.register(COLORED_SHAPED_CRAFTING);
-            registry.register(SINGLE_USE_SUB.setRegistryName(new ResourceLocation(Splatcraft.MODID, "single_use_sub")));
-        }
-    }
-
-
 }

@@ -1,6 +1,6 @@
 package net.splatcraft.forge.util;
 
-import com.mojang.math.Vector3f;
+import org.joml.Vector3f;
 import java.util.HashMap;
 import java.util.TreeMap;
 import net.minecraft.client.Minecraft;
@@ -12,9 +12,9 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Material;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -72,7 +72,7 @@ public class ClientUtils
     {
         Player player = getClientPlayer();
 
-        if (!SplatcraftGameRules.getLocalizedRule(player.level, player.blockPosition(), SplatcraftGameRules.REQUIRE_INK_TANK))
+        if (!SplatcraftGameRules.getLocalizedRule(player.level(), player.blockPosition(), SplatcraftGameRules.REQUIRE_INK_TANK))
         {
             return 0;
         }
@@ -111,7 +111,7 @@ public class ClientUtils
         if (lookVec.dot(directionVec) > 0) {
             if (direction == null) return true;
             BlockState relative = te.getLevel().getBlockState(tePos.relative(direction));
-            return relative.getMaterial().equals(Material.BARRIER) || !relative.getMaterial().isSolidBlocking() || !relative.isCollisionShapeFullBlock(te.getLevel(), tePos.relative(direction));
+            return relative.is(Blocks.BARRIER) || !relative.blocksMotion() || !relative.isCollisionShapeFullBlock(te.getLevel(), tePos.relative(direction));
         }
 
         return false;

@@ -19,7 +19,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraft.world.level.material.Material;
+import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.splatcraft.forge.registries.SplatcraftBlocks;
@@ -28,8 +28,10 @@ import net.splatcraft.forge.registries.SplatcraftTileEntities;
 import net.splatcraft.forge.tileentities.InkColorTileEntity;
 import net.splatcraft.forge.util.BlockInkedResult;
 import net.splatcraft.forge.util.InkBlockUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+@SuppressWarnings("deprecation")
 public class SplatSwitchBlock extends Block implements IColoredBlock, SimpleWaterloggedBlock, EntityBlock
 {
     private static final VoxelShape[] SHAPES = new VoxelShape[]
@@ -48,7 +50,7 @@ public class SplatSwitchBlock extends Block implements IColoredBlock, SimpleWate
 
     public SplatSwitchBlock()
     {
-        super((Properties.of(Material.METAL).requiresCorrectToolForDrops().strength(5.0F).sound(SoundType.METAL).noOcclusion()));
+        super((Properties.of().mapColor(MapColor.METAL).requiresCorrectToolForDrops().strength(5.0F).sound(SoundType.METAL).noOcclusion()));
         registerDefaultState(defaultBlockState().setValue(FACING, Direction.UP).setValue(POWERED, false));
 
         SplatcraftBlocks.inkColoredBlocks.add(this);
@@ -60,7 +62,7 @@ public class SplatSwitchBlock extends Block implements IColoredBlock, SimpleWate
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public @NotNull VoxelShape getShape(BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull CollisionContext context) {
         return SHAPES[state.getValue(FACING).ordinal()];
     }
 
@@ -70,35 +72,38 @@ public class SplatSwitchBlock extends Block implements IColoredBlock, SimpleWate
     }
 
     @Override
-    public boolean isSignalSource(BlockState state) {
+    public boolean isSignalSource(@NotNull BlockState state) {
         return true;
     }
 
     @Override
-    public int getSignal(BlockState state, BlockGetter level, BlockPos pos, Direction face) {
+    public int getSignal(BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull Direction face) {
         return state.getValue(POWERED) ? 15 : 0;
     }
 
     @Override
-    public int getDirectSignal(BlockState state, BlockGetter level, BlockPos pos, Direction face) {
+    public int getDirectSignal(BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull Direction face) {
         return state.getValue(POWERED) ? 15 : 0;
     }
 
     @Override
-    public BlockState getStateForPlacement(BlockPlaceContext context)
+    public BlockState getStateForPlacement(@NotNull BlockPlaceContext context)
     {
-        BlockState state = super.getStateForPlacement(context).setValue(FACING, context.getClickedFace());
-        return state.setValue(WATERLOGGED, context.getLevel().getFluidState(context.getClickedPos()).getType() == Fluids.WATER);
+        BlockState state = super.getStateForPlacement(context);
+        if (state == null) {
+            return null;
+        }
+        return state.setValue(FACING, context.getClickedFace()).setValue(WATERLOGGED, context.getLevel().getFluidState(context.getClickedPos()).getType() == Fluids.WATER);
     }
 
     @Override
-    public FluidState getFluidState(BlockState state)
+    public @NotNull FluidState getFluidState(BlockState state)
     {
         return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
     }
 
     @Override
-    public BlockState updateShape(BlockState stateIn, Direction facing, BlockState facingState, LevelAccessor levelIn, BlockPos currentPos, BlockPos facingPos)
+    public @NotNull BlockState updateShape(@NotNull BlockState stateIn, @NotNull Direction facing, @NotNull BlockState facingState, @NotNull LevelAccessor levelIn, @NotNull BlockPos currentPos, @NotNull BlockPos facingPos)
     {
         if(InkedBlock.isTouchingLiquid(levelIn, currentPos) && levelIn instanceof Level)
         {
@@ -112,7 +117,7 @@ public class SplatSwitchBlock extends Block implements IColoredBlock, SimpleWate
     }
 
     @Override
-    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving)
+    public void onRemove(BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState newState, boolean isMoving)
     {
         if(state.getValue(POWERED))
             updateNeighbors(state, level, pos);
@@ -148,8 +153,7 @@ public class SplatSwitchBlock extends Block implements IColoredBlock, SimpleWate
     public int getColor(Level level, BlockPos pos)
     {
         BlockState state = level.getBlockState(pos);
-        return state.getValue(POWERED) && level.getBlockEntity(pos) instanceof InkColorTileEntity ?
-                ((InkColorTileEntity) level.getBlockEntity(pos)).getColor() : -1;
+        return state.getValue(POWERED) && level.getBlockEntity(pos) instanceof InkColorTileEntity te ? te.getColor() : -1;
     }
 
     @Override
@@ -185,7 +189,7 @@ public class SplatSwitchBlock extends Block implements IColoredBlock, SimpleWate
 
     @Nullable
     @Override
-    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+    public BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
         return SplatcraftTileEntities.colorTileEntity.get().create(pos, state);
     }
 }

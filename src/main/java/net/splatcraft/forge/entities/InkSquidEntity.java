@@ -60,7 +60,7 @@ public class InkSquidEntity extends PathfinderMob implements IColoredEntity
     @Override
     public void die(DamageSource source)
     {
-        level.broadcastEntityEvent(this, (byte) 60);
+        level().broadcastEntityEvent(this, (byte) 60);
         super.die(source);
     }
 
@@ -69,7 +69,7 @@ public class InkSquidEntity extends PathfinderMob implements IColoredEntity
     {
         if (id == 60)
         {
-            level.addParticle(new SquidSoulParticleData(getColor()), this.getX(), this.getY(), this.getZ(), 0, 1, 0);
+            level().addParticle(new SquidSoulParticleData(getColor()), this.getX(), this.getY(), this.getZ(), 0, 1, 0);
         } else
         {
             super.handleEntityEvent(id);
@@ -77,13 +77,13 @@ public class InkSquidEntity extends PathfinderMob implements IColoredEntity
     }
 
     @Override
-    protected int getExperienceReward(Player player)
+    public int getExperienceReward()
     {
         return 0;
     }
 
     @Override
-    protected boolean shouldDropExperience() {
+    public boolean shouldDropExperience() {
         return false;
     }
 
@@ -96,9 +96,9 @@ public class InkSquidEntity extends PathfinderMob implements IColoredEntity
 
         BlockPos pos = getBlockPosBelowThatAffectsMyMovement();
 
-        if (level.getBlockState(pos).getBlock() == SplatcraftBlocks.inkwell.get() && level.getBlockEntity(pos) instanceof InkColorTileEntity)
+        if (level().getBlockState(pos).getBlock() == SplatcraftBlocks.inkwell.get() && level().getBlockEntity(pos) instanceof InkColorTileEntity)
         {
-            InkColorTileEntity te = (InkColorTileEntity) level.getBlockEntity(pos);
+            InkColorTileEntity te = (InkColorTileEntity) level().getBlockEntity(pos);
             if (te.getColor() != getColor())
             {
                 setColor(te.getColor());

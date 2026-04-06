@@ -2,10 +2,9 @@ package net.splatcraft.forge.crafting;
 
 import com.google.common.collect.Lists;
 import com.google.gson.JsonObject;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.Container;
@@ -15,7 +14,6 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.registries.ForgeRegistryEntry;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -36,7 +34,7 @@ public class WeaponWorkbenchTab implements Recipe<Container>, Comparable<WeaponW
         this.iconLoc = iconLoc;
         this.pos = pos;
         this.hidden = hidden;
-        this.name = name != null ? name : new TranslatableComponent("weaponTab." + getId().toString());
+        this.name = name != null ? name : Component.translatable("weaponTab." + getId().toString());
     }
 
     @Override
@@ -46,7 +44,7 @@ public class WeaponWorkbenchTab implements Recipe<Container>, Comparable<WeaponW
     }
 
     @Override
-    public ItemStack assemble(Container inv)
+    public ItemStack assemble(Container inv, RegistryAccess registryAccess)
     {
         return ItemStack.EMPTY;
     }
@@ -58,7 +56,7 @@ public class WeaponWorkbenchTab implements Recipe<Container>, Comparable<WeaponW
     }
 
     @Override
-    public ItemStack getResultItem()
+    public ItemStack getResultItem(RegistryAccess registryAccess)
     {
         return ItemStack.EMPTY;
     }
@@ -72,7 +70,7 @@ public class WeaponWorkbenchTab implements Recipe<Container>, Comparable<WeaponW
     @Override
     public RecipeSerializer<?> getSerializer()
     {
-        return SplatcraftRecipeTypes.WEAPON_STATION_TAB;
+        return SplatcraftRecipeTypes.WEAPON_STATION_TAB.get();
     }
 
     @Override
@@ -113,14 +111,9 @@ public class WeaponWorkbenchTab implements Recipe<Container>, Comparable<WeaponW
         return name;
     }
 
-    public static class WeaponWorkbenchTabSerializer extends ForgeRegistryEntry<RecipeSerializer<?>> implements RecipeSerializer<WeaponWorkbenchTab>
+    public static class WeaponWorkbenchTabSerializer implements RecipeSerializer<WeaponWorkbenchTab>
     {
-
-        public WeaponWorkbenchTabSerializer(String name)
-        {
-            super();
-            setRegistryName(name);
-        }
+        public WeaponWorkbenchTabSerializer() {}
 
         @Override
         public WeaponWorkbenchTab fromJson(ResourceLocation recipeId, JsonObject json)
@@ -128,7 +121,7 @@ public class WeaponWorkbenchTab implements Recipe<Container>, Comparable<WeaponW
             Component displayComponent;
 
             if(GsonHelper.isStringValue(json, "name"))
-                displayComponent = new TranslatableComponent(GsonHelper.getAsString(json, "name"));
+                displayComponent = Component.translatable(GsonHelper.getAsString(json, "name"));
             else displayComponent = json.has("name") ? Component.Serializer.fromJson(json.getAsJsonObject("name")) : null;
             return new WeaponWorkbenchTab(recipeId, new ResourceLocation(GsonHelper.getAsString(json, "icon")), GsonHelper.getAsInt(json, "pos", Integer.MAX_VALUE), displayComponent, GsonHelper.getAsBoolean(json, "hidden", false));
         }

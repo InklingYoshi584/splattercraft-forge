@@ -61,7 +61,7 @@ public class ChargerItem extends WeaponBaseItem<ChargerWeaponSettings> implement
 		level.addFreshEntity(proj);
 		level.playSound(null, player.getX(), player.getY(), player.getZ(), SplatcraftSounds.chargerShot, SoundSource.PLAYERS, 0.7F, ((level.getRandom().nextFloat() - level.getRandom().nextFloat()) * 0.1F + 1.0F) * 0.95F);
 		reduceInk(player, this, getInkConsumption(stack, charge), settings.inkRecoveryCooldown, false, true);
-		PlayerCooldown.setPlayerCooldown(player, new PlayerCooldown(stack, settings.endLagTicks, player.getInventory().selected, player.getUsedItemHand(), true, false, false, player.isOnGround()));
+		PlayerCooldown.setPlayerCooldown(player, new PlayerCooldown(stack, settings.endLagTicks, player.getInventory().selected, player.getUsedItemHand(), true, false, false, player.onGround()));
 		player.getCooldowns().addCooldown(this, 7);
 	}
 
@@ -94,7 +94,7 @@ public class ChargerItem extends WeaponBaseItem<ChargerWeaponSettings> implement
 		{
 			ChargerWeaponSettings settings = getSettings(stack);
 			float prevCharge = PlayerCharge.getChargeValue(player, stack);
-			float newCharge = prevCharge + (entity.isOnGround() ? settings.chargeSpeed : settings.airborneChargeSpeed);
+			float newCharge = prevCharge + (entity.onGround() ? settings.chargeSpeed : settings.airborneChargeSpeed);
 			if (!enoughInk(entity, this, getInkConsumption(stack, newCharge), 0, timeLeft % 4 == 0))
 			{
 				if(!hasInkInTank(player, this) || !InkTankItem.canRecharge(player.getItemBySlot(EquipmentSlot.CHEST), true))
@@ -121,7 +121,7 @@ public class ChargerItem extends WeaponBaseItem<ChargerWeaponSettings> implement
 			if (charge != null && charge.charge > 0.05f)
 			{
 				ChargerWeaponSettings settings = getSettings(stack);
-				PlayerCooldown.setPlayerCooldown((Player) entity, new PlayerCooldown(stack, settings.endLagTicks, ((Player) entity).getInventory().selected, entity.getUsedItemHand(), true, false, false, entity.isOnGround()));
+				PlayerCooldown.setPlayerCooldown((Player) entity, new PlayerCooldown(stack, settings.endLagTicks, ((Player) entity).getInventory().selected, entity.getUsedItemHand(), true, false, false, entity.onGround()));
 				SplatcraftPacketHandler.sendToServer(new ReleaseChargePacket(charge.charge, stack));
 				charge.reset();
 			}

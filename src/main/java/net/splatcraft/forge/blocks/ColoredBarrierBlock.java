@@ -91,7 +91,7 @@ public class ColoredBarrierBlock extends StageBarrierBlock implements IColoredBl
 
     public boolean canAllowThrough(BlockPos pos, Entity entity)
     {
-        return blocksColor != ColorUtils.colorEquals(entity, entity.level.getBlockEntity(pos));
+        return blocksColor != ColorUtils.colorEquals(entity, entity.level().getBlockEntity(pos));
     }
 
     @Override

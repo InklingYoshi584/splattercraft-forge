@@ -49,7 +49,7 @@ public class CurlingBombEntity extends AbstractSubWeaponEntity
 
 	public CurlingBombEntity(EntityType<? extends AbstractSubWeaponEntity> type, Level level) {
 		super(type, level);
-		maxUpStep = .7f;
+		setMaxUpStep(.7f);
 	}
 
 	@Override
@@ -104,24 +104,24 @@ public class CurlingBombEntity extends AbstractSubWeaponEntity
 
 		if (fuseTime >= settings.fuseTime - FLASH_DURATION && !playedActivationSound)
 		{
-			level.playSound(null, getX(), getY(), getZ(), SplatcraftSounds.subDetonating, SoundSource.PLAYERS, 0.8F, 1f);
+			level().playSound(null, getX(), getY(), getZ(), SplatcraftSounds.subDetonating, SoundSource.PLAYERS, 0.8F, 1f);
 			playedActivationSound = true;
 		}
 
-		if(!level.isClientSide)
+		if(!level().isClientSide())
 			for(int i = 0; i <= 2; i++)
-				if(InkBlockUtils.canInkFromFace(level, blockPosition().below(i), Direction.UP))
+				if(InkBlockUtils.canInkFromFace(level(), blockPosition().below(i), Direction.UP))
 				{
-					InkBlockUtils.playerInkBlock(getOwner() instanceof Player player ? player : null, level, blockPosition().below(i), getColor(), settings.contactDamage, inkType);
+					InkBlockUtils.playerInkBlock(getOwner() instanceof Player player ? player : null, level(), blockPosition().below(i), getColor(), settings.contactDamage, inkType);
 					break;
 				}
 
 
-		if (!this.onGround || distanceToSqr(this.getDeltaMovement()) > (double)1.0E-5F)
+		if (!this.onGround() || distanceToSqr(this.getDeltaMovement()) > (double)1.0E-5F)
 		{
 			float f1 = 0.98F;
-			if (this.onGround)
-				f1 = this.level.getBlockState(new BlockPos(this.getX(), this.getY() - 1.0D, this.getZ())).getFriction(level, new BlockPos(this.getX(), this.getY() - 1.0D, this.getZ()), this);
+			if (this.onGround())
+				f1 = this.level().getBlockState(BlockPos.containing(this.getX(), this.getY() - 1.0D, this.getZ())).getFriction(level(), BlockPos.containing(this.getX(), this.getY() - 1.0D, this.getZ()), this);
 
 			f1 = (float) Math.min(0.98, f1*3f) * Math.min(1, 2 * (1 - fuseTime/(float)settings.fuseTime));
 
@@ -131,15 +131,15 @@ public class CurlingBombEntity extends AbstractSubWeaponEntity
 
 		if(fuseTime >= settings.fuseTime)
 		{
-			InkExplosion.createInkExplosion(level, getOwner(), blockPosition(), settings.explosionSize + getCookScale(), settings.propDamage, settings.indirectDamage, settings.directDamage, bypassMobDamageMultiplier, getColor(), inkType, sourceWeapon);
-			level.broadcastEntityEvent(this, (byte) 1);
-			level.playSound(null, getX(), getY(), getZ(), SplatcraftSounds.subDetonate, SoundSource.PLAYERS, 0.8F, ((level.getRandom().nextFloat() - level.getRandom().nextFloat()) * 0.1F + 1.0F) * 0.95F);
-			if(!level.isClientSide())
+			InkExplosion.createInkExplosion(level(), getOwner(), blockPosition(), settings.explosionSize + getCookScale(), settings.propDamage, settings.indirectDamage, settings.directDamage, bypassMobDamageMultiplier, getColor(), inkType, sourceWeapon);
+			level().broadcastEntityEvent(this, (byte) 1);
+			level().playSound(null, getX(), getY(), getZ(), SplatcraftSounds.subDetonate, SoundSource.PLAYERS, 0.8F, ((level().getRandom().nextFloat() - level().getRandom().nextFloat()) * 0.1F + 1.0F) * 0.95F);
+			if(!level().isClientSide())
 				discard();
 			return;
 		}
 		else if(spd > 0.01 && fuseTime % (int)Math.max(1, (1-spd)*10) == 0)
-			level.broadcastEntityEvent(this, (byte) 2);
+			level().broadcastEntityEvent(this, (byte) 2);
 
 		this.move(MoverType.SELF, this.getDeltaMovement().multiply(0,1,0));
 
@@ -153,10 +153,10 @@ public class CurlingBombEntity extends AbstractSubWeaponEntity
 	public void handleEntityEvent(byte id) {
 		super.handleEntityEvent(id);
 		if (id == 1) {
-			level.addAlwaysVisibleParticle(new InkExplosionParticleData(getColor(), (getSettings().explosionSize+getCookScale()) * 2), this.getX(), this.getY(), this.getZ(), 0, 0, 0);
+			level().addAlwaysVisibleParticle(new InkExplosionParticleData(getColor(), (getSettings().explosionSize+getCookScale()) * 2), this.getX(), this.getY(), this.getZ(), 0, 0, 0);
 		}
 		if (id == 2) {
-			level.addParticle(new InkSplashParticleData(getColor(), getSettings().explosionSize*1.15f), this.getX(), this.getY()+0.4, this.getZ(), 0, 0, 0);
+			level().addParticle(new InkSplashParticleData(getColor(), getSettings().explosionSize*1.15f), this.getX(), this.getY()+0.4, this.getZ(), 0, 0, 0);
 		}
 
 	}
@@ -166,7 +166,7 @@ public class CurlingBombEntity extends AbstractSubWeaponEntity
 	protected void onHitEntity(EntityHitResult result)
 	{
 		if(result.getEntity() instanceof LivingEntity)
-			InkDamageUtils.doRollDamage(level, (LivingEntity) result.getEntity(), getSettings().contactDamage, getColor(), getOwner(), this, sourceWeapon, false);
+			InkDamageUtils.doRollDamage(level(), (LivingEntity) result.getEntity(), getSettings().contactDamage, getColor(), getOwner(), this, sourceWeapon, false);
 
 		double velocityX = this.getDeltaMovement().x;
 		double velocityY = this.getDeltaMovement().y;
@@ -195,7 +195,7 @@ public class CurlingBombEntity extends AbstractSubWeaponEntity
 
 		Direction blockFace = result.getDirection();
 
-		if(level.getBlockState(result.getBlockPos()).getCollisionShape(level, result.getBlockPos()).bounds().maxY - (position().y() - blockPosition().getY()) < maxUpStep)
+		if(level().getBlockState(result.getBlockPos()).getCollisionShape(level(), result.getBlockPos()).bounds().maxY - (position().y() - blockPosition().getY()) < getStepHeight())
 			return;
 
 		if(blockFace == Direction.EAST || blockFace == Direction.WEST)
@@ -219,18 +219,18 @@ public class CurlingBombEntity extends AbstractSubWeaponEntity
 
 	private boolean canStepUp(Vec3 p_20273_) {
 		AABB aabb = this.getBoundingBox();
-		List<VoxelShape> list = this.level.getEntityCollisions(this, aabb.expandTowards(p_20273_));
-		Vec3 vec3 = p_20273_.lengthSqr() == 0.0D ? p_20273_ : collideBoundingBox(this, p_20273_, aabb, this.level, list);
+		List<VoxelShape> list = this.level().getEntityCollisions(this, aabb.expandTowards(p_20273_));
+		Vec3 vec3 = p_20273_.lengthSqr() == 0.0D ? p_20273_ : collideBoundingBox(this, p_20273_, aabb, this.level(), list);
 		boolean flag = p_20273_.x != vec3.x;
 		boolean flag1 = p_20273_.y != vec3.y;
 		boolean flag2 = p_20273_.z != vec3.z;
-		boolean flag3 = this.onGround || flag1 && p_20273_.y < 0.0D;
+		boolean flag3 = this.onGround() || flag1 && p_20273_.y < 0.0D;
 		float stepHeight = getStepHeight();
 		if (stepHeight > 0.0F && flag3 && (flag || flag2)) {
-			Vec3 vec31 = collideBoundingBox(this, new Vec3(p_20273_.x, (double)stepHeight, p_20273_.z), aabb, this.level, list);
-			Vec3 vec32 = collideBoundingBox(this, new Vec3(0.0D, (double)stepHeight, 0.0D), aabb.expandTowards(p_20273_.x, 0.0D, p_20273_.z), this.level, list);
+			Vec3 vec31 = collideBoundingBox(this, new Vec3(p_20273_.x, (double)stepHeight, p_20273_.z), aabb, this.level(), list);
+			Vec3 vec32 = collideBoundingBox(this, new Vec3(0.0D, (double)stepHeight, 0.0D), aabb.expandTowards(p_20273_.x, 0.0D, p_20273_.z), this.level(), list);
 			if (vec32.y < (double)stepHeight) {
-				Vec3 vec33 = collideBoundingBox(this, new Vec3(p_20273_.x, 0.0D, p_20273_.z), aabb.move(vec32), this.level, list).add(vec32);
+				Vec3 vec33 = collideBoundingBox(this, new Vec3(p_20273_.x, 0.0D, p_20273_.z), aabb.move(vec32), this.level(), list).add(vec32);
 				if (vec33.horizontalDistanceSqr() > vec31.horizontalDistanceSqr()) {
 					vec31 = vec33;
 				}
@@ -246,25 +246,25 @@ public class CurlingBombEntity extends AbstractSubWeaponEntity
 
 	private Vec3 collide(Vec3 p_20273_) {
 		AABB aabb = this.getBoundingBox();
-		List<VoxelShape> list = this.level.getEntityCollisions(this, aabb.expandTowards(p_20273_));
-		Vec3 vec3 = p_20273_.lengthSqr() == 0.0D ? p_20273_ : collideBoundingBox(this, p_20273_, aabb, this.level, list);
+		List<VoxelShape> list = this.level().getEntityCollisions(this, aabb.expandTowards(p_20273_));
+		Vec3 vec3 = p_20273_.lengthSqr() == 0.0D ? p_20273_ : collideBoundingBox(this, p_20273_, aabb, this.level(), list);
 		boolean flag = p_20273_.x != vec3.x;
 		boolean flag1 = p_20273_.y != vec3.y;
 		boolean flag2 = p_20273_.z != vec3.z;
-		boolean flag3 = this.onGround || flag1 && p_20273_.y < 0.0D;
+		boolean flag3 = this.onGround() || flag1 && p_20273_.y < 0.0D;
 		float stepHeight = getStepHeight();
 		if (stepHeight > 0.0F && flag3 && (flag || flag2)) {
-			Vec3 vec31 = collideBoundingBox(this, new Vec3(p_20273_.x, (double)stepHeight, p_20273_.z), aabb, this.level, list);
-			Vec3 vec32 = collideBoundingBox(this, new Vec3(0.0D, (double)stepHeight, 0.0D), aabb.expandTowards(p_20273_.x, 0.0D, p_20273_.z), this.level, list);
+			Vec3 vec31 = collideBoundingBox(this, new Vec3(p_20273_.x, (double)stepHeight, p_20273_.z), aabb, this.level(), list);
+			Vec3 vec32 = collideBoundingBox(this, new Vec3(0.0D, (double)stepHeight, 0.0D), aabb.expandTowards(p_20273_.x, 0.0D, p_20273_.z), this.level(), list);
 			if (vec32.y < (double)stepHeight) {
-				Vec3 vec33 = collideBoundingBox(this, new Vec3(p_20273_.x, 0.0D, p_20273_.z), aabb.move(vec32), this.level, list).add(vec32);
+				Vec3 vec33 = collideBoundingBox(this, new Vec3(p_20273_.x, 0.0D, p_20273_.z), aabb.move(vec32), this.level(), list).add(vec32);
 				if (vec33.horizontalDistanceSqr() > vec31.horizontalDistanceSqr()) {
 					vec31 = vec33;
 				}
 			}
 
 			if (vec31.horizontalDistanceSqr() > vec3.horizontalDistanceSqr()) {
-				return vec31.add(collideBoundingBox(this, new Vec3(0.0D, -vec31.y + p_20273_.y, 0.0D), aabb.move(vec31), this.level, list));
+				return vec31.add(collideBoundingBox(this, new Vec3(0.0D, -vec31.y + p_20273_.y, 0.0D), aabb.move(vec31), this.level(), list));
 			}
 		}
 

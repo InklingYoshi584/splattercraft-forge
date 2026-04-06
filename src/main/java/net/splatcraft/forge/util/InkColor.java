@@ -1,72 +1,72 @@
 package net.splatcraft.forge.util;
 
-import net.minecraft.client.resources.language.I18n;
-import net.minecraft.network.chat.TranslatableComponent;
+import java.util.TreeMap;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
-import net.minecraftforge.registries.IForgeRegistryEntry;
 import net.splatcraft.forge.Splatcraft;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.TreeMap;
-
-public class InkColor implements Comparable<InkColor>, IForgeRegistryEntry<InkColor> {
+public class InkColor implements Comparable<InkColor> {
     private static final TreeMap<Integer, InkColor> colorMap = new TreeMap<>();
     private static int idIndex = 0;
+
     private final int hexCode;
-    private String name;
     private final DyeColor dyeColor;
-    private final int ID;
+    private final int id;
+    private String name;
+    private ResourceLocation registryName;
 
     public InkColor(String name, int color, @Nullable DyeColor dyeColor) {
-        hexCode = color;
+        this.hexCode = color;
         this.name = name;
         this.dyeColor = dyeColor;
-
-        ID = idIndex++;
+        this.id = idIndex++;
         colorMap.put(color, this);
-        //setRegistryName(name);
     }
 
-    public InkColor(String name, int color)
-    {
+    public InkColor(String name, int color) {
         this(name, color, null);
     }
 
-    public static InkColor getByHex(int hexCode)
-    {
+    public static InkColor getByHex(int hexCode) {
         return colorMap.get(hexCode);
     }
 
-    public TranslatableComponent getLocalizedName()
-    {
-        return new TranslatableComponent(getUnlocalizedName());
+    public MutableComponent getLocalizedName() {
+        return Component.translatable(getUnlocalizedName());
     }
 
-    public String getUnlocalizedName()
-    {
-        return "ink_color." + getRegistryName().getNamespace() + "." + name;
+    public String getUnlocalizedName() {
+        ResourceLocation key = getRegistryName();
+        return "ink_color." + key.getNamespace() + "." + key.getPath();
     }
 
-    public String getHexCode()
-    {
+    public String getHexCode() {
         return String.format("%06X", hexCode);
     }
 
-    public int getColor()
-    {
+    public int getColor() {
         return hexCode;
     }
 
-    public @Nullable
-    DyeColor getDyeColor()
-    {
+    public @Nullable DyeColor getDyeColor() {
         return dyeColor;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return name;
+    }
+
+    public ResourceLocation getRegistryName() {
+        return registryName != null ? registryName : new ResourceLocation(Splatcraft.MODID, name);
+    }
+
+    public InkColor setRegistryName(ResourceLocation name) {
+        this.name = name.getPath();
+        this.registryName = name;
+        return this;
     }
 
     @Override
@@ -76,22 +76,7 @@ public class InkColor implements Comparable<InkColor>, IForgeRegistryEntry<InkCo
 
     @Override
     public int compareTo(InkColor other) {
-        return ID - other.ID;
-    }
-
-    public ResourceLocation getRegistryName() {
-        return new ResourceLocation(Splatcraft.MODID, name);
-    }
-
-    @Override
-    public InkColor setRegistryName(ResourceLocation name) {
-        this.name = name.getPath();
-        return this;
-    }
-
-    @Override
-    public Class<InkColor> getRegistryType() {
-        return InkColor.class;
+        return id - other.id;
     }
 
     public static class DummyType extends InkColor {

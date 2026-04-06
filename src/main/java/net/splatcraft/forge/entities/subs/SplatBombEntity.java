@@ -39,16 +39,16 @@ public class SplatBombEntity extends AbstractSubWeaponEntity {
         prevFuseTime = fuseTime;
         SubWeaponSettings settings = getSettings();
 
-        if (!this.onGround || distanceToSqr(this.getDeltaMovement()) > (double)1.0E-5F)
+        if (!this.onGround() || distanceToSqr(this.getDeltaMovement()) > (double)1.0E-5F)
         {
             float f1 = 0.98F;
-            if (this.onGround)
-                f1 = this.level.getBlockState(new BlockPos(this.getX(), this.getY() - 1.0D, this.getZ())).getFriction(level, new BlockPos(this.getX(), this.getY() - 1.0D, this.getZ()), this);
+			if (this.onGround())
+				f1 = this.level().getBlockState(BlockPos.containing(this.getX(), this.getY() - 1.0D, this.getZ())).getFriction(level(), BlockPos.containing(this.getX(), this.getY() - 1.0D, this.getZ()), this);
 
             f1 = (float) Math.min(0.98, f1*1.5f);
 
             this.setDeltaMovement(this.getDeltaMovement().multiply(f1, 0.98D, f1));
-            /*if (this.onGround) {
+            /*if (this.onGround()) {
                 Vec3 vector3d1 = this.getDeltaMovement();
                 if (vector3d1.y < 0.0D) {
                     this.setDeltaMovement(vector3d1.multiply(1.0D, -0.5D, 1.0D));
@@ -58,14 +58,14 @@ public class SplatBombEntity extends AbstractSubWeaponEntity {
 
 
 
-        if(onGround)
+        if(onGround())
             fuseTime++;
         if(fuseTime >= settings.fuseTime)
         {
-            InkExplosion.createInkExplosion(level, getOwner(), blockPosition(), settings.explosionSize, settings.propDamage, settings.indirectDamage, settings.directDamage, bypassMobDamageMultiplier, getColor(), inkType, sourceWeapon);
-            level.broadcastEntityEvent(this, (byte) 1);
-            level.playSound(null, getX(), getY(), getZ(), SplatcraftSounds.subDetonate, SoundSource.PLAYERS, 0.8F, ((level.getRandom().nextFloat() - level.getRandom().nextFloat()) * 0.1F + 1.0F) * 0.95F);
-            if(!level.isClientSide())
+			InkExplosion.createInkExplosion(level(), getOwner(), blockPosition(), settings.explosionSize, settings.propDamage, settings.indirectDamage, settings.directDamage, bypassMobDamageMultiplier, getColor(), inkType, sourceWeapon);
+            level().broadcastEntityEvent(this, (byte) 1);
+            level().playSound(null, getX(), getY(), getZ(), SplatcraftSounds.subDetonate, SoundSource.PLAYERS, 0.8F, ((level().getRandom().nextFloat() - level().getRandom().nextFloat()) * 0.1F + 1.0F) * 0.95F);
+            if(!level().isClientSide())
                 discard();
             return;
         }
@@ -78,7 +78,7 @@ public class SplatBombEntity extends AbstractSubWeaponEntity {
     public void handleEntityEvent(byte id) {
         super.handleEntityEvent(id);
         if (id == 1) {
-            level.addAlwaysVisibleParticle(new InkExplosionParticleData(getColor(), getSettings().explosionSize * 2), this.getX(), this.getY(), this.getZ(), 0, 0, 0);
+            level().addAlwaysVisibleParticle(new InkExplosionParticleData(getColor(), getSettings().explosionSize * 2), this.getX(), this.getY(), this.getZ(), 0, 0, 0);
         }
 
     }
@@ -108,8 +108,8 @@ public class SplatBombEntity extends AbstractSubWeaponEntity {
     @Override
     protected void onBlockHit(BlockHitResult result)
     {
-        if(level.getBlockState(result.getBlockPos()).getCollisionShape(level, result.getBlockPos()).bounds().maxY - (position().y() - blockPosition().getY()) <= 0)
-            return;
+		if(level().getBlockState(result.getBlockPos()).getCollisionShape(level(), result.getBlockPos()).bounds().maxY - (position().y() - blockPosition().getY()) <= 0)
+			return;
 
         double velocityX = this.getDeltaMovement().x;
         double velocityY = this.getDeltaMovement().y;

@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
@@ -22,7 +23,7 @@ public class BlockEffectsMixin
 	@Mixin(LivingEntity.class)
 	public static class LivingEntityMixin
 	{
-		@WrapOperation(method = "checkFallDamage", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;addLandingEffects(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/entity/LivingEntity;I)Z"))
+		@WrapOperation(method = "checkFallDamage", at = @At(value = "INVOKE", remap = false, target = "Lnet/minecraft/world/level/block/state/BlockState;addLandingEffects(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/entity/LivingEntity;I)Z"))
 		public boolean addLandingEffects(BlockState state, ServerLevel level, BlockPos pos, BlockState blockState, LivingEntity entity, int i, Operation<Boolean> original)
 		{
 			if(InkBlockUtils.isInked(level, pos))
@@ -33,7 +34,7 @@ public class BlockEffectsMixin
 			return original.call(state, level, pos, blockState, entity, i);
 		}
 
-		@WrapOperation(method = "playBlockFallSound", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getSoundType(Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/world/level/block/SoundType;"))
+		@WrapOperation(method = "playBlockFallSound", at = @At(value = "INVOKE", remap = false, target = "Lnet/minecraft/world/level/block/state/BlockState;getSoundType(Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/world/level/block/SoundType;"))
 		public SoundType getFallSound(BlockState state, LevelReader levelReader, BlockPos pos, Entity entity, Operation<SoundType> original)
 		{
 			if(levelReader instanceof Level level && InkBlockUtils.isInked(level, pos))
@@ -47,21 +48,21 @@ public class BlockEffectsMixin
 	@Mixin(Entity.class)
 	public static class EntityMixin
 	{
-		@WrapOperation(method = "spawnSprintParticle", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;addRunningEffects(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/Entity;)Z"))
+		@WrapOperation(method = "spawnSprintParticle", at = @At(value = "INVOKE", remap = false, target = "Lnet/minecraft/world/level/block/state/BlockState;addRunningEffects(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/Entity;)Z"))
 		public boolean addRunningEffects(BlockState state, Level level, BlockPos pos, Entity entity, Operation<Boolean> original)
 		{
 
 			if(InkBlockUtils.isInked(level, pos))
 			{
 				ColorUtils.addInkSplashParticle(level, InkBlockUtils.getInk(level, pos).color(), entity.getX() + level.getRandom().nextFloat() * entity.getBbWidth() - entity.getBbWidth() * 0.5,
-						entity.getY(level.getRandom().nextFloat() * 0.3f), entity.getZ() + level.getRandom().nextFloat() * entity.getBbWidth() - entity.getBbWidth() * 0.5, level.random.nextFloat(0.3f, 0.7f));
+						entity.getY(level.getRandom().nextFloat() * 0.3f), entity.getZ() + level.getRandom().nextFloat() * entity.getBbWidth() - entity.getBbWidth() * 0.5, Mth.nextFloat(level.random, 0.3f, 0.7f));
 				return true;
 			}
 
 			return original.call(state, level, pos, entity);
 		}
 
-		@WrapOperation(method = "playStepSound", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getSoundType(Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/world/level/block/SoundType;"))
+		@WrapOperation(method = "playStepSound", at = @At(value = "INVOKE", remap = false, target = "Lnet/minecraft/world/level/block/state/BlockState;getSoundType(Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/world/level/block/SoundType;"))
 		public SoundType getRunningSound(BlockState state, LevelReader levelReader, BlockPos pos, Entity entity, Operation<SoundType> original)
 		{
 			if(levelReader instanceof Level level && InkBlockUtils.isInked(level, pos))

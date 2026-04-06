@@ -1,8 +1,8 @@
 package net.splatcraft.forge.network.s2c;
 
+import net.minecraft.network.chat.Component;
 import java.util.ArrayList;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.entity.player.Player;
 import net.splatcraft.forge.util.ClientUtils;
 import net.splatcraft.forge.util.ColorUtils;
@@ -54,7 +54,7 @@ public class SendScanTurfResultsPacket extends PlayS2CPacket
 
         for (int i = 0; i < colors.length; i++)
         {
-            player.displayClientMessage(new TranslatableComponent("status.scan_turf.score", ColorUtils.getFormatedColorName(colors[i], false), String.format("%.1f", scores[i])), false);
+            player.displayClientMessage(Component.translatable("status.scan_turf.score", ColorUtils.getFormatedColorName(colors[i], false), String.format("%.1f", scores[i])), false);
             if (winnerScore < scores[i])
             {
                 winnerScore = scores[i];
@@ -64,7 +64,7 @@ public class SendScanTurfResultsPacket extends PlayS2CPacket
 
         if (winner != -1)
         {
-            player.displayClientMessage(new TranslatableComponent("status.scan_turf.winner", ColorUtils.getFormatedColorName(winner, false)), false);
+            player.displayClientMessage(Component.translatable("status.scan_turf.winner", ColorUtils.getFormatedColorName(winner, false)), false);
         }
 
     }

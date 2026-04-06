@@ -1,50 +1,48 @@
-modLoader           = "javafml"
-loaderVersion = "[40.0,)"
-license = "https://github.com/splatcraft/splatcraft-forge/blob/HEAD/LICENSE"
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+issueTrackerURL="https://github.com/splatcraft/splatcraft-forge/issues"
 
 [[mods]]
-modId           = "splatcraft"
-displayName     = "Splatcraft"
-description = '''
-        Splatcraft is a Minecraft mod based on Nintendo's popular game Splatoon!
-        This mod aims to add items and mechanics based on the game in a cohesive way, such as Turf Wars, Weapons, Squid Transformations and many more!
-    '''
+modId="${mod_id}"
+version="${mod_version}"
+displayName="${mod_name}"
+updateJSONURL="https://api.modrinth.com/updates/splatcraft/forge_updates.json"
+displayURL="https://curseforge.com/minecraft/mc-mods/splatcraft"
+logoFile="pack.png"
+credits='''
+Thanks to Nintendo and Mojang, for making such great games!
 
-authors = "Cibernet, Octol1ttle"
-credits = '''
-        Thanks to Nintendo and Mojang, for making such great games!
+Programming and Design by Cibernet and Octol1ttle
+Models by Cibernet & JustHatless
+French translation by Flyse and Este
+Portuguese translation by gatoazulado
+Simplified Chinese translation by White Mind
+Spanish translation by Cibernet and Chichi
+Russian translation by jskces
+Italian translation by Alessio798
 
-        Programming and Design by Cibernet and Octol1ttle
-        Models by Cibernet & JustHatless
-        French translation by Flyse and Este
-        Portuguese translation by gatoazulado
-        Simplified Chinese translation by White Mind
-        Spanish translation by Cibernet and Chichi
-        Russian translation by jskces
-        Italian translation by Alessio798
+Block of Power Eggs texture by rose bushes
 
-        Block of Power Eggs texture by rose bushes
+Special Thanks to Andante and seamuskills
+'''
+authors="${mod_authors}"
+displayTest="MATCH_VERSION"
+description='''
+Splatcraft is a Minecraft mod based on Nintendo's popular game Splatoon!
+This mod aims to add items and mechanics based on the game in a cohesive way, such as Turf Wars, Weapons, Squid Transformations and many more!
+'''
 
-        Special Thanks to Andante and seamuskills
-        '''
+[[dependencies.${mod_id}]]
+modId="forge"
+mandatory=true
+versionRange="${forge_version_range}"
+ordering="NONE"
+side="BOTH"
 
-logoFile = "pack.png"
-
-version = "${file.jarVersion}"
-updateJSONURL = "https://api.modrinth.com/updates/splatcraft/forge_updates.json"
-
-displayURL = "https://curseforge.com/minecraft/mc-mods/splatcraft"
-issueTrackerURL = "https://github.com/splatcraft/splatcraft-forge/issues"
-
-[[dependencies.splatcraft]]
-modId           = "forge"
-mandatory = true
-versionRange = "[40.2.4,41)"
-ordering = "NONE"
-side            = "BOTH"
-[[dependencies.splatcraft]]
-modId           = "minecraft"
-mandatory = true
-versionRange = "[1.18.2]"
-ordering = "NONE"
-side            = "BOTH"
+[[dependencies.${mod_id}]]
+modId="minecraft"
+mandatory=true
+versionRange="${minecraft_version_range}"
+ordering="NONE"
+side="BOTH"

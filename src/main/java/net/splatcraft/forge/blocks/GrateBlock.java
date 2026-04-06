@@ -14,18 +14,20 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.*;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraft.world.level.material.Material;
+import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 import java.util.HashMap;
+import org.jetbrains.annotations.NotNull;
 
+@SuppressWarnings("deprecation")
 public class GrateBlock extends Block implements SimpleWaterloggedBlock
 {
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
-    public static final Properties PROPERTIES = Properties.of(Material.METAL).noOcclusion().requiresCorrectToolForDrops().strength(4.0f).sound(SoundType.METAL);
+    public static final Properties PROPERTIES = Properties.of().mapColor(MapColor.METAL).noOcclusion().requiresCorrectToolForDrops().strength(4.0f).sound(SoundType.METAL);
 
     protected static final HashMap<Direction, VoxelShape> AABBS = new HashMap<>()
     {{
@@ -44,12 +46,12 @@ public class GrateBlock extends Block implements SimpleWaterloggedBlock
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, BlockGetter levelIn, BlockPos pos, CollisionContext context)
+    public @NotNull VoxelShape getShape(BlockState state, @NotNull BlockGetter levelIn, @NotNull BlockPos pos, @NotNull CollisionContext context)
     {
         return AABBS.get(state.getValue(FACING));
     }
 
-    public boolean isPathfindable(BlockState state, BlockGetter levelIn, BlockPos pos, PathComputationType type) {
+    public boolean isPathfindable(@NotNull BlockState state, @NotNull BlockGetter levelIn, @NotNull BlockPos pos, @NotNull PathComputationType type) {
         return type == PathComputationType.WATER && levelIn.getFluidState(pos).is(FluidTags.WATER);
     }
 
@@ -78,7 +80,7 @@ public class GrateBlock extends Block implements SimpleWaterloggedBlock
     }
 
     @Override
-    public FluidState getFluidState(BlockState state)
+    public @NotNull FluidState getFluidState(BlockState state)
     {
         return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
     }
@@ -90,7 +92,7 @@ public class GrateBlock extends Block implements SimpleWaterloggedBlock
      * Note that this method should ideally consider only the specific face passed in.
      */
     @Override
-    public BlockState updateShape(BlockState stateIn, Direction facing, BlockState facingState, LevelAccessor levelIn, BlockPos currentPos, BlockPos facingPos)
+    public @NotNull BlockState updateShape(BlockState stateIn, @NotNull Direction facing, @NotNull BlockState facingState, @NotNull LevelAccessor levelIn, @NotNull BlockPos currentPos, @NotNull BlockPos facingPos)
     {
         if (stateIn.getValue(WATERLOGGED))
         {

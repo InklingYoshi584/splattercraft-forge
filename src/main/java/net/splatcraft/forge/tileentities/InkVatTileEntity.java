@@ -6,7 +6,6 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -21,6 +20,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.items.IItemHandler;
 import net.splatcraft.forge.blocks.InkVatBlock;
 import net.splatcraft.forge.data.SplatcraftTags;
@@ -155,7 +155,7 @@ public class InkVatTileEntity extends BaseContainerBlockEntity implements Worldl
     @Override
     public boolean stillValid(Player player)
     {
-        if (this.level.getBlockEntity(this.getBlockPos()) != this)
+        if (this.getLevel().getBlockEntity(this.getBlockPos()) != this)
         {
             return false;
         }
@@ -190,7 +190,7 @@ public class InkVatTileEntity extends BaseContainerBlockEntity implements Worldl
     @Override
     protected Component getDefaultName()
     {
-        return new TranslatableComponent("container.ink_vat");
+        return Component.translatable("container.ink_vat");
     }
 
     @Override
@@ -238,9 +238,9 @@ public class InkVatTileEntity extends BaseContainerBlockEntity implements Worldl
     @Override
     public boolean canPlaceItem(int index, ItemStack stack) {
         return switch (index) {
-            case 0 -> ItemStack.isSame(stack, new ItemStack(Items.INK_SAC));
-            case 1 -> ItemStack.isSame(stack, new ItemStack(SplatcraftItems.powerEgg.get()));
-            case 2 -> ItemStack.isSame(stack, new ItemStack(SplatcraftItems.emptyInkwell.get()));
+            case 0 -> ItemStack.isSameItem(stack, new ItemStack(Items.INK_SAC));
+            case 1 -> ItemStack.isSameItem(stack, new ItemStack(SplatcraftItems.powerEgg.get()));
+            case 2 -> ItemStack.isSameItem(stack, new ItemStack(SplatcraftItems.emptyInkwell.get()));
             case 3 -> stack.is(SplatcraftTags.Items.FILTERS);
             default -> false;
         };
@@ -273,7 +273,7 @@ public class InkVatTileEntity extends BaseContainerBlockEntity implements Worldl
     @Override
     public <T> net.minecraftforge.common.util.LazyOptional<T> getCapability(net.minecraftforge.common.capabilities.Capability<T> capability, @Nullable Direction facing)
     {
-        if (!this.isRemoved() && facing != null && capability == net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)
+        if (!this.isRemoved() && facing != null && capability == ForgeCapabilities.ITEM_HANDLER)
         {
             if (facing == Direction.UP)
             {

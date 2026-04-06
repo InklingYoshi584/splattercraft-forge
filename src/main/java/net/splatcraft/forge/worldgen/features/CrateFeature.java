@@ -3,6 +3,7 @@ package net.splatcraft.forge.worldgen.features;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
@@ -22,8 +23,6 @@ import net.splatcraft.forge.registries.SplatcraftBlocks;
 import net.splatcraft.forge.registries.SplatcraftItems;
 import net.splatcraft.forge.tileentities.CrateTileEntity;
 
-import java.util.Random;
-
 public class CrateFeature extends Feature<CountConfiguration>
 {
 	public CrateFeature(Codec<CountConfiguration> codec) {
@@ -34,7 +33,7 @@ public class CrateFeature extends Feature<CountConfiguration>
 	public boolean place(FeaturePlaceContext<CountConfiguration> context)
 	{
 		int i = 0;
-		Random random = context.random();
+		RandomSource random = context.random();
 		WorldGenLevel worldgenlevel = context.level();
 		BlockPos blockpos = context.origin();
 		int j = context.config().count().sample(random);

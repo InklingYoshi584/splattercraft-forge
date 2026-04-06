@@ -7,8 +7,6 @@ import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
@@ -16,8 +14,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.ColorHandlerEvent;
-import net.minecraftforge.client.event.TextureStitchEvent;
+import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.splatcraft.forge.Splatcraft;
@@ -26,7 +23,6 @@ import net.splatcraft.forge.client.gui.InkVatScreen;
 import net.splatcraft.forge.client.gui.WeaponWorkbenchScreen;
 import net.splatcraft.forge.data.SplatcraftTags;
 import net.splatcraft.forge.data.capabilities.playerinfo.PlayerInfoCapability;
-import net.splatcraft.forge.items.SquidBumperItem;
 import net.splatcraft.forge.registries.SplatcraftBlocks;
 import net.splatcraft.forge.registries.SplatcraftItems;
 import net.splatcraft.forge.registries.SplatcraftTileEntities;
@@ -38,6 +34,7 @@ import org.jetbrains.annotations.Nullable;
 public class ClientSetupHandler
 {
 
+    /*
     @SubscribeEvent
     public static void onTextureStitch(TextureStitchEvent.Pre event)
     {
@@ -57,6 +54,7 @@ public class ClientSetupHandler
         while(Minecraft.getInstance().getResourceManager().hasResource(new ResourceLocation(Splatcraft.MODID, "textures/blocks/glitter"+i+".png")))
             event.addSprite(new ResourceLocation(Splatcraft.MODID, "blocks/glitter"+(i++)));
     }
+    */
 
     public static void bindScreenContainers()
     {
@@ -66,7 +64,8 @@ public class ClientSetupHandler
 
 
     @SubscribeEvent
-    public static void initItemColors(ColorHandlerEvent.Item event) {
+    public static void initItemColors(RegisterColorHandlersEvent.Item event)
+    {
         ItemColors colors = event.getItemColors();
 
         SplatcraftItems.inkColoredItems.add(SplatcraftItems.splatfestBand.get());
@@ -77,7 +76,7 @@ public class ClientSetupHandler
     }
 
     @SubscribeEvent
-    public static void initBlockColors(ColorHandlerEvent.Block event)
+    public static void initBlockColors(RegisterColorHandlersEvent.Block event)
     {
         BlockColors colors = event.getBlockColors();
 

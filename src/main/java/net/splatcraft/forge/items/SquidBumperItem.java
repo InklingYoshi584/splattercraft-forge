@@ -5,7 +5,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
@@ -43,7 +42,7 @@ public class SquidBumperItem extends Item implements IColoredItem
 {
     public SquidBumperItem()
     {
-        super(new Properties().stacksTo(16).tab(SplatcraftItemGroups.GROUP_GENERAL));
+        super(new Properties().stacksTo(16));
         SplatcraftItems.inkColoredItems.add(this);
     }
 
@@ -56,17 +55,7 @@ public class SquidBumperItem extends Item implements IColoredItem
         boolean inverted = ColorUtils.isInverted(stack);
         if (ColorUtils.isColorLocked(stack))
             tooltip.add(ColorUtils.getFormatedColorName(inverted ? 0xFFFFFF - ColorUtils.getInkColor(stack) : ColorUtils.getInkColor(stack), true));
-        else tooltip.add(new TranslatableComponent( "item.splatcraft.tooltip.matches_color" + (inverted ? ".inverted" : "")).withStyle(ChatFormatting.GRAY));
-    }
-
-    @Override
-    public void fillItemCategory(@NotNull CreativeModeTab group, @NotNull NonNullList<ItemStack> items)
-    {
-        if (allowdedIn(group))
-        {
-            items.add(ColorUtils.setColorLocked(new ItemStack(this), false));
-            items.add(ColorUtils.setInverted(ColorUtils.setColorLocked(new ItemStack(this), false), true));
-        }
+        else tooltip.add(Component.translatable( "item.splatcraft.tooltip.matches_color" + (inverted ? ".inverted" : "")).withStyle(ChatFormatting.GRAY));
     }
 
     @Override
@@ -86,17 +75,17 @@ public class SquidBumperItem extends Item implements IColoredItem
     {
         BlockPos pos = entity.blockPosition().below();
 
-        if (entity.level.getBlockState(pos).getBlock() instanceof InkwellBlock)
+        if (entity.level().getBlockState(pos).getBlock() instanceof InkwellBlock)
         {
-            InkColorTileEntity te = (InkColorTileEntity) entity.level.getBlockEntity(pos);
+            InkColorTileEntity te = (InkColorTileEntity) entity.level().getBlockEntity(pos);
 
-            if (ColorUtils.getInkColor(stack) != ColorUtils.getInkColorOrInverted(entity.level, pos))
+            if (ColorUtils.getInkColor(stack) != ColorUtils.getInkColorOrInverted(entity.level(), pos))
             {
-                ColorUtils.setInkColor(entity.getItem(), ColorUtils.getInkColorOrInverted(entity.level, pos));
+                ColorUtils.setInkColor(entity.getItem(), ColorUtils.getInkColorOrInverted(entity.level(), pos));
                 ColorUtils.setColorLocked(entity.getItem(), true);
             }
         }
-        else if(InkedBlock.causesClear(entity.level, pos, entity.level.getBlockState(pos)) && ColorUtils.isColorLocked(stack))
+        else if(InkedBlock.causesClear(entity.level(), pos, entity.level().getBlockState(pos)) && ColorUtils.isColorLocked(stack))
         {
             ColorUtils.setInkColor(stack, 0xFFFFFF);
             ColorUtils.setColorLocked(stack, false);
@@ -119,13 +108,14 @@ public class SquidBumperItem extends Item implements IColoredItem
         AABB axisalignedbb = SplatcraftEntities.SQUID_BUMPER.get().getDimensions().makeBoundingBox(vector3d.x(), vector3d.y(), vector3d.z());
         if (level.noCollision(null, axisalignedbb) && level.getEntities(null, axisalignedbb).isEmpty())
         {
-            if (level instanceof ServerLevel)
-            {
-                SquidBumperEntity bumper = SplatcraftEntities.SQUID_BUMPER.get().create((ServerLevel) level, stack.getTag(), null, context.getPlayer(), pos, MobSpawnType.SPAWN_EGG, true, true);
-                if(bumper != null)
-                {
-                    bumper.setColor(ColorUtils.getInkColorOrInverted(stack));
-                    float f = (float) Mth.floor((Mth.wrapDegrees(context.getRotation() - 180.0F) + 22.5F) / 45.0F) * 45.0F;
+			if (level instanceof ServerLevel serverLevel)
+			{
+				SquidBumperEntity bumper = SplatcraftEntities.SQUID_BUMPER.get().create(serverLevel);
+				if(bumper != null)
+				{
+					bumper.moveTo(Vec3.atBottomCenterOf(pos));
+					bumper.setColor(ColorUtils.getInkColorOrInverted(stack));
+					float f = (float) Mth.floor((Mth.wrapDegrees(context.getRotation() - 180.0F) + 22.5F) / 45.0F) * 45.0F;
                     bumper.moveTo(bumper.getX(), bumper.getY(), bumper.getZ(), f, 0);
                     bumper.setYHeadRot(f);
                     bumper.yHeadRotO = f;

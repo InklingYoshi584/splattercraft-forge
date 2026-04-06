@@ -1,12 +1,12 @@
 package net.splatcraft.forge.commands;
 
+import net.minecraft.network.chat.Component;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.splatcraft.forge.commands.arguments.ColorCriterionArgument;
 import net.splatcraft.forge.commands.arguments.InkColorArgument;
 import net.splatcraft.forge.data.capabilities.saveinfo.SaveInfoCapability;
@@ -17,7 +17,7 @@ import net.splatcraft.forge.network.s2c.UpdateColorScoresPacket;
 import java.util.Collection;
 
 public class ColorScoresCommand {
-    private static final SimpleCommandExceptionType CRITERION_ALREADY_EXISTS_EXCEPTION = new SimpleCommandExceptionType(new TranslatableComponent("commands.colorscores.add.duplicate"));
+    private static final SimpleCommandExceptionType CRITERION_ALREADY_EXISTS_EXCEPTION = new SimpleCommandExceptionType(Component.translatable("commands.colorscores.add.duplicate"));
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("colorscores").requires(commandSource -> commandSource.hasPermission(2))
@@ -49,7 +49,7 @@ public class ColorScoresCommand {
         SaveInfoCapability.get(context.getSource().getServer()).addInitializedColorScores(color);
         update();
 
-        source.sendSuccess(new TranslatableComponent("commands.colorscores.add.success", InkColorCommand.getColorName(color)), true);
+        source.sendSuccess(() -> Component.translatable("commands.colorscores.add.success", InkColorCommand.getColorName(color)), true);
 
         return color;
     }
@@ -61,7 +61,7 @@ public class ColorScoresCommand {
         SaveInfoCapability.get(context.getSource().getServer()).removeColorScore(color);
         update();
 
-        context.getSource().sendSuccess(new TranslatableComponent("commands.colorscores.remove.success", InkColorCommand.getColorName(color)), true);
+        context.getSource().sendSuccess(() -> Component.translatable("commands.colorscores.remove.success", InkColorCommand.getColorName(color)), true);
 
         return color;
     }
@@ -72,12 +72,12 @@ public class ColorScoresCommand {
 
         if (collection.isEmpty())
         {
-            context.getSource().sendSuccess(new TranslatableComponent("commands.colorscores.list.empty"), false);
+            context.getSource().sendSuccess(() -> Component.translatable("commands.colorscores.list.empty"), false);
         } else
         {
-            context.getSource().sendSuccess(new TranslatableComponent("commands.colorscores.list.count", collection.size()), false);
+            context.getSource().sendSuccess(() -> Component.translatable("commands.colorscores.list.count", collection.size()), false);
             collection.forEach(color ->
-                    context.getSource().sendSuccess(new TranslatableComponent("commands.colorscores.list.entry", ScoreboardHandler.getColorIdentifier(color), InkColorCommand.getColorName(color)), false));
+                    context.getSource().sendSuccess(() -> Component.translatable("commands.colorscores.list.entry", ScoreboardHandler.getColorIdentifier(color), InkColorCommand.getColorName(color)), false));
         }
 
         return collection.size();

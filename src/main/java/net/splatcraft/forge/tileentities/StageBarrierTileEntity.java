@@ -16,10 +16,9 @@ import net.splatcraft.forge.SplatcraftConfig;
 import net.splatcraft.forge.blocks.StageBarrierBlock;
 import net.splatcraft.forge.data.SplatcraftTags;
 import net.splatcraft.forge.entities.SpawnShieldEntity;
+import net.splatcraft.forge.registries.SplatcraftDamageTypes;
 import net.splatcraft.forge.registries.SplatcraftTileEntities;
 import net.splatcraft.forge.util.ClientUtils;
-
-import static net.splatcraft.forge.util.InkDamageUtils.VOID_DAMAGE;
 
 public class StageBarrierTileEntity extends BlockEntity
 {
@@ -54,7 +53,7 @@ public class StageBarrierTileEntity extends BlockEntity
             if (getBlockState().getBlock() instanceof StageBarrierBlock && ((StageBarrierBlock) getBlockState().getBlock()).damagesPlayer &&
                     entity instanceof Player)
             {
-                entity.hurt(VOID_DAMAGE, Float.MAX_VALUE);
+                entity.hurt(SplatcraftDamageTypes.of(level, SplatcraftDamageTypes.OUT_OF_STAGE), Float.MAX_VALUE);
             }
 
         }

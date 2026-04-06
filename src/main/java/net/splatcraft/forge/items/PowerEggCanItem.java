@@ -17,7 +17,7 @@ public class PowerEggCanItem extends Item
 {
     public PowerEggCanItem()
     {
-        super(new Properties().stacksTo(16).tab(SplatcraftItemGroups.GROUP_GENERAL));
+        super(new Properties().stacksTo(16));
     }
 
     @Override

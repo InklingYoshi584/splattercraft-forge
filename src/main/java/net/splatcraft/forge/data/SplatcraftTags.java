@@ -96,7 +96,7 @@ public class SplatcraftTags
 
         private static TagKey<EntityType<?>> createTag(String name)
         {
-            return TagKey.create(Registry.ENTITY_TYPE_REGISTRY, new ResourceLocation(Splatcraft.MODID, name));
+            return TagKey.create(net.minecraft.core.registries.Registries.ENTITY_TYPE, new ResourceLocation(Splatcraft.MODID, name));
         }
     }
 

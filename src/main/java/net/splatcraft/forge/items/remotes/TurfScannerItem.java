@@ -2,7 +2,6 @@ package net.splatcraft.forge.items.remotes;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -30,7 +29,7 @@ public class TurfScannerItem extends RemoteItem
 {
     public TurfScannerItem()
     {
-        super(new Properties().tab(SplatcraftItemGroups.GROUP_GENERAL).stacksTo(1), 2);
+        super(new Properties().stacksTo(1), 2);
     }
 
     public static TurfScanResult scanTurf(Level level, Level outputWorld, BlockPos blockpos, BlockPos blockpos1, int mode, Collection<ServerPlayer> targets)
@@ -40,7 +39,7 @@ public class TurfScannerItem extends RemoteItem
 
 
         if (!level.isInWorldBounds(minPos) || !level.isInWorldBounds(maxPos))
-            return new TurfScanResult(false, new TranslatableComponent("status.scan_turf.out_of_world"));
+            return new TurfScanResult(false, Component.translatable("status.scan_turf.out_of_world"));
 
         if (level.isClientSide)
         {
@@ -59,8 +58,8 @@ public class TurfScannerItem extends RemoteItem
                     BlockPos checkPos = getTopSolidOrLiquidBlock(new BlockPos(x, 0, z),level, minPos.getY(), maxPos.getY() + 1);
                     BlockState checkState = level.getBlockState(checkPos);
 
-                    if (checkPos.getY() > maxPos.getY() || !checkState.getMaterial().blocksMotion() || checkState.getMaterial().isLiquid() || InkBlockUtils.isUninkable(level, checkPos))
-                        continue;
+					if (checkPos.getY() > maxPos.getY() || !checkState.blocksMotion() || !checkState.getFluidState().isEmpty() || InkBlockUtils.isUninkable(level, checkPos))
+						continue;
 
                     blockTotal++;
 
@@ -111,8 +110,8 @@ public class TurfScannerItem extends RemoteItem
                         if (isWall || InkBlockUtils.isUninkable(level, checkPos))
                             continue;
 
-                        if (!checkState.getMaterial().blocksMotion() || checkState.getMaterial().isLiquid() || InkBlockUtils.isUninkable(level, checkPos))
-                            continue;
+						if (!checkState.blocksMotion() || !checkState.getFluidState().isEmpty() || InkBlockUtils.isUninkable(level, checkPos))
+							continue;
 
                         blockTotal++;
 
@@ -179,7 +178,7 @@ public class TurfScannerItem extends RemoteItem
 
         if (scores.isEmpty())
         {
-            return new TurfScanResult(false, new TranslatableComponent("status.scan_turf.no_ink"));
+            return new TurfScanResult(false, Component.translatable("status.scan_turf.no_ink"));
         } else
         {
             SendScanTurfResultsPacket packet = new SendScanTurfResultsPacket(colors, colorScores);
@@ -190,7 +189,7 @@ public class TurfScannerItem extends RemoteItem
 
         }
 
-        return (TurfScanResult) new TurfScanResult(true, new TranslatableComponent("commands.scanturf.success", blockTotal), scores, blockTotal).setIntResults(winner, (int) ((float) affectedBlockTotal / blockTotal * 15));
+        return (TurfScanResult) new TurfScanResult(true, Component.translatable("commands.scanturf.success", blockTotal), scores, blockTotal).setIntResults(winner, (int) ((float) affectedBlockTotal / blockTotal * 15));
     }
 
     private static BlockPos getTopSolidOrLiquidBlock(BlockPos pos, Level level, int min, int max)
@@ -202,9 +201,9 @@ public class TurfScannerItem extends RemoteItem
         {
             BlockState state = chunk.getBlockState(blockpos);
 
-            if (state.is(SplatcraftTags.Blocks.SCAN_TURF_IGNORED) || !InkBlockUtils.canInkPassthrough(level, blockpos) ||
-                    state.getMaterial().blocksMotion())
-            {
+			if (state.is(SplatcraftTags.Blocks.SCAN_TURF_IGNORED) || !InkBlockUtils.canInkPassthrough(level, blockpos) ||
+					state.blocksMotion())
+			{
                 break;
             }
 

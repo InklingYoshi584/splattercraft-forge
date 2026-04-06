@@ -2,10 +2,12 @@ package net.splatcraft.forge.crafting;
 
 import com.google.gson.JsonObject;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.ShapedRecipe;
@@ -17,12 +19,12 @@ public class ColoredShapedRecipe extends ShapedRecipe
 {
 	public ColoredShapedRecipe(ResourceLocation p_i48162_1_, String p_i48162_2_, int p_i48162_3_, int p_i48162_4_, NonNullList<Ingredient> p_i48162_5_, ItemStack p_i48162_6_)
 	{
-		super(p_i48162_1_, p_i48162_2_, p_i48162_3_, p_i48162_4_, p_i48162_5_, p_i48162_6_);
+		super(p_i48162_1_, p_i48162_2_, CraftingBookCategory.MISC, p_i48162_3_, p_i48162_4_, p_i48162_5_, p_i48162_6_);
 	}
 
 
 	@Override
-	public ItemStack assemble(CraftingContainer inventory)
+	public ItemStack assemble(CraftingContainer inventory, RegistryAccess registryAccess)
 	{
 		int color = 0, j = 0, curColor = 0;
 		boolean colorLock = false;
@@ -45,7 +47,7 @@ public class ColoredShapedRecipe extends ShapedRecipe
 		if(!colorLock)
 			color = curColor;
 
-		return ColorUtils.setColorLocked(ColorUtils.setInkColor(super.assemble(inventory), j == 0 ? -1 : color/j), colorLock);
+		return ColorUtils.setColorLocked(ColorUtils.setInkColor(super.assemble(inventory, registryAccess), j == 0 ? -1 : color/j), colorLock);
 	}
 
 	@Override
@@ -62,24 +64,20 @@ public class ColoredShapedRecipe extends ShapedRecipe
 
 	public static class Serializer extends ShapedRecipe.Serializer
 	{
-		public Serializer(String name)
-		{
-			super();
-			setRegistryName(name);
-		}
+		public Serializer() {}
 
 		@Override
 		public ShapedRecipe fromJson(ResourceLocation p_199425_1_, JsonObject p_199425_2_)
 		{
 			ShapedRecipe recipe = super.fromJson(p_199425_1_, p_199425_2_);
-			return new ColoredShapedRecipe(recipe.getId(), recipe.getGroup(), recipe.getRecipeWidth(), recipe.getRecipeHeight(), recipe.getIngredients(), recipe.getResultItem().copy());
+			return new ColoredShapedRecipe(recipe.getId(), recipe.getGroup(), recipe.getRecipeWidth(), recipe.getRecipeHeight(), recipe.getIngredients(), recipe.getResultItem(RegistryAccess.EMPTY).copy());
 		}
 
 		@Override
 		public ShapedRecipe fromNetwork(ResourceLocation p_199426_1_, FriendlyByteBuf p_199426_2_)
 		{
 			ShapedRecipe recipe = super.fromNetwork(p_199426_1_, p_199426_2_);
-			return new ColoredShapedRecipe(recipe.getId(), recipe.getGroup(), recipe.getRecipeWidth(), recipe.getRecipeHeight(), recipe.getIngredients(), recipe.getResultItem().copy());
+			return new ColoredShapedRecipe(recipe.getId(), recipe.getGroup(), recipe.getRecipeWidth(), recipe.getRecipeHeight(), recipe.getIngredients(), recipe.getResultItem(RegistryAccess.EMPTY).copy());
 		}
 	}
 }

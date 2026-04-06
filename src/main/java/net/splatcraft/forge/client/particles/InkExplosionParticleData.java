@@ -51,6 +51,6 @@ public class InkExplosionParticleData extends InkSplashParticleData
     @Override
     public ParticleType<?> getType()
     {
-        return SplatcraftParticleTypes.INK_EXPLOSION;
+        return SplatcraftParticleTypes.INK_EXPLOSION.get();
     }
 }

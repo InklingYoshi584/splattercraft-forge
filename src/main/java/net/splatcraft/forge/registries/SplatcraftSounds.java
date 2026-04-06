@@ -1,23 +1,20 @@
 package net.splatcraft.forge.registries;
 
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraftforge.common.util.ForgeSoundType;
-import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.IForgeRegistry;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegisterEvent;
 import net.splatcraft.forge.Splatcraft;
 
-import java.util.ArrayList;
-import java.util.List;
-
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
-public class SplatcraftSounds
-{
-
-    private static final List<SoundEvent> sounds = new ArrayList<>();
+@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, modid = Splatcraft.MODID)
+public class SplatcraftSounds {
+    private static final List<Entry> SOUNDS = new ArrayList<>();
 
     public static SoundEvent squidTransform;
     public static SoundEvent squidRevert;
@@ -63,10 +60,17 @@ public class SplatcraftSounds
     public static SoundEvent inkedBlockHit;
     public static SoundEvent inkedBlockFall;
 
-    public static final SoundType SOUND_TYPE_INK = new ForgeSoundType(1.0F, 1.0F, () -> SplatcraftSounds.inkedBlockBreak, () -> SplatcraftSounds.inkedBlockStep, () -> SplatcraftSounds.inkedBlockPlace, () -> SplatcraftSounds.inkedBlockHit, () -> SplatcraftSounds.inkedBlockFall);
-    public static final SoundType SOUND_TYPE_SWIMMING = new ForgeSoundType(1.0F, 1.0F, () -> SplatcraftSounds.inkedBlockBreak, () -> SplatcraftSounds.inkedBlockSwim, () -> SplatcraftSounds.inkedBlockPlace, () -> SplatcraftSounds.inkedBlockHit, () -> SplatcraftSounds.inkedBlockFall);
-    public static void initSounds()
-    {
+    public static final SoundType SOUND_TYPE_INK = new ForgeSoundType(1.0F, 1.0F, () -> inkedBlockBreak, () -> inkedBlockStep, () -> inkedBlockPlace, () -> inkedBlockHit, () -> inkedBlockFall);
+    public static final SoundType SOUND_TYPE_SWIMMING = new ForgeSoundType(1.0F, 1.0F, () -> inkedBlockBreak, () -> inkedBlockSwim, () -> inkedBlockPlace, () -> inkedBlockHit, () -> inkedBlockFall);
+
+    private static boolean initialized = false;
+
+    private static void initSounds() {
+        if (initialized) {
+            return;
+        }
+        initialized = true;
+
         inkedBlockBreak = createSoundEvent("block.inked_block.break");
         inkedBlockStep = createSoundEvent("block.inked_block.step");
         inkedBlockSwim = createSoundEvent("block.inked_block.swim");
@@ -113,23 +117,22 @@ public class SplatcraftSounds
         splatSwitchPoweredOff = createSoundEvent("splat_switch_powered_off");
     }
 
-    private static SoundEvent createSoundEvent(String id)
-    {
+    private static SoundEvent createSoundEvent(String id) {
         ResourceLocation loc = new ResourceLocation(Splatcraft.MODID, id);
-        SoundEvent sound = new SoundEvent(loc).setRegistryName(loc);
-        sounds.add(sound);
+        SoundEvent sound = SoundEvent.createVariableRangeEvent(loc);
+        SOUNDS.add(new Entry(loc, sound));
         return sound;
     }
 
     @SubscribeEvent
-    public static void registerSounds(RegistryEvent.Register<SoundEvent> event)
-    {
+    public static void registerSounds(RegisterEvent event) {
         initSounds();
-
-        IForgeRegistry<SoundEvent> registry = event.getRegistry();
-        for (SoundEvent sound : sounds)
-        {
-            registry.register(sound);
-        }
+        event.register(ForgeRegistries.Keys.SOUND_EVENTS, helper -> {
+            for (Entry entry : SOUNDS) {
+                helper.register(entry.id, entry.sound);
+            }
+        });
     }
+
+    private record Entry(ResourceLocation id, SoundEvent sound) {}
 }

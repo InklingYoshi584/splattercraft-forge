@@ -18,18 +18,21 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraft.world.level.material.Material;
+import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("deprecation")
 public class TarpBlock extends Block implements SimpleWaterloggedBlock
 {
     public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
@@ -50,7 +53,7 @@ public class TarpBlock extends Block implements SimpleWaterloggedBlock
 
     public TarpBlock()
     {
-        this(Properties.of(Material.WOOL));
+        this(Properties.of().mapColor(MapColor.WOOL).ignitedByLava());
     }
 
     public TarpBlock(Properties properties)
@@ -67,10 +70,20 @@ public class TarpBlock extends Block implements SimpleWaterloggedBlock
 
     @Nullable
     @Override
-    public BlockState getStateForPlacement(BlockPlaceContext context)
+    public BlockState getStateForPlacement(@NotNull BlockPlaceContext context)
     {
-        BlockState state = context.getLevel().getBlockState(context.getClickedPos()).is(this) ? context.getLevel().getBlockState(context.getClickedPos()) :
-                super.getStateForPlacement(context).setValue(DOWN, false).setValue(WATERLOGGED, context.getLevel().getFluidState(context.getClickedPos()).getType() == Fluids.WATER);
+        BlockState superState = super.getStateForPlacement(context);
+        Level level = context.getLevel();
+
+        BlockState state;
+        if (level.getBlockState(context.getClickedPos()).is(this)) {
+            state = level.getBlockState(context.getClickedPos());
+        } else {
+            if (superState == null) {
+                return null;
+            }
+            state = superState.setValue(DOWN, false).setValue(WATERLOGGED, level.getFluidState(context.getClickedPos()).getType() == Fluids.WATER);
+        }
 
         state = state.setValue(FACING_TO_PROPERTY_MAP.get(context.getClickedFace().getOpposite()), true);
 
@@ -82,7 +95,7 @@ public class TarpBlock extends Block implements SimpleWaterloggedBlock
     }
 
     @Override
-    public boolean canBeReplaced(BlockState state, BlockPlaceContext context)
+    public boolean canBeReplaced(@NotNull BlockState state, @NotNull BlockPlaceContext context)
     {
         for(Direction direction : Direction.values())
             if(state.getValue(FACING_TO_PROPERTY_MAP.get(direction)))
@@ -92,7 +105,7 @@ public class TarpBlock extends Block implements SimpleWaterloggedBlock
 
 
     @Override
-    public void playerDestroy(Level levelIn, Player player, BlockPos pos, BlockState state, @Nullable BlockEntity te, ItemStack stack)
+    public void playerDestroy(@NotNull Level levelIn, Player player, @NotNull BlockPos pos, @NotNull BlockState state, @Nullable BlockEntity te, @NotNull ItemStack stack)
     {
         player.awardStat(Stats.BLOCK_MINED.get(this));
         player.causeFoodExhaustion(0.005F);
@@ -103,13 +116,13 @@ public class TarpBlock extends Block implements SimpleWaterloggedBlock
     }
 
     @Override
-    public FluidState getFluidState(BlockState state)
+    public @NotNull FluidState getFluidState(BlockState state)
     {
         return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context)
+    public @NotNull VoxelShape getShape(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull CollisionContext context)
     {
         return stateToShapeMap.get(state);
     }
@@ -143,23 +156,23 @@ public class TarpBlock extends Block implements SimpleWaterloggedBlock
     {
         public Seethrough()
         {
-            super(Properties.of(Material.GLASS).noOcclusion());
+            super(Properties.of().instrument(NoteBlockInstrument.HAT).isRedstoneConductor((blockState, blockGetter, blockPos) -> false).noOcclusion());
         }
 
-        public VoxelShape getVisualShape(BlockState p_48735_, BlockGetter p_48736_, BlockPos p_48737_, CollisionContext p_48738_) {
+        public @NotNull VoxelShape getVisualShape(@NotNull BlockState p_48735_, @NotNull BlockGetter p_48736_, @NotNull BlockPos p_48737_, @NotNull CollisionContext p_48738_) {
             return Shapes.empty();
         }
 
-        public float getShadeBrightness(BlockState p_48731_, BlockGetter p_48732_, BlockPos p_48733_) {
+        public float getShadeBrightness(@NotNull BlockState p_48731_, @NotNull BlockGetter p_48732_, @NotNull BlockPos p_48733_) {
             return 1.0F;
         }
 
-        public boolean propagatesSkylightDown(BlockState p_48740_, BlockGetter p_48741_, BlockPos p_48742_) {
+        public boolean propagatesSkylightDown(@NotNull BlockState p_48740_, @NotNull BlockGetter p_48741_, @NotNull BlockPos p_48742_) {
             return true;
         }
 
         @Override
-        public boolean useShapeForLightOcclusion(BlockState p_60576_) {
+        public boolean useShapeForLightOcclusion(@NotNull BlockState p_60576_) {
             return true;
         }
     }

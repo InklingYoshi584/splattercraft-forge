@@ -2,6 +2,7 @@ package net.splatcraft.forge.crafting;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
@@ -12,7 +13,6 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.registries.ForgeRegistryEntry;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -40,7 +40,7 @@ public class WeaponWorkbenchRecipe implements Recipe<Container>, Comparable<Weap
     }
 
     @Override
-    public ItemStack assemble(Container inv)
+    public ItemStack assemble(Container inv, RegistryAccess registryAccess)
     {
         return ItemStack.EMPTY;
     }
@@ -52,7 +52,7 @@ public class WeaponWorkbenchRecipe implements Recipe<Container>, Comparable<Weap
     }
 
     @Override
-    public ItemStack getResultItem()
+    public ItemStack getResultItem(RegistryAccess registryAccess)
     {
         return subRecipes.isEmpty() ? ItemStack.EMPTY : subRecipes.get(0).getOutput().copy();
     }
@@ -66,7 +66,7 @@ public class WeaponWorkbenchRecipe implements Recipe<Container>, Comparable<Weap
     @Override
     public RecipeSerializer<?> getSerializer()
     {
-        return SplatcraftRecipeTypes.WEAPON_STATION;
+        return SplatcraftRecipeTypes.WEAPON_STATION.get();
     }
 
     @Override
@@ -102,14 +102,9 @@ public class WeaponWorkbenchRecipe implements Recipe<Container>, Comparable<Weap
         return subRecipes.stream().filter(weaponWorkbenchSubtypeRecipe -> weaponWorkbenchSubtypeRecipe.isAvailable(player)).toList();
     }
 
-    public static class Serializer extends ForgeRegistryEntry<RecipeSerializer<?>> implements RecipeSerializer<WeaponWorkbenchRecipe>
+    public static class Serializer implements RecipeSerializer<WeaponWorkbenchRecipe>
     {
-
-        public Serializer(String name)
-        {
-            super();
-            setRegistryName(name);
-        }
+        public Serializer() {}
 
         @Override
         public WeaponWorkbenchRecipe fromJson(ResourceLocation recipeId, JsonObject json)

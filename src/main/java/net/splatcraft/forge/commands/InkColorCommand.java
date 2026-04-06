@@ -35,9 +35,10 @@ public class InkColorCommand
 
     private static int setColor(CommandSourceStack source, int color) throws CommandSyntaxException
     {
-        ColorUtils.setPlayerColor(source.getPlayerOrException(), color);
+        ServerPlayer player = source.getPlayerOrException();
+        ColorUtils.setPlayerColor(player, color);
 
-        source.sendSuccess(new TranslatableComponent("commands.inkcolor.success.single", source.getPlayerOrException().getDisplayName(), getColorName(color))/*ColorUtils.getFormatedColorName(color, false)*/, true);
+        source.sendSuccess(() -> Component.translatable("commands.inkcolor.success.single", player.getDisplayName(), getColorName(color))/*ColorUtils.getFormatedColorName(color, false)*/, true);
 
         return 1;
     }
@@ -45,7 +46,7 @@ public class InkColorCommand
     //TODO server friendly feedback message
     public static MutableComponent getColorName(int color)
     {
-        return new TextComponent("#" + String.format("%06X", color).toUpperCase()).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(color)));
+        return Component.literal("#" + String.format("%06X", color).toUpperCase()).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(color)));
     }
 
     private static int setColor(CommandSourceStack source, int color, Collection<ServerPlayer> targets)
@@ -54,10 +55,10 @@ public class InkColorCommand
 
         if (targets.size() == 1)
         {
-            source.sendSuccess(new TranslatableComponent("commands.inkcolor.success.single", targets.iterator().next().getDisplayName(), getColorName(color)), true);
+            source.sendSuccess(() -> Component.translatable("commands.inkcolor.success.single", targets.iterator().next().getDisplayName(), getColorName(color)), true);
         } else
         {
-            source.sendSuccess(new TranslatableComponent("commands.inkcolor.success.multiple", targets.size(), getColorName(color)), true);
+            source.sendSuccess(() -> Component.translatable("commands.inkcolor.success.multiple", targets.size(), getColorName(color)), true);
         }
 
         return targets.size();

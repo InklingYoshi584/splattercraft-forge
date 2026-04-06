@@ -1,8 +1,8 @@
 package net.splatcraft.forge.client.particles;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Quaternion;
-import com.mojang.math.Vector3f;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.*;
@@ -63,26 +63,26 @@ public class SquidSoulParticle extends TextureSheetParticle
         float lvt_5_1_ = (float) (Mth.lerp(partialTicks, this.xo, this.x) - renderPos.x());
         float lvt_6_1_ = (float) (Mth.lerp(partialTicks, this.yo, this.y) - renderPos.y());
         float lvt_7_1_ = (float) (Mth.lerp(partialTicks, this.zo, this.z) - renderPos.z());
-        Quaternion rotation;
+        Quaternionf rotation;
         if (this.roll == 0.0F)
         {
             rotation = renderInfo.rotation();
         } else
         {
-            rotation = new Quaternion(renderInfo.rotation());
+            rotation = new Quaternionf(renderInfo.rotation());
             float lvt_9_1_ = Mth.lerp(partialTicks, this.roll, this.oRoll);
-            rotation.mul(Vector3f.ZP.rotation(lvt_9_1_));
+            rotation.mul(com.mojang.math.Axis.ZP.rotation(lvt_9_1_));
         }
 
         Vector3f lvt_9_2_ = new Vector3f(-1.0F, -1.0F, 0.0F);
-        lvt_9_2_.transform(rotation);
+        lvt_9_2_.rotate(rotation);
         Vector3f[] lvt_10_1_ = new Vector3f[]{new Vector3f(-1.0F, -1.0F, 0.0F), new Vector3f(-1.0F, 1.0F, 0.0F), new Vector3f(1.0F, 1.0F, 0.0F), new Vector3f(1.0F, -1.0F, 0.0F)};
         float lvt_11_1_ = this.getQuadSize(partialTicks);
 
         for (int lvt_12_1_ = 0; lvt_12_1_ < 4; ++lvt_12_1_)
         {
             Vector3f lvt_13_1_ = lvt_10_1_[lvt_12_1_];
-            lvt_13_1_.transform(rotation);
+            lvt_13_1_.rotate(rotation);
             lvt_13_1_.mul(lvt_11_1_);
             lvt_13_1_.add(lvt_5_1_, lvt_6_1_, lvt_7_1_);
         }

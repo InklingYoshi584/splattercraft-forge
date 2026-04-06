@@ -5,12 +5,12 @@ import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.DyeableArmorItem;
 import net.minecraft.world.item.ItemStack;
@@ -33,7 +33,13 @@ public class ColoredArmorItem extends DyeableArmorItem implements IColoredItem
 {
     public ColoredArmorItem(ArmorMaterial material, EquipmentSlot slot, Properties properties)
     {
-        super(material, slot, properties);
+        super(material, switch (slot) {
+            case HEAD -> ArmorItem.Type.HELMET;
+            case CHEST -> ArmorItem.Type.CHESTPLATE;
+            case LEGS -> ArmorItem.Type.LEGGINGS;
+            case FEET -> ArmorItem.Type.BOOTS;
+            default -> throw new IllegalArgumentException("Unsupported armor slot: " + slot);
+        }, properties);
         SplatcraftItems.inkColoredItems.add(this);
 
         CauldronInteraction.WATER.put(this, CauldronInteraction.DYED_ITEM);
@@ -41,7 +47,7 @@ public class ColoredArmorItem extends DyeableArmorItem implements IColoredItem
 
     public ColoredArmorItem(ArmorMaterial material, EquipmentSlot slot)
     {
-        this( material, slot, new Properties().tab(SplatcraftItemGroups.GROUP_WEAPONS).stacksTo(1));
+        this( material, slot, new Properties().stacksTo(1));
     }
 
     @Override
@@ -51,12 +57,12 @@ public class ColoredArmorItem extends DyeableArmorItem implements IColoredItem
 
 
         if (I18n.exists(getDescriptionId() + ".tooltip"))
-            tooltip.add(new TranslatableComponent(getDescriptionId() + ".tooltip").withStyle(ChatFormatting.GRAY));
+            tooltip.add(Component.translatable(getDescriptionId() + ".tooltip").withStyle(ChatFormatting.GRAY));
 
         if (ColorUtils.isColorLocked(stack))
             tooltip.add(ColorUtils.getFormatedColorName(ColorUtils.getInkColor(stack), true));
         else
-            tooltip.add(new TranslatableComponent( "item.splatcraft.tooltip.matches_color").withStyle(ChatFormatting.GRAY));
+            tooltip.add(Component.translatable( "item.splatcraft.tooltip.matches_color").withStyle(ChatFormatting.GRAY));
     }
 
     @Override
@@ -76,11 +82,11 @@ public class ColoredArmorItem extends DyeableArmorItem implements IColoredItem
     {
         BlockPos pos = entity.blockPosition().below();
 
-        if (entity.level.getBlockState(pos).getBlock() instanceof InkwellBlock)
+        if (entity.level().getBlockState(pos).getBlock() instanceof InkwellBlock)
         {
-            if (ColorUtils.getInkColor(stack) != ColorUtils.getInkColorOrInverted(entity.level, pos))
+            if (ColorUtils.getInkColor(stack) != ColorUtils.getInkColorOrInverted(entity.level(), pos))
             {
-                ColorUtils.setInkColor(entity.getItem(), ColorUtils.getInkColorOrInverted(entity.level, pos));
+                ColorUtils.setInkColor(entity.getItem(), ColorUtils.getInkColorOrInverted(entity.level(), pos));
                 ColorUtils.setColorLocked(entity.getItem(), true);
             }
         }

@@ -2,6 +2,7 @@ package net.splatcraft.forge.items.weapons.settings;
 
 import com.mojang.serialization.Codec;
 import net.minecraft.ChatFormatting;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
@@ -77,7 +78,7 @@ public abstract class AbstractWeaponSettings<SELF extends AbstractWeaponSettings
 
     public void serializeToBuffer(FriendlyByteBuf buffer)
     {
-        buffer.writeWithCodec(getCodec(), serialize());
+        buffer.writeWithCodec(NbtOps.INSTANCE, getCodec(), serialize());
     }
 
     public static float calculateDistanceTravelled(float hAccel, float gravity, float vHeight)

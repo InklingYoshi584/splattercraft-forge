@@ -40,7 +40,7 @@ public class ColorChangerItem extends RemoteItem implements IColoredItem
 {
     public ColorChangerItem()
     {
-        super(new Properties().tab(SplatcraftItemGroups.GROUP_GENERAL).stacksTo(1).rarity(Rarity.UNCOMMON), 3);
+        super(new Properties().stacksTo(1).rarity(Rarity.UNCOMMON), 3);
         SplatcraftItems.inkColoredItems.add(this);
     }
 
@@ -50,7 +50,7 @@ public class ColorChangerItem extends RemoteItem implements IColoredItem
         BlockPos blockpos3 = new BlockPos(Math.max(from.getX(), to.getX()), Math.max(to.getY(), from.getY()), Math.max(from.getZ(), to.getZ()));
 
         if (!level.isInWorldBounds(blockpos2) || !level.isInWorldBounds(blockpos3))
-            return createResult(false, new TranslatableComponent("status.change_color.out_of_world"));
+            return createResult(false, Component.translatable("status.change_color.out_of_world"));
 
         /*
         for (int j = blockpos2.getZ(); j <= blockpos3.getZ(); j += 16)
@@ -59,7 +59,7 @@ public class ColorChangerItem extends RemoteItem implements IColoredItem
             {
                 if (!level.isLoaded(new BlockPos(k, blockpos3.getY() - blockpos2.getY(), j)))
                 {
-                    return createResult(false, new TranslatableComponent("status.change_color.out_of_world"));
+                    return createResult(false, Component.translatable("status.change_color.out_of_world"));
                 }
             }
         }
@@ -98,7 +98,7 @@ public class ColorChangerItem extends RemoteItem implements IColoredItem
                 SplatcraftPacketHandler.sendToAll(new UpdateStageListPacket(stages));
         }
 
-        return createResult(true, new TranslatableComponent("status.change_color.success", count, level.isClientSide ? ColorUtils.getFormatedColorName(color, false) : InkColorCommand.getColorName(color))).setIntResults(count, count * 15 / blockTotal);
+        return createResult(true, Component.translatable("status.change_color.success", count, level.isClientSide ? ColorUtils.getFormatedColorName(color, false) : InkColorCommand.getColorName(color))).setIntResults(count, count * 15 / blockTotal);
     }
 
     @Override
@@ -114,7 +114,7 @@ public class ColorChangerItem extends RemoteItem implements IColoredItem
 
             if(nbt.contains("Stage") && ClientUtils.clientStages.containsKey(nbt.getString("Stage")))
                 color = ClientUtils.clientStages.get(nbt.getString("Stage")).getTeamColor(nbt.getString("Team"));
-            tooltip.add(ComponentUtils.mergeStyles(new TextComponent(nbt.getString("Team")), color <= -1 ? TARGETS_STYLE : TARGETS_STYLE.withColor(TextColor.fromRgb(color))));
+            tooltip.add(ComponentUtils.mergeStyles(Component.literal(nbt.getString("Team")), color <= -1 ? TARGETS_STYLE : TARGETS_STYLE.withColor(TextColor.fromRgb(color))));
         }
 
 
@@ -139,11 +139,11 @@ public class ColorChangerItem extends RemoteItem implements IColoredItem
     {
         BlockPos pos = entity.blockPosition().below();
 
-        if (entity.level.getBlockState(pos).getBlock() instanceof InkwellBlock)
+        if (entity.level().getBlockState(pos).getBlock() instanceof InkwellBlock)
         {
-            if (ColorUtils.getInkColor(stack) != ColorUtils.getInkColorOrInverted(entity.level, pos))
+            if (ColorUtils.getInkColor(stack) != ColorUtils.getInkColorOrInverted(entity.level(), pos))
             {
-                ColorUtils.setInkColor(entity.getItem(), ColorUtils.getInkColorOrInverted(entity.level, pos));
+                ColorUtils.setInkColor(entity.getItem(), ColorUtils.getInkColorOrInverted(entity.level(), pos));
                 ColorUtils.setColorLocked(entity.getItem(), true);
             }
         }

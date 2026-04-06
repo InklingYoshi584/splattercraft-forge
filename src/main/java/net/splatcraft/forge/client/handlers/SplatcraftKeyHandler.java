@@ -5,7 +5,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.List;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -17,10 +17,11 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.ClientRegistry;
+import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.splatcraft.forge.Splatcraft;
 import net.splatcraft.forge.SplatcraftConfig;
 import net.splatcraft.forge.data.capabilities.playerinfo.PlayerInfo;
 import net.splatcraft.forge.data.capabilities.playerinfo.PlayerInfoCapability;
@@ -36,7 +37,7 @@ import net.splatcraft.forge.util.PlayerCharge;
 import net.splatcraft.forge.util.PlayerCooldown;
 import org.lwjgl.glfw.GLFW;
 
-@Mod.EventBusSubscriber(value = Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = Splatcraft.MODID, value = Dist.CLIENT)
 public class SplatcraftKeyHandler {
     private static final List<ToggleableKey> pressState = new ObjectArrayList<>();
 
@@ -47,15 +48,15 @@ public class SplatcraftKeyHandler {
 
     private static int slot = -1;
 
-    public static void registerKeys() {
+    public static void onRegisterKeys(RegisterKeyMappingsEvent event) {
         fireKey = new ToggleableKey(Minecraft.getInstance().options.keyUse);
 
         KeyMapping squidMapping = new KeyMapping("key.squidForm", GLFW.GLFW_KEY_Z, "key.categories.splatcraft");
-        ClientRegistry.registerKeyBinding(squidMapping);
+        event.register(squidMapping);
         squidKey = new ToggleableKey(squidMapping);
 
         KeyMapping subWeaponMapping = new KeyMapping("key.subWeaponHotkey", -1, "key.categories.splatcraft");
-        ClientRegistry.registerKeyBinding(subWeaponMapping);
+        event.register(subWeaponMapping);
         subWeaponHotkey = new ToggleableKey(subWeaponMapping);
     }
 
@@ -123,9 +124,10 @@ public class SplatcraftKeyHandler {
         {
             ItemStack sub = CommonUtils.getItemInInventory(player, itemStack -> itemStack.getItem() instanceof SubWeaponItem);
 
-            if (sub.isEmpty() || (info.isSquid() && player.level.getBlockCollisions(player,
+            if (sub.isEmpty() || (info.isSquid() && player.level().getBlockCollisions(
+                    player,
                     new AABB(-0.3 + player.getX(), player.getY(), -0.3 + player.getZ(), 0.3 + player.getX(), 0.6 + player.getY(), 0.3 + player.getZ())).iterator().hasNext())) {
-                player.displayClientMessage(new TranslatableComponent("status.cant_use"), true);
+                player.displayClientMessage(Component.translatable("status.cant_use"), true);
             } else {
                 ClientUtils.setSquid(info, false);
 
@@ -163,7 +165,8 @@ public class SplatcraftKeyHandler {
 
 
         if (player.getVehicle() == null &&
-                !player.level.getBlockCollisions(player,
+                !player.level().getBlockCollisions(
+                        player,
                         new AABB(-0.3 + player.getX(), player.getY(), -0.3 + player.getZ(), 0.3 + player.getX(), 0.6 + player.getY(), 0.3 + player.getZ())).iterator().hasNext()) {
             if (squidKey.equals(last) || !squidKey.active) {
                 ClientUtils.setSquid(info, squidKey.active);
@@ -192,7 +195,7 @@ public class SplatcraftKeyHandler {
         if (!mc.gameMode.isDestroying()) {
             ((MinecraftClientAccessor) mc).setRightClickDelay(4);
             {
-                net.minecraftforge.client.event.InputEvent.ClickInputEvent inputEvent = net.minecraftforge.client.ForgeHooksClient.onClickInput(1, mc.options.keyUse, hand);
+                var inputEvent = net.minecraftforge.client.ForgeHooksClient.onClickInput(1, mc.options.keyUse, hand);
                 if (inputEvent.isCanceled()) {
                     if (inputEvent.shouldSwingHand()) {
                         mc.player.swing(hand);
@@ -223,7 +226,7 @@ public class SplatcraftKeyHandler {
                         case BLOCK:
                             BlockHitResult blockraytraceresult = (BlockHitResult) mc.hitResult;
                             int i = itemstack.getCount();
-                            InteractionResult actionresulttype1 = mc.gameMode.useItemOn(mc.player, mc.level, hand, blockraytraceresult);
+                            InteractionResult actionresulttype1 = mc.gameMode.useItemOn(mc.player, hand, blockraytraceresult);
                             if (actionresulttype1.consumesAction()) {
                                 if (actionresulttype1.shouldSwing()) {
                                     if (inputEvent.shouldSwingHand()) {
@@ -248,7 +251,7 @@ public class SplatcraftKeyHandler {
                 }
 
                 if (!itemstack.isEmpty()) {
-                    InteractionResult actionresulttype2 = mc.gameMode.useItem(mc.player, mc.level, hand);
+                    InteractionResult actionresulttype2 = mc.gameMode.useItem(mc.player, hand);
                     if (actionresulttype2.consumesAction()) {
                         if (actionresulttype2.shouldSwing()) {
                             mc.player.swing(hand);
@@ -296,6 +299,14 @@ public class SplatcraftKeyHandler {
             released = !isKeyDown && wasKeyDown;
             wasKeyDown = isKeyDown;
 
+        }
+    }
+
+    @Mod.EventBusSubscriber(modid = Splatcraft.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    public static class ModBusEvents {
+        @SubscribeEvent
+        public static void onRegisterKeys(RegisterKeyMappingsEvent event) {
+            SplatcraftKeyHandler.onRegisterKeys(event);
         }
     }
 }

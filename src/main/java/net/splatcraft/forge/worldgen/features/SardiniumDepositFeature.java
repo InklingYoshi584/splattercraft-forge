@@ -3,6 +3,7 @@ package net.splatcraft.forge.worldgen.features;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.WorldGenLevel;
@@ -12,10 +13,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
-import net.minecraft.world.level.material.Material;
 import net.splatcraft.forge.registries.SplatcraftBlocks;
-
-import java.util.Random;
 
 public class SardiniumDepositFeature extends Feature<NoneFeatureConfiguration>
 {
@@ -26,7 +24,7 @@ public class SardiniumDepositFeature extends Feature<NoneFeatureConfiguration>
 	@Override
 	public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> context)
 	{
-		Random random = context.random();
+		RandomSource random = context.random();
 		BlockPos centerPos = context.origin();
 
 		WorldGenLevel worldgenlevel = context.level();
@@ -90,7 +88,7 @@ public class SardiniumDepositFeature extends Feature<NoneFeatureConfiguration>
 
 
 
-	private void generateIcebergBlock(LevelAccessor level, Random p_66060_, BlockPos p_66061_, int p_66062_, int p_66063_, int p_66064_, int p_66065_, int p_66066_, int p_66067_, boolean p_66068_, int p_66069_, double p_66070_, BlockState state) {
+	private void generateIcebergBlock(LevelAccessor level, RandomSource p_66060_, BlockPos p_66061_, int p_66062_, int p_66063_, int p_66064_, int p_66065_, int p_66066_, int p_66067_, boolean p_66068_, int p_66069_, double p_66070_, BlockState state) {
 		double d0 = p_66068_ ? this.signedDistanceEllipse(p_66063_, p_66065_, BlockPos.ZERO, p_66067_, this.getEllipseC(p_66064_, p_66062_, p_66069_), p_66070_) : this.signedDistanceCircle(p_66063_, p_66065_, BlockPos.ZERO, p_66066_, p_66060_);
 		if (d0 < 0.0D) {
 			BlockPos blockpos = p_66061_.offset(p_66063_, p_66064_, p_66065_);
@@ -114,7 +112,7 @@ public class SardiniumDepositFeature extends Feature<NoneFeatureConfiguration>
 		return i;
 	}
 
-	private double signedDistanceCircle(int p_66030_, int p_66031_, BlockPos p_66032_, int p_66033_, Random p_66034_) {
+	private double signedDistanceCircle(int p_66030_, int p_66031_, BlockPos p_66032_, int p_66033_, RandomSource p_66034_) {
 		float f = 10.0F * Mth.clamp(p_66034_.nextFloat(), 0.2F, 0.8F) / (float)p_66033_;
 		return (double)f + Math.pow((double)(p_66030_ - p_66032_.getX()), 2.0D) + Math.pow((double)(p_66031_ - p_66032_.getZ()), 2.0D) - Math.pow((double)p_66033_, 2.0D);
 	}
@@ -123,13 +121,13 @@ public class SardiniumDepositFeature extends Feature<NoneFeatureConfiguration>
 		return Math.pow(((double)(p_66023_ - p_66025_.getX()) * Math.cos(p_66028_) - (double)(p_66024_ - p_66025_.getZ()) * Math.sin(p_66028_)) / (double)p_66026_, 2.0D) + Math.pow(((double)(p_66023_ - p_66025_.getX()) * Math.sin(p_66028_) + (double)(p_66024_ - p_66025_.getZ()) * Math.cos(p_66028_)) / (double)p_66027_, 2.0D) - 1.0D;
 	}
 
-	private int heightDependentRadiusSteep(Random p_66114_, int p_66115_, int p_66116_, int p_66117_) {
+	private int heightDependentRadiusSteep(RandomSource p_66114_, int p_66115_, int p_66116_, int p_66117_) {
 		float f = 1.0F + p_66114_.nextFloat() / 2.0F;
 		float f1 = (1.0F - (float)p_66115_ / ((float)p_66116_ * f)) * (float)p_66117_;
 		return Mth.ceil(f1 / 2.0F);
 	}
 
-	private int heightDependentRadiusRound(Random p_66095_, int p_66096_, int p_66097_, int p_66098_) {
+	private int heightDependentRadiusRound(RandomSource p_66095_, int p_66096_, int p_66097_, int p_66098_) {
 		float f = 3.5F - p_66095_.nextFloat();
 		float f1 = (1.0F - (float)Math.pow((double)p_66096_, 2.0D) / ((float)p_66097_ * f)) * (float)p_66098_;
 		if (p_66097_ > 15 + p_66095_.nextInt(5)) {
@@ -184,6 +182,6 @@ public class SardiniumDepositFeature extends Feature<NoneFeatureConfiguration>
 	}
 
 	private boolean belowIsAir(BlockGetter p_66046_, BlockPos p_66047_) {
-		return p_66046_.getBlockState(p_66047_.below()).getMaterial() == Material.AIR;
+		return p_66046_.getBlockState(p_66047_.below()).isAir();
 	}
 }

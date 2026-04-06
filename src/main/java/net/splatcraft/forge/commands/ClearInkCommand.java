@@ -44,7 +44,7 @@ public class ClearInkCommand
     {
         RemoteItem.RemoteResult result = InkDisruptorItem.clearInk(source.getLevel(), from, to);
 
-        source.sendSuccess(result.getOutput(), true);
+        source.sendSuccess(() -> result.getOutput(), true);
         return result.getCommandResult();
     }
 }

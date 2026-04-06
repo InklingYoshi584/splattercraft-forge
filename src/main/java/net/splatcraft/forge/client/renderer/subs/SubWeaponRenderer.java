@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraft.world.item.ItemStack;
 import net.splatcraft.forge.SplatcraftConfig;
 import net.splatcraft.forge.client.models.AbstractSubWeaponModel;
@@ -47,18 +48,19 @@ public abstract class SubWeaponRenderer<E extends AbstractSubWeaponEntity, M ext
 		if(stack.getItem() instanceof SubWeaponItem && entityIn.getType().equals(((SubWeaponItem) stack.getItem()).entityType.get()))
 		{
 			SubWeaponItem sub = (SubWeaponItem) stack.getItem();
+			ResourceLocation subKey = ForgeRegistries.ITEMS.getKey(sub);
 
 			String customModelData = "";
 
-			if(stack.hasTag() && stack.getTag().contains("CustomModelData") && Minecraft.getInstance().getResourceManager().hasResource(new ResourceLocation(sub.getRegistryName().getNamespace(),
-					"textures/models/" + sub.getRegistryName().getPath() + "_" + stack.getTag().getInt("CustomModelData") + ".png")))
+			if(stack.hasTag() && stack.getTag().contains("CustomModelData") && Minecraft.getInstance().getResourceManager().getResource(new ResourceLocation(subKey.getNamespace(),
+					"textures/models/" + subKey.getPath() + "_" + stack.getTag().getInt("CustomModelData") + ".png")).isPresent())
 				customModelData = "_" + stack.getTag().getInt("CustomModelData");
 
-			texture = new ResourceLocation(sub.getRegistryName().getNamespace(), "textures/weapons/sub/"+sub.getRegistryName().getPath()+customModelData+".png");
-			inkTexture = new ResourceLocation(sub.getRegistryName().getNamespace(), "textures/weapons/sub/"+sub.getRegistryName().getPath()+customModelData+"_ink.png");
+			texture = new ResourceLocation(subKey.getNamespace(), "textures/weapons/sub/"+subKey.getPath()+customModelData+".png");
+			inkTexture = new ResourceLocation(subKey.getNamespace(), "textures/weapons/sub/"+subKey.getPath()+customModelData+"_ink.png");
 
 			if(overlay != null)
-				overlay = new ResourceLocation(sub.getRegistryName().getNamespace(), "textures/weapons/sub/"+sub.getRegistryName().getPath()+customModelData+"_overlay.png");
+				overlay = new ResourceLocation(subKey.getNamespace(), "textures/weapons/sub/"+subKey.getPath()+customModelData+"_overlay.png");
 		}
 
 		model.setupAnim(entityIn, 0, 0, this.handleRotationFloat(entityIn, partialTicks), entityYaw, entityIn.getXRot());

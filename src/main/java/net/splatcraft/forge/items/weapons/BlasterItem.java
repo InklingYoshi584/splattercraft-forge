@@ -44,7 +44,7 @@ public class BlasterItem extends WeaponBaseItem<BlasterWeaponSettings>
         if (!cooldownTracker.isOnCooldown(this))
         {
             BlasterWeaponSettings settings = getSettings(stack);
-            PlayerCooldown.setPlayerCooldown((Player) entity, new PlayerCooldown(stack, settings.startupTicks, ((Player) entity).getInventory().selected, entity.getUsedItemHand(), true, false, true, entity.isOnGround()));
+            PlayerCooldown.setPlayerCooldown((Player) entity, new PlayerCooldown(stack, settings.startupTicks, ((Player) entity).getInventory().selected, entity.getUsedItemHand(), true, false, true, entity.onGround()));
             if (!level.isClientSide) {
                 cooldownTracker.addCooldown(this, settings.endlagTicks);
             }
@@ -58,7 +58,7 @@ public class BlasterItem extends WeaponBaseItem<BlasterWeaponSettings>
             BlasterWeaponSettings settings = getSettings(stack);
             if (reduceInk(player, this, settings.inkConsumption, settings.inkRecoveryCooldown, true)) {
                 InkProjectileEntity proj = new InkProjectileEntity(level, player, stack, InkBlockUtils.getInkType(player), settings.projectileSize, settings).setShooterTrail();
-                proj.shootFromRotation(player, player.getXRot(), player.getYRot(), 0, settings.projectileSpeed, player.isOnGround() ? settings.groundInaccuracy : settings.airInaccuracy);
+                proj.shootFromRotation(player, player.getXRot(), player.getYRot(), 0, settings.projectileSpeed, player.onGround() ? settings.groundInaccuracy : settings.airInaccuracy);
                 proj.setBlasterStats(settings);
                 level.addFreshEntity(proj);
                 level.playSound(null, player.getX(), player.getY(), player.getZ(), SplatcraftSounds.blasterShot, SoundSource.PLAYERS, 0.7F, ((level.getRandom().nextFloat() - level.getRandom().nextFloat()) * 0.1F + 1.0F) * 0.95F);

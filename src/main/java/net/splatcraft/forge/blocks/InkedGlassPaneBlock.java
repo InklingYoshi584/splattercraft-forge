@@ -14,36 +14,32 @@ import net.minecraft.world.level.block.SimpleWaterloggedBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraft.world.level.material.Material;
 import net.minecraft.world.phys.HitResult;
 import net.splatcraft.forge.registries.SplatcraftBlocks;
-import net.splatcraft.forge.registries.SplatcraftGameRules;
 import net.splatcraft.forge.registries.SplatcraftTileEntities;
 import net.splatcraft.forge.tileentities.InkColorTileEntity;
-import net.splatcraft.forge.tileentities.InkedBlockTileEntity;
-import net.splatcraft.forge.util.BlockInkedResult;
 import net.splatcraft.forge.util.ColorUtils;
-import net.splatcraft.forge.util.InkBlockUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+@SuppressWarnings("deprecation")
 public class InkedGlassPaneBlock extends IronBarsBlock implements IColoredBlock, SimpleWaterloggedBlock, EntityBlock
 {
-
     public InkedGlassPaneBlock()
     {
-        super(Properties.of(Material.GLASS).strength(0.3F).sound(SoundType.GLASS).noOcclusion());
+        super(Properties.of().instrument(NoteBlockInstrument.HAT).isRedstoneConductor((pState, pLevel, pPos) -> false).strength(0.3F).sound(SoundType.GLASS).noOcclusion());
         SplatcraftBlocks.inkColoredBlocks.add(this);
     }
 
     @Override
-    public boolean useShapeForLightOcclusion(BlockState state) {
+    public boolean useShapeForLightOcclusion(@NotNull BlockState state) {
         return true;
     }
 
-    @Nullable
     @Override
-    public float[] getBeaconColorMultiplier(BlockState state, LevelReader level, BlockPos pos, BlockPos beaconPos)
+    public float @Nullable [] getBeaconColorMultiplier(BlockState state, LevelReader level, BlockPos pos, BlockPos beaconPos)
     {
         return ColorUtils.hexToRGB(getColor((Level) level, pos));
     }
@@ -55,7 +51,7 @@ public class InkedGlassPaneBlock extends IronBarsBlock implements IColoredBlock,
     }
 
     @Override
-    public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity entity, ItemStack stack)
+    public void setPlacedBy(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state, @Nullable LivingEntity entity, ItemStack stack)
     {
         if (stack.getTag() != null && level.getBlockEntity(pos) instanceof InkColorTileEntity)
         {
@@ -65,18 +61,22 @@ public class InkedGlassPaneBlock extends IronBarsBlock implements IColoredBlock,
     }
 
     @Override
-    public BlockState getStateForPlacement(BlockPlaceContext context)
+    public BlockState getStateForPlacement(@NotNull BlockPlaceContext context)
     {
-        return super.getStateForPlacement(context).setValue(WATERLOGGED, context.getLevel().getFluidState(context.getClickedPos()).getType() == Fluids.WATER);
+        BlockState state = super.getStateForPlacement(context);
+        if (state == null) {
+            return null;
+        }
+        return state.setValue(WATERLOGGED, context.getLevel().getFluidState(context.getClickedPos()).getType() == Fluids.WATER);
     }
 
     @Override
-    public ItemStack getCloneItemStack(BlockGetter reader, BlockPos pos, BlockState state)
+    public @NotNull ItemStack getCloneItemStack(@NotNull BlockGetter reader, @NotNull BlockPos pos, @NotNull BlockState state)
     {
         ItemStack stack = super.getCloneItemStack(reader, pos, state);
 
-        if (reader.getBlockEntity(pos) instanceof InkColorTileEntity)
-            ColorUtils.setColorLocked(ColorUtils.setInkColor(stack, ColorUtils.getInkColor(reader.getBlockEntity(pos))), true);
+        if (reader.getBlockEntity(pos) instanceof InkColorTileEntity te)
+            ColorUtils.setColorLocked(ColorUtils.setInkColor(stack, ColorUtils.getInkColor(te)), true);
 
         return stack;
     }
@@ -104,9 +104,9 @@ public class InkedGlassPaneBlock extends IronBarsBlock implements IColoredBlock,
     @Override
     public int getColor(Level level, BlockPos pos)
     {
-        if (level.getBlockEntity(pos) instanceof InkColorTileEntity)
+        if (level.getBlockEntity(pos) instanceof InkColorTileEntity te)
         {
-            return ((InkColorTileEntity) level.getBlockEntity(pos)).getColor();
+            return te.getColor();
         }
         return -1;
     }
@@ -115,48 +115,14 @@ public class InkedGlassPaneBlock extends IronBarsBlock implements IColoredBlock,
     public boolean remoteColorChange(Level level, BlockPos pos, int newColor)
     {
         BlockState state = level.getBlockState(pos);
-        if (level.getBlockEntity(pos) instanceof InkColorTileEntity && ((InkColorTileEntity) level.getBlockEntity(pos)).getColor() != newColor)
+        if (level.getBlockEntity(pos) instanceof InkColorTileEntity te && te.getColor() != newColor)
         {
-            ((InkColorTileEntity) level.getBlockEntity(pos)).setColor(newColor);
+            te.setColor(newColor);
             level.sendBlockUpdated(pos, state, state, 2);
             return true;
         }
         return false;
     }
-
-    /*
-
-    @Override
-    public BlockInkedResult inkBlock(Level level, BlockPos pos, int color, float damage, InkBlockUtils.InkType inkType)
-    {
-        if (InkedBlock.isTouchingLiquid(level, pos) || !SplatcraftGameRules.getLocalizedRule(level, pos, SplatcraftGameRules.INKABLE_GROUND))
-        {
-            return BlockInkedResult.FAIL;
-        }
-
-        int woolColor = -1;
-
-        if (level.getBlockEntity(pos) instanceof InkColorTileEntity)
-        {
-            woolColor = ((InkColorTileEntity) level.getBlockEntity(pos)).getColor();
-        }
-        BlockState state = level.getBlockState(pos);
-        BlockState inkState = InkBlockUtils.getInkState(inkType);
-        level.setBlock(pos, inkState, 3);
-        level.setBlockEntity(SplatcraftBlocks.inkedBlock.get().newBlockEntity(pos, inkState));
-        InkedBlockTileEntity inkte = (InkedBlockTileEntity) level.getBlockEntity(pos);
-        if (inkte == null)
-        {
-            return BlockInkedResult.FAIL;
-        }
-        inkte.setColor(color);
-        inkte.setSavedState(state);
-        inkte.setSavedColor(woolColor);
-
-        return BlockInkedResult.SUCCESS;
-    }
-
-     */
 
     @Override
     public boolean remoteInkClear(Level level, BlockPos pos)
@@ -166,7 +132,7 @@ public class InkedGlassPaneBlock extends IronBarsBlock implements IColoredBlock,
 
     @Nullable
     @Override
-    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+    public BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
         return SplatcraftTileEntities.colorTileEntity.get().create(pos, state);
     }
 }

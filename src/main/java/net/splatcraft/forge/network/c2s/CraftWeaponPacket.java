@@ -41,7 +41,7 @@ public class CraftWeaponPacket extends PlayC2SPacket
     @Override
     public void execute(Player player)
     {
-        Optional<? extends Recipe<?>> recipeOptional = player.level.getRecipeManager().byKey(recipeID);
+        Optional<? extends Recipe<?>> recipeOptional = player.level().getRecipeManager().byKey(recipeID);
 
         if (recipeOptional.isPresent() && recipeOptional.get() instanceof WeaponWorkbenchRecipe)
         {

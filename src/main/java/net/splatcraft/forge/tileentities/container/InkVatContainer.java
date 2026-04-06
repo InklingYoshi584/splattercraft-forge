@@ -64,7 +64,7 @@ public class InkVatContainer extends AbstractContainerMenu {
         Objects.requireNonNull(inventory);
         Objects.requireNonNull(buffer);
 
-        final BlockEntity te = inventory.player.level.getBlockEntity(buffer.readBlockPos());
+        final BlockEntity te = inventory.player.level().getBlockEntity(buffer.readBlockPos());
 
         if (te instanceof InkVatTileEntity) {
             return (InkVatTileEntity) te;
@@ -272,7 +272,7 @@ public class InkVatContainer extends AbstractContainerMenu {
         @Override
         public boolean mayPlace(ItemStack stack)
         {
-            return validItem.sameItemStackIgnoreDurability(stack);
+            return ItemStack.isSameItem(validItem, stack);
         }
     }
 

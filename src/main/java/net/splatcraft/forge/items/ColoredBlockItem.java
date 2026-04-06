@@ -8,7 +8,6 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
@@ -84,12 +83,12 @@ public class ColoredBlockItem extends BlockItem implements IColoredItem
 
     public ColoredBlockItem(Block block, int stackSize, @Nullable Item clearItem)
     {
-        this(block, new Properties().stacksTo(stackSize).tab(SplatcraftItemGroups.GROUP_GENERAL), clearItem);
+        this(block, new Properties().stacksTo(stackSize), clearItem);
     }
 
     public ColoredBlockItem(Block block, int stackSize)
     {
-        this(block, new Properties().stacksTo(stackSize).tab(SplatcraftItemGroups.GROUP_GENERAL), null);
+        this(block, new Properties().stacksTo(stackSize), null);
     }
 
     public ColoredBlockItem setMatchColor(boolean matchColor) {
@@ -112,17 +111,17 @@ public class ColoredBlockItem extends BlockItem implements IColoredItem
         super.appendHoverText(stack, level, tooltip, flag);
 
         if (I18n.exists(getDescriptionId() + ".tooltip"))
-            tooltip.add(new TranslatableComponent(getDescriptionId() + ".tooltip").withStyle(ChatFormatting.GRAY));
+            tooltip.add(Component.translatable(getDescriptionId() + ".tooltip").withStyle(ChatFormatting.GRAY));
 
         boolean inverted = ColorUtils.isInverted(stack);
         if (ColorUtils.isColorLocked(stack))
         {
             tooltip.add(ColorUtils.getFormatedColorName(ColorUtils.getInkColor(stack), true));
             if(inverted)
-                tooltip.add(new TranslatableComponent("item.splatcraft.tooltip.inverted").withStyle(Style.EMPTY.withItalic(true).withColor(ChatFormatting.DARK_PURPLE)));
+                tooltip.add(Component.translatable("item.splatcraft.tooltip.inverted").withStyle(Style.EMPTY.withItalic(true).withColor(ChatFormatting.DARK_PURPLE)));
         }
         else if(matchColor)
-            tooltip.add(new TranslatableComponent( "item.splatcraft.tooltip.matches_color" + (inverted ? ".inverted" : "")).withStyle(ChatFormatting.GRAY));
+            tooltip.add(Component.translatable( "item.splatcraft.tooltip.matches_color" + (inverted ? ".inverted" : "")).withStyle(ChatFormatting.GRAY));
     }
 
     public ColoredBlockItem addStarterColors()
@@ -154,22 +153,6 @@ public class ColoredBlockItem extends BlockItem implements IColoredItem
     }
 
     @Override
-    public void fillItemCategory(@NotNull CreativeModeTab group, @NotNull NonNullList<ItemStack> items)
-    {
-        if (allowdedIn(group))
-        {
-            items.add(ColorUtils.setInkColor(new ItemStack(this), -1));
-
-            if (addStartersToTab)
-            {
-                items.add(ColorUtils.setInverted(ColorUtils.setColorLocked(new ItemStack(this), false), true));
-                for (int color : ColorUtils.STARTER_COLORS)
-                    items.add(ColorUtils.setColorLocked(ColorUtils.setInkColor(new ItemStack(this), color), true));
-            }
-        }
-    }
-
-    @Override
     public void inventoryTick(@NotNull ItemStack stack, @NotNull Level levelIn, @NotNull Entity entityIn, int itemSlot, boolean isSelected)
     {
         super.inventoryTick(stack, levelIn, entityIn, itemSlot, isSelected);
@@ -187,16 +170,16 @@ public class ColoredBlockItem extends BlockItem implements IColoredItem
     {
         BlockPos pos = entity.blockPosition();
 
-        if (entity.level.getBlockState(pos.below()).getBlock() instanceof InkwellBlock)
+        if (entity.level().getBlockState(pos.below()).getBlock() instanceof InkwellBlock)
         {
-            if (ColorUtils.getInkColor(stack) != ColorUtils.getInkColorOrInverted(entity.level, pos.below()))
+            if (ColorUtils.getInkColor(stack) != ColorUtils.getInkColorOrInverted(entity.level(), pos.below()))
             {
-                ColorUtils.setInkColor(entity.getItem(), ColorUtils.getInkColorOrInverted(entity.level, pos.below()));
+                ColorUtils.setInkColor(entity.getItem(), ColorUtils.getInkColorOrInverted(entity.level(), pos.below()));
                 ColorUtils.setColorLocked(entity.getItem(), true);
             }
         }
         else if (!(equals(clearItem) && ColorUtils.getInkColor(stack) < 0) &&
-                clearItem != null && InkedBlock.causesClear(entity.level, pos, entity.level.getBlockState(pos), Direction.UP))
+                clearItem != null && InkedBlock.causesClear(entity.level(), pos, entity.level().getBlockState(pos), Direction.UP))
         {
             entity.setItem(new ItemStack(clearItem, stack.getCount()));
         }

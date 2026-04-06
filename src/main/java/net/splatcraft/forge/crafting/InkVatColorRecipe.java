@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
@@ -15,7 +16,6 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.registries.ForgeRegistryEntry;
 import net.splatcraft.forge.registries.SplatcraftBlocks;
 import net.splatcraft.forge.registries.SplatcraftInkColors;
 import net.splatcraft.forge.util.ColorUtils;
@@ -56,9 +56,9 @@ public class InkVatColorRecipe implements Recipe<Container>
     }
 
     @Override
-    public ItemStack assemble(Container inv)
+    public ItemStack assemble(Container inv, RegistryAccess registryAccess)
     {
-        return inv.getItem(0);
+        return inv.getItem(0).copy();
     }
 
     @Override
@@ -68,7 +68,7 @@ public class InkVatColorRecipe implements Recipe<Container>
     }
 
     @Override
-    public ItemStack getResultItem()
+    public ItemStack getResultItem(RegistryAccess registryAccess)
     {
         return ColorUtils.setInkColor(new ItemStack(SplatcraftBlocks.inkwell.get()), color);
     }
@@ -87,7 +87,7 @@ public class InkVatColorRecipe implements Recipe<Container>
     @Override
     public RecipeSerializer<?> getSerializer()
     {
-        return SplatcraftRecipeTypes.INK_VAT_COLOR_CRAFTING;
+        return SplatcraftRecipeTypes.INK_VAT_COLOR_CRAFTING.get();
     }
 
     @Override
@@ -102,14 +102,9 @@ public class InkVatColorRecipe implements Recipe<Container>
         return new ItemStack(SplatcraftBlocks.inkVat.get());
     }
 
-    public static class InkVatColorSerializer extends ForgeRegistryEntry<RecipeSerializer<?>> implements RecipeSerializer<InkVatColorRecipe>
+    public static class InkVatColorSerializer implements RecipeSerializer<InkVatColorRecipe>
     {
-
-        public InkVatColorSerializer(String name)
-        {
-            super();
-            setRegistryName(name);
-        }
+        public InkVatColorSerializer() {}
 
         @Override
         public InkVatColorRecipe fromJson(ResourceLocation recipeId, JsonObject json) {

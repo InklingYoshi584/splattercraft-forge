@@ -111,7 +111,7 @@ public class InkBlockUtils {
 
     public static boolean isBlockFoliage(BlockState state)
     {
-        return state.is(BlockTags.CROPS) || state.is(BlockTags.SAPLINGS) || state.is(BlockTags.REPLACEABLE_PLANTS);
+        return state.is(BlockTags.CROPS) || state.is(BlockTags.SAPLINGS) || state.is(BlockTags.REPLACEABLE);
     }
 
     public static BlockState getInkState(InkType inkType) {
@@ -158,7 +158,7 @@ public class InkBlockUtils {
     }
 
     public static boolean canSquidHide(LivingEntity entity) {
-        return !entity.isSpectator() && (entity.isOnGround() || !entity.level.getBlockState(new BlockPos(entity.getX(), entity.getY() - 0.1, entity.getZ())).getBlock().equals(Blocks.AIR))
+        return !entity.isSpectator() && (entity.onGround() || !entity.level().getBlockState(BlockPos.containing(entity.getX(), entity.getY() - 0.1, entity.getZ())).getBlock().equals(Blocks.AIR))
                 && canSquidSwim(entity) || canSquidClimb(entity);
     }
 
@@ -166,40 +166,40 @@ public class InkBlockUtils {
         boolean canSwim = false;
 
         BlockPos down = getBlockStandingOnPos(entity);
-        Block standingBlock = entity.level.getBlockState(down).getBlock();
+        Block standingBlock = entity.level().getBlockState(down).getBlock();
 
-        if(isInked(entity.level, down))
-            return ColorUtils.colorEquals(entity.level, down, ColorUtils.getEntityColor(entity), getInk(entity.level, down).color());
+        if(isInked(entity.level(), down))
+            return ColorUtils.colorEquals(entity.level(), down, ColorUtils.getEntityColor(entity), getInk(entity.level(), down).color());
 
         if (standingBlock instanceof IColoredBlock)
             canSwim = ((IColoredBlock) standingBlock).canSwim();
 
-        return canSwim && ColorUtils.colorEquals(entity, entity.level.getBlockEntity(down));
+        return canSwim && ColorUtils.colorEquals(entity, entity.level().getBlockEntity(down));
     }
 
     public static BlockPos getBlockStandingOnPos(Entity entity) {
         BlockPos result;
         for (double i = 0; i >= -0.5; i -= 0.1) {
-            result = new BlockPos(entity.getX(), entity.getY() + i, entity.getZ());
+            result = BlockPos.containing(entity.getX(), entity.getY() + i, entity.getZ());
 
-            VoxelShape shape = entity.level.getBlockState(result).getCollisionShape(entity.level, result, CollisionContext.of(entity));
+            VoxelShape shape = entity.level().getBlockState(result).getCollisionShape(entity.level(), result, CollisionContext.of(entity));
 
             if (!shape.isEmpty() && shape.bounds().minY <= entity.getY() - result.getY())
                 return result;
         }
 
-        return new BlockPos(entity.getX(), entity.getY() - 0.6, entity.getZ());
+        return BlockPos.containing(entity.getX(), entity.getY() - 0.6, entity.getZ());
     }
 
     public static boolean onEnemyInk(LivingEntity entity) {
-        if (!entity.isOnGround())
+        if (!entity.onGround())
             return false;
         BlockPos pos = getBlockStandingOnPos(entity);
 
-        if(isInked(entity.level, pos))
+        if(isInked(entity.level(), pos))
             return !canSquidSwim(entity);
-        else if (entity.level.getBlockState(pos).getBlock() instanceof IColoredBlock coloredBlock)
-            return coloredBlock.canDamage() && ColorUtils.getInkColor(entity.level, pos) != -1 && !canSquidSwim(entity);
+        else if (entity.level().getBlockState(pos).getBlock() instanceof IColoredBlock coloredBlock)
+            return coloredBlock.canDamage() && ColorUtils.getInkColor(entity.level(), pos) != -1 && !canSquidSwim(entity);
         else return false;
     }
 
@@ -209,17 +209,17 @@ public class InkBlockUtils {
         for (int i = 0; i < 4; i++)
         {
             float xOff = (i < 2 ? .32f : 0) * (i % 2 == 0 ? 1 : -1), zOff = (i < 2 ? 0 : .32f) * (i % 2 == 0 ? 1 : -1);
-            BlockPos pos = new BlockPos(entity.getX() - xOff, entity.getY(), entity.getZ() - zOff);
-            Block block = entity.level.getBlockState(pos).getBlock();
-            VoxelShape shape = entity.level.getBlockState(pos).getCollisionShape(entity.level, pos, CollisionContext.of(entity));
+            BlockPos pos = BlockPos.containing(entity.getX() - xOff, entity.getY(), entity.getZ() - zOff);
+            Block block = entity.level().getBlockState(pos).getBlock();
+            VoxelShape shape = entity.level().getBlockState(pos).getCollisionShape(entity.level(), pos, CollisionContext.of(entity));
 
             if (pos.equals(getBlockStandingOnPos(entity)) || (!shape.isEmpty() && (shape.bounds().maxY < (entity.getY() - entity.blockPosition().getY()) || shape.bounds().minY > (entity.getY() - entity.blockPosition().getY()))))
                 continue;
 
-            if(isInked(entity.level, pos) && ColorUtils.colorEquals(entity.level, pos, ColorUtils.getEntityColor(entity), getInk(entity.level, pos).color()))
+            if(isInked(entity.level(), pos) && ColorUtils.colorEquals(entity.level(), pos, ColorUtils.getEntityColor(entity), getInk(entity.level(), pos).color()))
                 return true;
 
-            if ((!(block instanceof IColoredBlock) || ((IColoredBlock) block).canClimb()) && entity.level.getBlockEntity(pos) instanceof InkColorTileEntity && ColorUtils.colorEquals(entity, entity.level.getBlockEntity(pos)) && !entity.isPassenger())
+            if ((!(block instanceof IColoredBlock) || ((IColoredBlock) block).canClimb()) && entity.level().getBlockEntity(pos) instanceof InkColorTileEntity && ColorUtils.colorEquals(entity, entity.level().getBlockEntity(pos)) && !entity.isPassenger())
                 return true;
         }
         return false;
