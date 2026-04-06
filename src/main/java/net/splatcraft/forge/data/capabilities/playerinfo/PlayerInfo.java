@@ -22,6 +22,11 @@ public class PlayerInfo
     private Player player;
 
     private ItemStack inkBand = ItemStack.EMPTY;
+    private int specialSourceSlot = -1;
+    private int specialTicksRemaining = 0;
+    private int specialMaxTicks = 0;
+    private int specialWindupTicksRemaining = 0;
+    private int specialWindupMaxTicks = 0;
 
     public PlayerInfo(int defaultColor)
     {
@@ -84,6 +89,69 @@ public class PlayerInfo
         return InkBlockUtils.getInkTypeFromStack(inkBand);
     }
 
+    public int getSpecialSourceSlot()
+    {
+        return specialSourceSlot;
+    }
+
+    public void startSpecial(int sourceSlot, int windupTicks, int activeTicks)
+    {
+        this.specialSourceSlot = sourceSlot;
+        this.specialWindupTicksRemaining = Math.max(windupTicks, 0);
+        this.specialWindupMaxTicks = Math.max(windupTicks, 0);
+        this.specialTicksRemaining = Math.max(activeTicks, 0);
+        this.specialMaxTicks = Math.max(activeTicks, 0);
+    }
+
+    public boolean hasActiveSpecial()
+    {
+        return specialSourceSlot >= 0 && (specialWindupTicksRemaining > 0 || specialTicksRemaining > 0);
+    }
+
+    public boolean isSpecialInWindup()
+    {
+        return specialWindupTicksRemaining > 0;
+    }
+
+    public int getSpecialTicksRemaining()
+    {
+        return specialTicksRemaining;
+    }
+
+    public int getSpecialMaxTicks()
+    {
+        return specialMaxTicks;
+    }
+
+    public int getSpecialWindupTicksRemaining()
+    {
+        return specialWindupTicksRemaining;
+    }
+
+    public int getSpecialWindupMaxTicks()
+    {
+        return specialWindupMaxTicks;
+    }
+
+    public void tickSpecialWindup()
+    {
+        specialWindupTicksRemaining = Math.max(0, specialWindupTicksRemaining - 1);
+    }
+
+    public void tickActiveSpecial()
+    {
+        specialTicksRemaining = Math.max(0, specialTicksRemaining - 1);
+    }
+
+    public void clearSpecial()
+    {
+        specialSourceSlot = -1;
+        specialTicksRemaining = 0;
+        specialMaxTicks = 0;
+        specialWindupTicksRemaining = 0;
+        specialWindupMaxTicks = 0;
+    }
+
     public NonNullList<ItemStack> getMatchInventory()
     {
         return matchInventory;
@@ -132,6 +200,12 @@ public class PlayerInfo
         if(!inkBand.isEmpty())
             nbt.put("InkBand", getInkBand().serializeNBT());
 
+        nbt.putInt("SpecialSourceSlot", specialSourceSlot);
+        nbt.putInt("SpecialTicksRemaining", specialTicksRemaining);
+        nbt.putInt("SpecialMaxTicks", specialMaxTicks);
+        nbt.putInt("SpecialWindupTicksRemaining", specialWindupTicksRemaining);
+        nbt.putInt("SpecialWindupMaxTicks", specialWindupMaxTicks);
+
         if (!matchInventory.isEmpty())
         {
             CompoundTag invNBT = new CompoundTag();
@@ -158,6 +232,12 @@ public class PlayerInfo
         if(nbt.contains("InkBand"))
             setInkBand(ItemStack.of(nbt.getCompound("InkBand")));
         else setInkBand(ItemStack.EMPTY);
+
+        specialSourceSlot = nbt.getInt("SpecialSourceSlot");
+        specialTicksRemaining = nbt.getInt("SpecialTicksRemaining");
+        specialMaxTicks = nbt.getInt("SpecialMaxTicks");
+        specialWindupTicksRemaining = nbt.getInt("SpecialWindupTicksRemaining");
+        specialWindupMaxTicks = nbt.getInt("SpecialWindupMaxTicks");
 
         if (nbt.contains("MatchInventory"))
         {

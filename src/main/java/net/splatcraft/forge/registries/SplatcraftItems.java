@@ -149,6 +149,9 @@ public class SplatcraftItems {
     public static final RegistryObject<SubWeaponItem> suctionBomb = REGISTRY.register("suction_bomb", () -> new SubWeaponItem(SplatcraftEntities.SUCTION_BOMB, "suction_bomb"));
     public static final RegistryObject<SubWeaponItem> curlingBomb = REGISTRY.register("curling_bomb", () -> new CurlingSubWeaponItem(SplatcraftEntities.CURLING_BOMB, "curling_bomb", CurlingBombEntity::onItemUseTick));
     public static final RegistryObject<SpecialWeaponItem> dummySpecial = REGISTRY.register("dummy_special", SpecialWeaponItem::new);
+    public static final RegistryObject<InkArmorSpecialItem> inkArmor = REGISTRY.register("ink_armor", InkArmorSpecialItem::new);
+    public static final RegistryObject<BombRushSpecialItem> bombRush = REGISTRY.register("bomb_rush", BombRushSpecialItem::new);
+    public static final RegistryObject<InkzookaSpecialItem> inkzooka = REGISTRY.register("inkzooka", InkzookaSpecialItem::new);
 
     //Vanity
     public static final RegistryObject<Item> inkClothHelmet = REGISTRY.register("ink_cloth_helmet", () -> new ColoredArmorItem(INK_CLOTH, EquipmentSlot.HEAD));

@@ -43,6 +43,9 @@ public class SplatcraftItemGroups {
             output.accept(colorChanger.get());
             output.accept(remotePedestal.get());
             output.accept(dummySpecial.get());
+            output.accept(inkArmor.get());
+            output.accept(bombRush.get());
+            output.accept(inkzooka.get());
 
             output.accept(splatfestBand.get());
             output.accept(clearBand.get());

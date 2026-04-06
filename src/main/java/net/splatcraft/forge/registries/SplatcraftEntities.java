@@ -42,6 +42,7 @@ import net.splatcraft.forge.client.models.subs.SplatBombModel;
 import net.splatcraft.forge.client.models.subs.SuctionBombModel;
 import net.splatcraft.forge.client.renderer.InkProjectileRenderer;
 import net.splatcraft.forge.client.renderer.InkSquidRenderer;
+import net.splatcraft.forge.client.renderer.InkzookaTornadoRenderer;
 import net.splatcraft.forge.client.renderer.SpawnShieldRenderer;
 import net.splatcraft.forge.client.renderer.SquidBumperRenderer;
 import net.splatcraft.forge.client.renderer.subs.BurstBombRenderer;
@@ -50,6 +51,7 @@ import net.splatcraft.forge.client.renderer.subs.SplatBombRenderer;
 import net.splatcraft.forge.client.renderer.subs.SuctionBombRenderer;
 import net.splatcraft.forge.entities.InkProjectileEntity;
 import net.splatcraft.forge.entities.InkSquidEntity;
+import net.splatcraft.forge.entities.InkzookaTornadoEntity;
 import net.splatcraft.forge.entities.SpawnShieldEntity;
 import net.splatcraft.forge.entities.SquidBumperEntity;
 import net.splatcraft.forge.entities.subs.BurstBombEntity;
@@ -67,6 +69,7 @@ public class SplatcraftEntities {
     public static final RegistryObject<EntityType<InkSquidEntity>> INK_SQUID = create("ink_squid", InkSquidEntity::new, MobCategory.AMBIENT, 0.6f, 0.5f);
 
     public static final RegistryObject<EntityType<InkProjectileEntity>> INK_PROJECTILE = create("ink_projectile", InkProjectileEntity::new, MobCategory.MISC);
+    public static final RegistryObject<EntityType<InkzookaTornadoEntity>> INKZOOKA_TORNADO = create("inkzooka_tornado", InkzookaTornadoEntity::new, MobCategory.MISC, 0.5f, 20.0f);
     public static final RegistryObject<EntityType<SquidBumperEntity>> SQUID_BUMPER = create("squid_bumper", SquidBumperEntity::new, MobCategory.MISC, 0.6f, 1.8f);
     public static final RegistryObject<EntityType<SpawnShieldEntity>> SPAWN_SHIELD = create("spawn_shield", SpawnShieldEntity::new, MobCategory.MISC, 1, 1);
 
@@ -87,6 +90,7 @@ public class SplatcraftEntities {
 
     public static void bindRenderers() {
         EntityRenderers.register(INK_PROJECTILE.get(), InkProjectileRenderer::new);
+        EntityRenderers.register(INKZOOKA_TORNADO.get(), InkzookaTornadoRenderer::new);
         EntityRenderers.register(INK_SQUID.get(), InkSquidRenderer::new);
         EntityRenderers.register(SQUID_BUMPER.get(), SquidBumperRenderer::new);
 

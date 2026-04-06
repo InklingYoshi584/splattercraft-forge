@@ -37,6 +37,7 @@ import net.splatcraft.forge.client.handlers.SplatcraftKeyHandler;
 import net.splatcraft.forge.data.capabilities.playerinfo.PlayerInfoCapability;
 import net.splatcraft.forge.handlers.DataHandler;
 import net.splatcraft.forge.handlers.PlayerPosingHandler;
+import net.splatcraft.forge.handlers.SpecialHandler;
 import net.splatcraft.forge.items.IColoredItem;
 import net.splatcraft.forge.items.InkTankItem;
 import net.splatcraft.forge.items.weapons.settings.*;
@@ -150,8 +151,6 @@ public abstract class WeaponBaseItem<S extends AbstractWeaponSettings<S, ?>> ext
 
         if (!specialWeapon.useSpecial(level, player, specialStack, weaponStack))
             return false;
-
-        setSpecialPoints(weaponStack, 0);
         return true;
     }
 
@@ -230,6 +229,8 @@ public abstract class WeaponBaseItem<S extends AbstractWeaponSettings<S, ?>> ext
 
     public static boolean reduceInk(LivingEntity player, Item item, float amount, int recoveryCooldown, boolean sendMessage, boolean force) {
         if (!force && !enoughInk(player, item, amount, recoveryCooldown, sendMessage, false)) return false;
+        if (player instanceof Player actualPlayer && SpecialHandler.hasInfiniteInkSpecial(actualPlayer))
+            return true;
         ItemStack tank = player.getItemBySlot(EquipmentSlot.CHEST);
         if (tank.getItem() instanceof InkTankItem)
             InkTankItem.setInkAmount(tank, InkTankItem.getInkAmount(tank) - amount);
@@ -249,6 +250,9 @@ public abstract class WeaponBaseItem<S extends AbstractWeaponSettings<S, ?>> ext
     }
 
     public static boolean enoughInk(LivingEntity player, Item item, float consumption, int recoveryCooldown, boolean sendMessage, boolean sub) {
+        if (player instanceof Player actualPlayer && SpecialHandler.hasInfiniteInkSpecial(actualPlayer))
+            return true;
+
         ItemStack tank = player.getItemBySlot(EquipmentSlot.CHEST);
         if (!SplatcraftGameRules.getLocalizedRule(player.level(), player.blockPosition(), SplatcraftGameRules.REQUIRE_INK_TANK)
                 || player instanceof Player && ((Player) player).isCreative()

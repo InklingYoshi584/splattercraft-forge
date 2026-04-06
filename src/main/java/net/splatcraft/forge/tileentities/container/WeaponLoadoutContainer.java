@@ -21,6 +21,7 @@ public class WeaponLoadoutContainer extends AbstractContainerMenu
     private final Player player;
     private final InteractionHand hand;
     private final SimpleContainer loadout;
+    private boolean initializing;
 
     public WeaponLoadoutContainer(int id, Inventory playerInventory, FriendlyByteBuf buffer)
     {
@@ -38,13 +39,16 @@ public class WeaponLoadoutContainer extends AbstractContainerMenu
             public void setChanged()
             {
                 super.setChanged();
-                saveToWeapon();
+                if (!initializing)
+                    saveToWeapon();
             }
         };
 
         ItemStack weaponStack = getWeaponStack();
+        this.initializing = true;
         this.loadout.setItem(0, WeaponBaseItem.getStoredSubWeapon(weaponStack));
         this.loadout.setItem(1, WeaponBaseItem.getStoredSpecialWeapon(weaponStack));
+        this.initializing = false;
 
         addSlot(new Slot(loadout, 0, 44, 20)
         {

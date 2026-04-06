@@ -17,6 +17,7 @@ import net.splatcraft.forge.Splatcraft;
 import net.splatcraft.forge.client.particles.SquidSoulParticleData;
 import net.splatcraft.forge.commands.SuperJumpCommand;
 import net.splatcraft.forge.data.capabilities.playerinfo.PlayerInfoCapability;
+import net.splatcraft.forge.items.weapons.SpecialWeaponItem;
 import net.splatcraft.forge.items.weapons.WeaponBaseItem;
 import net.splatcraft.forge.network.SplatcraftPacketHandler;
 import net.splatcraft.forge.network.s2c.PlayerSetSquidS2CPacket;
@@ -91,6 +92,14 @@ public class WeaponHandler {
 		}
 		if (canUseWeapon && player.getUseItemRemainingTicks() > 0 && !CommonUtils.anyWeaponOnCooldown(player)) {
 			ItemStack stack = player.getItemInHand(player.getUsedItemHand());
+			ItemStack activeSpecial = SpecialHandler.getActiveSpecialStack(player);
+			if (activeSpecial.getItem() instanceof SpecialWeaponItem specialWeapon && specialWeapon.replacesMainWeapon(player.level(), player, activeSpecial, stack)) {
+				specialWeapon.onMainWeaponUseTick(player.level(), player, activeSpecial, stack, player.getUseItemRemainingTicks());
+				player.setSprinting(false);
+				prevPosMap.put(player, player.position());
+				return;
+			}
+
 			if (stack.getItem() instanceof WeaponBaseItem<?> weapon) {
 				weapon.weaponUseTick(player.level(), player, stack, player.getUseItemRemainingTicks());
 				player.setSprinting(false);
