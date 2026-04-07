@@ -5,7 +5,6 @@
   "recipes": [
     {
       "name": "weaponType.original",
-      "advancement": "splatcraft:unlocks/clash_blaster",
       "result": {
         "item": "splatcraft:clash_blaster",
         "count": 1
@@ -35,7 +34,6 @@
     },
     {
       "name": "weaponType.neo",
-      "advancement": "splatcraft:unlocks/clash_blaster_neo",
       "result": {
         "item": "splatcraft:clash_blaster_neo",
         "count": 1

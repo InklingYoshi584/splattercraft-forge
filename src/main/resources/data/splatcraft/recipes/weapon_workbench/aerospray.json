@@ -5,7 +5,6 @@
   "recipes": [
     {
       "name": "weaponType.mg",
-      "advancement": "splatcraft:unlocks/aerospray_mg",
       "result": {
         "item": "splatcraft:aerospray_mg",
         "count": 1
@@ -31,7 +30,6 @@
     },
     {
       "name": "weaponType.rg",
-      "advancement": "splatcraft:unlocks/aerospray_rg",
       "result": {
         "item": "splatcraft:aerospray_rg",
         "count": 1

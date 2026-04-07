@@ -5,7 +5,6 @@
   "recipes": [
     {
       "name": "weaponType.original",
-      "advancement": "splatcraft:unlocks/slosher",
       "result": {
         "item": "splatcraft:slosher",
         "count": 1
@@ -31,7 +30,6 @@
     },
     {
       "name": "weaponType.classic",
-      "advancement": "splatcraft:unlocks/classic_slosher",
       "result": {
         "item": "splatcraft:classic_slosher",
         "count": 1
@@ -57,7 +55,6 @@
     },
     {
       "name": "weaponType.soda",
-      "advancement": "splatcraft:unlocks/soda_slosher",
       "result": {
         "item": "splatcraft:soda_slosher",
         "count": 1

@@ -5,7 +5,6 @@
   "recipes": [
     {
       "name": "weaponType.original",
-      "advancement": "splatcraft:unlocks/splattershot",
       "result": {
         "item": "splatcraft:splattershot",
         "count": 1
@@ -27,7 +26,6 @@
     },
     {
       "name": "weaponType.tentatek",
-      "advancement": "splatcraft:unlocks/tentatek_splattershot",
       "result": {
         "item": "splatcraft:tentatek_splattershot",
         "count": 1
@@ -49,7 +47,6 @@
     },
     {
       "name": "weaponType.wasabi",
-      "advancement": "splatcraft:unlocks/wasabi_splattershot",
       "result": {
         "item": "splatcraft:wasabi_splattershot",
         "count": 1
@@ -75,7 +72,6 @@
     },
     {
       "name": "weaponType.special",
-      "advancement": "splatcraft:story/get_all_weapons",
       "result": {
         "item": "splatcraft:ancient_splattershot",
         "count": 1

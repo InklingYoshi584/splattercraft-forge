@@ -1,0 +1,10 @@
+{
+  "type": "splatcraft:fishing",
+  "conditions": [],
+  "item": "splatcraft:sardinium",
+  "countMin": 5,
+  "countMax": 9,
+  "chance": 0.25,
+  "quality": 2,
+  "isTreasure": false
+}

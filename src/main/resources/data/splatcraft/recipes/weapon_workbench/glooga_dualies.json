@@ -5,7 +5,6 @@
   "recipes": [
     {
       "name": "weaponType.original",
-      "advancement": "splatcraft:unlocks/glooga_dualies",
       "result": {
         "item": "splatcraft:glooga_dualies",
         "count": 1
@@ -31,7 +30,6 @@
     },
     {
       "name": "weaponType.deco",
-      "advancement": "splatcraft:unlocks/glooga_dualies_deco",
       "result": {
         "item": "splatcraft:glooga_dualies_deco",
         "count": 1
@@ -61,7 +59,6 @@
     },
     {
       "name": "weaponType.kensa",
-      "advancement": "splatcraft:unlocks/kensa_glooga_dualies",
       "result": {
         "item": "splatcraft:kensa_glooga_dualies",
         "count": 1

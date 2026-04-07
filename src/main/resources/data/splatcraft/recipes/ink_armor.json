@@ -2,9 +2,6 @@
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
     {
-      "item": "splatcraft:armored_ink_tank"
-    },
-    {
       "item": "splatcraft:ink_cloth_helmet"
     },
     {

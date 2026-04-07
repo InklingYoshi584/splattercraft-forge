@@ -5,7 +5,6 @@
   "recipes": [
     {
       "name": "weaponType.original",
-      "advancement": "splatcraft:unlocks/splat_charger",
       "result": {
         "item": "splatcraft:splat_charger",
         "count": 1
@@ -27,7 +26,6 @@
     },
     {
       "name": "weaponType.kelp",
-      "advancement": "splatcraft:unlocks/kelp_splat_charger",
       "result": {
         "item": "splatcraft:kelp_splat_charger",
         "count": 1
@@ -53,7 +51,6 @@
     },
     {
       "name": "weaponType.bento",
-      "advancement": "splatcraft:unlocks/bento_splat_charger",
       "result": {
         "item": "splatcraft:bento_splat_charger",
         "count": 1

@@ -5,7 +5,6 @@
   "recipes": [
     {
       "name": "weaponType.original",
-      "advancement": "splatcraft:unlocks/jet_squelcher",
       "result": {
         "item": "splatcraft:jet_squelcher",
         "count": 1

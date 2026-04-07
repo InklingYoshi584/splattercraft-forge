@@ -30,7 +30,7 @@ public class InkzookaTornadoEntity extends Entity implements IColoredEntity
     private static final EntityDataAccessor<Float> HEIGHT = SynchedEntityData.defineId(InkzookaTornadoEntity.class, EntityDataSerializers.FLOAT);
     private static final float TORNADO_WIDTH = 0.5F;
     private static final float TORNADO_HEIGHT = 20.0F;
-    private static final float IMPACT_DAMAGE = 25.0F;
+    private static final float IMPACT_DAMAGE = 35.0F;
 
     private final Set<UUID> hitTargets = new HashSet<>();
     private UUID ownerUUID;

@@ -67,6 +67,7 @@ public abstract class WeaponBaseItem<S extends AbstractWeaponSettings<S, ?>> ext
     public static final String TAG_SUB_WEAPON = "StoredSubWeapon";
     public static final String TAG_SPECIAL_WEAPON = "StoredSpecialWeapon";
     public static final String TAG_SPECIAL_POINTS = "SpecialPoints";
+    public static final String TAG_ACTIVE_SPECIAL = "ActiveSpecial";
 
     public ResourceLocation settingsId;
     public boolean isSecret;
@@ -120,6 +121,16 @@ public abstract class WeaponBaseItem<S extends AbstractWeaponSettings<S, ?>> ext
     {
         ItemStack specialStack = getStoredSpecialWeapon(weaponStack);
         return specialStack.getItem() instanceof SpecialWeaponItem specialWeapon ? specialWeapon.getPointsRequired(specialStack) : 0;
+    }
+
+    public static boolean hasActiveSpecial(ItemStack weaponStack)
+    {
+        return weaponStack.hasTag() && weaponStack.getTag().getBoolean(TAG_ACTIVE_SPECIAL);
+    }
+
+    public static void setActiveSpecial(ItemStack weaponStack, boolean active)
+    {
+        weaponStack.getOrCreateTag().putBoolean(TAG_ACTIVE_SPECIAL, active);
     }
 
     public static void addSpecialPoints(ItemStack weaponStack, int points)

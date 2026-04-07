@@ -5,7 +5,6 @@
   "recipes": [
     {
       "name": "weaponType.original",
-      "advancement": "splatcraft:unlocks/blaster",
       "result": {
         "item": "splatcraft:blaster",
         "count": 1
@@ -31,7 +30,6 @@
     },
     {
       "name": "weaponType.grim",
-      "advancement": "splatcraft:unlocks/grim_blaster",
       "result": {
         "item": "splatcraft:grim_blaster",
         "count": 1

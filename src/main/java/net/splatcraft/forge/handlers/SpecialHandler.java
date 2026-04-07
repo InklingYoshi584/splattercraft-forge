@@ -45,6 +45,9 @@ public class SpecialHandler
         int sourceSlot = info.getSpecialSourceSlot();
         if (sourceSlot < 0 || sourceSlot >= player.getInventory().getContainerSize())
         {
+            ItemStack heldStack = player.getMainHandItem();
+            if (heldStack.getItem() instanceof WeaponBaseItem<?>)
+                WeaponBaseItem.setActiveSpecial(heldStack, false);
             info.clearSpecial();
             return;
         }
@@ -60,6 +63,7 @@ public class SpecialHandler
         if (!(specialStack.getItem() instanceof SpecialWeaponItem specialWeapon))
         {
             info.clearSpecial();
+            WeaponBaseItem.setActiveSpecial(weaponStack, false);
             WeaponBaseItem.setSpecialPoints(weaponStack, 0);
             return;
         }

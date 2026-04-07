@@ -13,6 +13,8 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.splatcraft.forge.client.handlers.RendererHandler;
+import net.splatcraft.forge.items.weapons.SpecialWeaponItem;
+import net.splatcraft.forge.items.weapons.WeaponBaseItem;
 import net.splatcraft.forge.registries.SplatcraftItems;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -23,6 +25,15 @@ public class ItemRendererMixin
 	@WrapOperation(method = "renderStatic(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemDisplayContext;ZLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/world/level/Level;III)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/ItemRenderer;render(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemDisplayContext;ZLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;IILnet/minecraft/client/resources/model/BakedModel;)V"))
 	public void onRenderGuiItem(ItemRenderer renderer, ItemStack stack, ItemDisplayContext transformType, boolean leftHanded, PoseStack poseStack, MultiBufferSource source, int light, int overlay, BakedModel modelIn, Operation<Void> original)
 	{
+		if (Minecraft.getInstance().player != null && Minecraft.getInstance().level != null && stack.getItem() instanceof WeaponBaseItem<?> && WeaponBaseItem.hasActiveSpecial(stack)) {
+			ItemStack specialStack = WeaponBaseItem.getStoredSpecialWeapon(stack);
+			if (specialStack.getItem() instanceof SpecialWeaponItem specialWeapon && specialWeapon.replacesMainWeapon(Minecraft.getInstance().level, Minecraft.getInstance().player, specialStack, stack)) {
+				BakedModel model = Minecraft.getInstance().getItemRenderer().getModel(specialStack, Minecraft.getInstance().level, Minecraft.getInstance().player, 0);
+				original.call(renderer, specialStack, transformType, leftHanded, poseStack, source, light, overlay, model);
+				return;
+			}
+		}
+
 		if (stack.getItem().equals(SplatcraftItems.powerEgg.get())) {
 			BakedModel model = Minecraft.getInstance().getItemRenderer().getItemModelShaper().getModelManager().getModel(new ModelResourceLocation(ForgeRegistries.ITEMS.getKey(stack.getItem()), "inventory"));
 			RendererHandler.renderItem(stack, transformType, true, poseStack, source, light, overlay, model);

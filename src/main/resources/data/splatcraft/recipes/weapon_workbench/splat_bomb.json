@@ -5,7 +5,6 @@
   "recipes": [
     {
       "name": "weaponType.original",
-      "advancement": "splatcraft:unlocks/splat_bomb",
       "result": {
         "item": "splatcraft:splat_bomb",
         "count": 1

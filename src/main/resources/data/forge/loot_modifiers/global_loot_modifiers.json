@@ -2,6 +2,8 @@
   "replace": false,
   "entries": [
     "splatcraft:sunken_crate_fishing",
+    "splatcraft:fishing_sardinium",
+    "splatcraft:salmon_power_eggs",
     "splatcraft:big_ocean_ruin_crate",
     "splatcraft:bonus_chest_kit_main",
     "splatcraft:bonus_chest_kit_sub",

@@ -41,6 +41,7 @@ public class InkzookaSpecialItem extends SpecialWeaponItem
 
         PlayerInfoCapability.get(player).startSpecial(player.getInventory().selected, 0, getActiveTicks(specialStack));
         WeaponBaseItem.setSpecialPoints(mainWeapon, getPointsRequired(specialStack));
+        WeaponBaseItem.setActiveSpecial(mainWeapon, true);
         player.displayClientMessage(Component.translatable("status.special.inkzooka"), false);
         return true;
     }
@@ -55,6 +56,7 @@ public class InkzookaSpecialItem extends SpecialWeaponItem
     public void onSpecialEnd(Level level, Player player, ItemStack specialStack, ItemStack mainWeapon, boolean interrupted)
     {
         WeaponBaseItem.setSpecialPoints(mainWeapon, 0);
+        WeaponBaseItem.setActiveSpecial(mainWeapon, false);
         player.getCooldowns().removeCooldown(this);
     }
 
