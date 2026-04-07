@@ -15,6 +15,7 @@ public class SplatcraftDamageTypes {
     public static final ResourceKey<DamageType> OUT_OF_STAGE = ResourceKey.create(Registries.DAMAGE_TYPE, new ResourceLocation(Splatcraft.MODID, "out_of_stage"));
     public static final ResourceKey<DamageType> ROLL_CRUSH = ResourceKey.create(Registries.DAMAGE_TYPE, new ResourceLocation(Splatcraft.MODID, "roll_crush"));
     public static final ResourceKey<DamageType> WATER = ResourceKey.create(Registries.DAMAGE_TYPE, new ResourceLocation(Splatcraft.MODID, "water"));
+    public static final ResourceKey<DamageType> INK_STRIKE_TORNADO = ResourceKey.create(Registries.DAMAGE_TYPE, new ResourceLocation(Splatcraft.MODID, "ink_strike_tornado"));
 
     public static Holder<DamageType> get(Level level, ResourceKey<DamageType> key) {
         return level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(key);

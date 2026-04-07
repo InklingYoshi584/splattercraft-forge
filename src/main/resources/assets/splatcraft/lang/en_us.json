@@ -253,6 +253,8 @@
   "item.splatcraft.bomb_rush.tooltip": "Unlimited ink for a short burst.",
   "item.splatcraft.inkzooka": "Inkzooka",
   "item.splatcraft.inkzooka.tooltip": "Temporarily replaces your main fire with massive ink tornadoes.",
+  "item.splatcraft.ink_strike": "Inkstrike",
+  "item.splatcraft.ink_strike.tooltip": "Throw a beacon to call down a towering expanding inkstrike.",
   "item.splatcraft.special.points": "Points Needed: %s",
   "item.splatcraft.main_weapon.sub": "Sub: %s",
   "item.splatcraft.main_weapon.special": "Special: %s",
@@ -557,6 +559,7 @@
   "status.special.ink_armor": "Ink Armor deployed!",
   "status.special.bomb_rush": "Bomb Rush!",
   "status.special.inkzooka": "Inkzooka ready!",
+  "status.special.ink_strike": "Inkstrike online!",
 
   "status.blueprint.invalid": "This Blueprint is empty.",
   "status.blueprint.already_unlocked.single": "You already have this Blueprint.",

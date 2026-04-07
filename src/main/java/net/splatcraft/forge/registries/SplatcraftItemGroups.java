@@ -46,6 +46,7 @@ public class SplatcraftItemGroups {
             output.accept(inkArmor.get());
             output.accept(bombRush.get());
             output.accept(inkzooka.get());
+            output.accept(inkStrike.get());
 
             output.accept(splatfestBand.get());
             output.accept(clearBand.get());

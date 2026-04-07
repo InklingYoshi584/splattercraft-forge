@@ -40,8 +40,11 @@ import net.splatcraft.forge.client.models.subs.BurstBombModel;
 import net.splatcraft.forge.client.models.subs.CurlingBombModel;
 import net.splatcraft.forge.client.models.subs.SplatBombModel;
 import net.splatcraft.forge.client.models.subs.SuctionBombModel;
+import net.splatcraft.forge.client.renderer.InkstrikeEntityRenderer;
+import net.splatcraft.forge.client.renderer.InkstrikeTornadoRenderer;
 import net.splatcraft.forge.client.renderer.InkProjectileRenderer;
 import net.splatcraft.forge.client.renderer.InkSquidRenderer;
+import net.splatcraft.forge.client.renderer.ItemStackEntityRenderer;
 import net.splatcraft.forge.client.renderer.InkzookaTornadoRenderer;
 import net.splatcraft.forge.client.renderer.SpawnShieldRenderer;
 import net.splatcraft.forge.client.renderer.SquidBumperRenderer;
@@ -49,6 +52,9 @@ import net.splatcraft.forge.client.renderer.subs.BurstBombRenderer;
 import net.splatcraft.forge.client.renderer.subs.CurlingBombRenderer;
 import net.splatcraft.forge.client.renderer.subs.SplatBombRenderer;
 import net.splatcraft.forge.client.renderer.subs.SuctionBombRenderer;
+import net.splatcraft.forge.entities.InkstrikeBeaconEntity;
+import net.splatcraft.forge.entities.InkstrikeEntity;
+import net.splatcraft.forge.entities.InkstrikeTornadoEntity;
 import net.splatcraft.forge.entities.InkProjectileEntity;
 import net.splatcraft.forge.entities.InkSquidEntity;
 import net.splatcraft.forge.entities.InkzookaTornadoEntity;
@@ -70,6 +76,9 @@ public class SplatcraftEntities {
 
     public static final RegistryObject<EntityType<InkProjectileEntity>> INK_PROJECTILE = create("ink_projectile", InkProjectileEntity::new, MobCategory.MISC);
     public static final RegistryObject<EntityType<InkzookaTornadoEntity>> INKZOOKA_TORNADO = create("inkzooka_tornado", InkzookaTornadoEntity::new, MobCategory.MISC, 0.5f, 20.0f);
+    public static final RegistryObject<EntityType<InkstrikeBeaconEntity>> INKSTRIKE_BEACON = create("inkstrike_beacon", InkstrikeBeaconEntity::new, MobCategory.MISC, 0.25f, 0.25f);
+    public static final RegistryObject<EntityType<InkstrikeEntity>> INKSTRIKE = create("inkstrike", InkstrikeEntity::new, MobCategory.MISC, 0.75f, 0.75f);
+    public static final RegistryObject<EntityType<InkstrikeTornadoEntity>> INKSTRIKE_TORNADO = create("inkstrike_tornado", InkstrikeTornadoEntity::new, MobCategory.MISC, 1.0f, 20.0f);
     public static final RegistryObject<EntityType<SquidBumperEntity>> SQUID_BUMPER = create("squid_bumper", SquidBumperEntity::new, MobCategory.MISC, 0.6f, 1.8f);
     public static final RegistryObject<EntityType<SpawnShieldEntity>> SPAWN_SHIELD = create("spawn_shield", SpawnShieldEntity::new, MobCategory.MISC, 1, 1);
 
@@ -91,6 +100,9 @@ public class SplatcraftEntities {
     public static void bindRenderers() {
         EntityRenderers.register(INK_PROJECTILE.get(), InkProjectileRenderer::new);
         EntityRenderers.register(INKZOOKA_TORNADO.get(), InkzookaTornadoRenderer::new);
+        EntityRenderers.register(INKSTRIKE_BEACON.get(), ItemStackEntityRenderer::new);
+        EntityRenderers.register(INKSTRIKE.get(), InkstrikeEntityRenderer::new);
+        EntityRenderers.register(INKSTRIKE_TORNADO.get(), InkstrikeTornadoRenderer::new);
         EntityRenderers.register(INK_SQUID.get(), InkSquidRenderer::new);
         EntityRenderers.register(SQUID_BUMPER.get(), SquidBumperRenderer::new);
 

@@ -148,10 +148,12 @@ public class SplatcraftItems {
     public static final RegistryObject<SubWeaponItem> burstBomb = REGISTRY.register("burst_bomb", () -> new SubWeaponItem(SplatcraftEntities.BURST_BOMB, "burst_bomb"));
     public static final RegistryObject<SubWeaponItem> suctionBomb = REGISTRY.register("suction_bomb", () -> new SubWeaponItem(SplatcraftEntities.SUCTION_BOMB, "suction_bomb"));
     public static final RegistryObject<SubWeaponItem> curlingBomb = REGISTRY.register("curling_bomb", () -> new CurlingSubWeaponItem(SplatcraftEntities.CURLING_BOMB, "curling_bomb", CurlingBombEntity::onItemUseTick));
+    public static final RegistryObject<Item> inkstrikeBeacon = REGISTRY.register("inkstrike_beacon", () -> new Item(new Item.Properties()));
     public static final RegistryObject<SpecialWeaponItem> dummySpecial = REGISTRY.register("dummy_special", SpecialWeaponItem::new);
     public static final RegistryObject<InkArmorSpecialItem> inkArmor = REGISTRY.register("ink_armor", InkArmorSpecialItem::new);
     public static final RegistryObject<BombRushSpecialItem> bombRush = REGISTRY.register("bomb_rush", BombRushSpecialItem::new);
     public static final RegistryObject<InkzookaSpecialItem> inkzooka = REGISTRY.register("inkzooka", InkzookaSpecialItem::new);
+    public static final RegistryObject<InkstrikeSpecialItem> inkStrike = REGISTRY.register("ink_strike", InkstrikeSpecialItem::new);
 
     //Vanity
     public static final RegistryObject<Item> inkClothHelmet = REGISTRY.register("ink_cloth_helmet", () -> new ColoredArmorItem(INK_CLOTH, EquipmentSlot.HEAD));
@@ -379,6 +381,7 @@ public class SplatcraftItems {
             put("inked_glass_pane", inkedGlassPane);
             put("weapon_workbench", weaponWorkbench);
             put("ink_polisher", waxApplicator);
+            put("inkstrike", inkStrike);
         }};
 
         @SubscribeEvent

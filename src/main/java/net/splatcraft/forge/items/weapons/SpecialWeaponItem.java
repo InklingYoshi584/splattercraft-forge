@@ -85,6 +85,11 @@ public class SpecialWeaponItem extends Item
         return false;
     }
 
+    public ItemStack getMainWeaponReplacementRenderStack(Level level, Player player, ItemStack specialStack, ItemStack mainWeapon)
+    {
+        return specialStack;
+    }
+
     public void onMainWeaponUseTick(Level level, LivingEntity entity, ItemStack specialStack, ItemStack mainWeapon, int timeLeft)
     {
     }

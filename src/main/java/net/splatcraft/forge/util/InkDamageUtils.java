@@ -111,7 +111,7 @@ public class InkDamageUtils {
 
         if (!(target instanceof SquidBumperEntity) && doDamage) {
             boolean nonSquidEntity = !(target instanceof Player) && !(target instanceof IColoredEntity);
-            float damageScale = nonSquidEntity ? 0.4f : 1.0f;
+            float damageScale = nonSquidEntity ? 0.2f : 1.0f;
             Vec3 deltaMovement = target.getDeltaMovement();
             doDamage = target.hurt(damageSource, damage * damageScale * (target instanceof Player || target instanceof IColoredEntity || damageMobs ? 1 : mobDmgPctg));
             target.setDeltaMovement(deltaMovement); // trying to prevent knockback... (this game is so dumb)

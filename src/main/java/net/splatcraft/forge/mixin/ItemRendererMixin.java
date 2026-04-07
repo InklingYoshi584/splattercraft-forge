@@ -28,8 +28,9 @@ public class ItemRendererMixin
 		if (Minecraft.getInstance().player != null && Minecraft.getInstance().level != null && stack.getItem() instanceof WeaponBaseItem<?> && WeaponBaseItem.hasActiveSpecial(stack)) {
 			ItemStack specialStack = WeaponBaseItem.getStoredSpecialWeapon(stack);
 			if (specialStack.getItem() instanceof SpecialWeaponItem specialWeapon && specialWeapon.replacesMainWeapon(Minecraft.getInstance().level, Minecraft.getInstance().player, specialStack, stack)) {
-				BakedModel model = Minecraft.getInstance().getItemRenderer().getModel(specialStack, Minecraft.getInstance().level, Minecraft.getInstance().player, 0);
-				original.call(renderer, specialStack, transformType, leftHanded, poseStack, source, light, overlay, model);
+				ItemStack renderStack = specialWeapon.getMainWeaponReplacementRenderStack(Minecraft.getInstance().level, Minecraft.getInstance().player, specialStack, stack);
+				BakedModel model = Minecraft.getInstance().getItemRenderer().getModel(renderStack, Minecraft.getInstance().level, Minecraft.getInstance().player, 0);
+				original.call(renderer, renderStack, transformType, leftHanded, poseStack, source, light, overlay, model);
 				return;
 			}
 		}

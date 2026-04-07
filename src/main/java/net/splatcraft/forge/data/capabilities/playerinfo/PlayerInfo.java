@@ -27,6 +27,7 @@ public class PlayerInfo
     private int specialMaxTicks = 0;
     private int specialWindupTicksRemaining = 0;
     private int specialWindupMaxTicks = 0;
+    private CompoundTag specialData = new CompoundTag();
 
     public PlayerInfo(int defaultColor)
     {
@@ -101,6 +102,7 @@ public class PlayerInfo
         this.specialWindupMaxTicks = Math.max(windupTicks, 0);
         this.specialTicksRemaining = Math.max(activeTicks, 0);
         this.specialMaxTicks = Math.max(activeTicks, 0);
+        this.specialData = new CompoundTag();
     }
 
     public boolean hasActiveSpecial()
@@ -150,6 +152,12 @@ public class PlayerInfo
         specialMaxTicks = 0;
         specialWindupTicksRemaining = 0;
         specialWindupMaxTicks = 0;
+        specialData = new CompoundTag();
+    }
+
+    public CompoundTag getSpecialData()
+    {
+        return specialData;
     }
 
     public NonNullList<ItemStack> getMatchInventory()
@@ -205,6 +213,8 @@ public class PlayerInfo
         nbt.putInt("SpecialMaxTicks", specialMaxTicks);
         nbt.putInt("SpecialWindupTicksRemaining", specialWindupTicksRemaining);
         nbt.putInt("SpecialWindupMaxTicks", specialWindupMaxTicks);
+        if (!specialData.isEmpty())
+            nbt.put("SpecialData", specialData.copy());
 
         if (!matchInventory.isEmpty())
         {
@@ -238,6 +248,7 @@ public class PlayerInfo
         specialMaxTicks = nbt.getInt("SpecialMaxTicks");
         specialWindupTicksRemaining = nbt.getInt("SpecialWindupTicksRemaining");
         specialWindupMaxTicks = nbt.getInt("SpecialWindupMaxTicks");
+        specialData = nbt.contains("SpecialData") ? nbt.getCompound("SpecialData").copy() : new CompoundTag();
 
         if (nbt.contains("MatchInventory"))
         {

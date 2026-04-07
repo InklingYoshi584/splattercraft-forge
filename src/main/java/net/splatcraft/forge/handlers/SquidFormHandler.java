@@ -55,20 +55,34 @@ public class SquidFormHandler {
     public static void onLivingHurt(LivingHurtEvent event) {
         if (event.getSource().is(SplatcraftDamageTypes.ENEMY_INK) && event.getEntity().getHealth() <= 4)
             event.setCanceled(true);
+
+        if (event.getSource().is(SplatcraftDamageTypes.WATER)) {
+            float maxNonLethalDamage = event.getEntity().getHealth() - 1.0f;
+            if (maxNonLethalDamage <= 0)
+                event.setCanceled(true);
+            else if (event.getAmount() > maxNonLethalDamage)
+                event.setAmount(maxNonLethalDamage);
+        }
     }
 
     @SubscribeEvent
     public static void playerTick(TickEvent.PlayerTickEvent event) {
         Player player = event.player;
 
+        boolean canUseInkAbilities = AbilityAccessUtils.canUseInkAbilities(player);
+
+        if (!player.level().isClientSide() && !canUseInkAbilities && ColorUtils.getPlayerColor(player) != ColorUtils.DEFAULT)
+            ColorUtils.setPlayerColor(player, ColorUtils.DEFAULT);
+
         if (InkBlockUtils.onEnemyInk(player)) {
-            if (player.tickCount % 20 == 0 && player.getHealth() > 4 && player.level().getDifficulty() != Difficulty.PEACEFUL)
+            if (canUseInkAbilities && player.tickCount % 20 == 0 && player.getHealth() > 4 && player.level().getDifficulty() != Difficulty.PEACEFUL)
                 player.hurt(SplatcraftDamageTypes.of(player.level(), SplatcraftDamageTypes.ENEMY_INK), 2f);
+
             if (player.level().getRandom().nextFloat() < 0.7f)
                 ColorUtils.addStandingInkSplashParticle(player.level(), player, 1);
         }
 
-        if (SplatcraftGameRules.getLocalizedRule(player.level(), player.blockPosition(), SplatcraftGameRules.WATER_DAMAGE) && player.isInWater() && player.tickCount % 10 == 0 && !MobEffectUtil.hasWaterBreathing(player))
+        if (canUseInkAbilities && SplatcraftGameRules.getLocalizedRule(player.level(), player.blockPosition(), SplatcraftGameRules.WATER_DAMAGE) && player.isInWater() && player.tickCount % 10 == 0 && !MobEffectUtil.hasWaterBreathing(player))
             player.hurt(SplatcraftDamageTypes.of(player.level(), SplatcraftDamageTypes.WATER), 8f);
 
         if(!PlayerInfoCapability.hasCapability(player))
