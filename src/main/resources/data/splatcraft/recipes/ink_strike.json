@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "###",
+    "#X#",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "splatcraft:sardinium"
+    },
+    "X": {
+      "item": "splatcraft:suction_bomb"
+    }
+  },
+  "result": {
+    "item": "splatcraft:ink_strike"
+  }
+}

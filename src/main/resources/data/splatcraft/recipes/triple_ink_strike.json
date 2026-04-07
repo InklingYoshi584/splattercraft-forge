@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "splatcraft:ink_strike"
+    },
+    {
+      "item": "splatcraft:ink_strike"
+    },
+    {
+      "item": "splatcraft:ink_strike"
+    }
+  ],
+  "result": {
+    "item": "splatcraft:triple_ink_strike"
+  }
+}

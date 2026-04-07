@@ -16,7 +16,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.splatcraft.forge.items.weapons.InkstrikeSpecialItem;
 import net.splatcraft.forge.registries.SplatcraftEntities;
 import net.splatcraft.forge.registries.SplatcraftItems;
 import net.splatcraft.forge.util.InkBlockUtils;
@@ -80,9 +79,6 @@ public class InkstrikeBeaconEntity extends ThrowableItemProjectile
         Vec3 target = resolveTarget(hitLocation);
         InkstrikeEntity inkstrike = new InkstrikeEntity(level(), owner, ownerUUID, sourceWeapon, inkType, color, target);
         level().addFreshEntity(inkstrike);
-
-        if (ownerUUID != null)
-            InkstrikeSpecialItem.trackSequenceEntity(level(), ownerUUID, inkstrike);
 
         discard();
     }

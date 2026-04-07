@@ -17,6 +17,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.splatcraft.forge.client.particles.InkSplashParticleData;
+import net.splatcraft.forge.items.weapons.InkstrikeSpecialItem;
 import net.splatcraft.forge.registries.SplatcraftDamageTypes;
 import net.splatcraft.forge.registries.SplatcraftEntities;
 import net.splatcraft.forge.util.ColorUtils;
@@ -41,6 +42,7 @@ public class InkstrikeTornadoEntity extends Entity implements IColoredEntity
     private UUID ownerUUID;
     private ItemStack sourceWeapon = ItemStack.EMPTY;
     private InkBlockUtils.InkType inkType = InkBlockUtils.InkType.NORMAL;
+    private boolean sequenceFinished;
 
     public InkstrikeTornadoEntity(EntityType<? extends InkstrikeTornadoEntity> type, Level level)
     {
@@ -95,7 +97,10 @@ public class InkstrikeTornadoEntity extends Entity implements IColoredEntity
         }
 
         if (tickCount >= EXPANSION_TICKS)
+        {
+            finishSequence();
             discard();
+        }
     }
 
     private void spawnParticles()
@@ -175,6 +180,15 @@ public class InkstrikeTornadoEntity extends Entity implements IColoredEntity
         entityData.set(WIDTH, width);
         reapplyPosition();
         refreshDimensions();
+    }
+
+    private void finishSequence()
+    {
+        if (!level().isClientSide && !sequenceFinished && ownerUUID != null)
+        {
+            sequenceFinished = true;
+            InkstrikeSpecialItem.finishSequence(level(), ownerUUID);
+        }
     }
 
     @Override

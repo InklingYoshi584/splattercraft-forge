@@ -15,7 +15,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.splatcraft.forge.client.particles.InkSplashParticleData;
-import net.splatcraft.forge.items.weapons.InkstrikeSpecialItem;
 import net.splatcraft.forge.registries.SplatcraftEntities;
 import net.splatcraft.forge.registries.SplatcraftItems;
 import net.splatcraft.forge.util.ColorUtils;
@@ -60,6 +59,11 @@ public class InkstrikeEntity extends ThrowableItemProjectile
 
     public static InkstrikeEntity createLaunchEffect(Level level, LivingEntity owner, ItemStack sourceWeapon, InkBlockUtils.InkType inkType, int color)
     {
+        return createLaunchEffect(level, owner, sourceWeapon, inkType, color, Vec3.ZERO, Vec3.ZERO);
+    }
+
+    public static InkstrikeEntity createLaunchEffect(Level level, LivingEntity owner, ItemStack sourceWeapon, InkBlockUtils.InkType inkType, int color, Vec3 positionOffset, Vec3 velocityOffset)
+    {
         InkstrikeEntity entity = new InkstrikeEntity(SplatcraftEntities.INKSTRIKE.get(), level);
         entity.ownerUUID = owner.getUUID();
         entity.sourceWeapon = sourceWeapon.copy();
@@ -68,8 +72,8 @@ public class InkstrikeEntity extends ThrowableItemProjectile
         entity.cosmeticLaunch = true;
         entity.setOwner(owner);
         entity.setItem(new ItemStack(SplatcraftItems.inkStrike.get()));
-        entity.setPos(owner.getX(), owner.getEyeY() - 0.15D, owner.getZ());
-        entity.setDeltaMovement(0.0D, LAUNCH_SPEED, 0.0D);
+        entity.setPos(owner.getX() + positionOffset.x, owner.getEyeY() - 0.15D + positionOffset.y, owner.getZ() + positionOffset.z);
+        entity.setDeltaMovement(velocityOffset.x, LAUNCH_SPEED + velocityOffset.y, velocityOffset.z);
         return entity;
     }
 
@@ -161,9 +165,6 @@ public class InkstrikeEntity extends ThrowableItemProjectile
         LivingEntity owner = getOwnerEntity();
         InkstrikeTornadoEntity tornado = new InkstrikeTornadoEntity(level(), owner, ownerUUID, sourceWeapon, inkType, color, position());
         level().addFreshEntity(tornado);
-
-        if (ownerUUID != null)
-            InkstrikeSpecialItem.trackSequenceEntity(level(), ownerUUID, tornado);
 
         discard();
     }
