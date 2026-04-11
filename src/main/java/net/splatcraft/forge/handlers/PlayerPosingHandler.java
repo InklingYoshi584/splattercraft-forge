@@ -15,6 +15,7 @@ import net.splatcraft.forge.data.capabilities.playerinfo.PlayerInfoCapability;
 import net.splatcraft.forge.items.weapons.RollerItem;
 import net.splatcraft.forge.items.weapons.SlosherItem;
 import net.splatcraft.forge.items.weapons.SubWeaponItem;
+import net.splatcraft.forge.items.weapons.UltraStampSpecialItem;
 import net.splatcraft.forge.items.weapons.WeaponBaseItem;
 import net.splatcraft.forge.util.PlayerCooldown;
 
@@ -33,6 +34,8 @@ public class PlayerPosingHandler
         PlayerInfo playerInfo = PlayerInfoCapability.get(player);
 
         InteractionHand activeHand = player.getUsedItemHand();
+        if (WeaponBaseItem.hasActiveSpecial(player.getMainHandItem()) && WeaponBaseItem.getStoredSpecialWeapon(player.getMainHandItem()).getItem() instanceof UltraStampSpecialItem)
+            activeHand = InteractionHand.MAIN_HAND;
         HumanoidArm handSide = player.getMainArm();
 
         if (activeHand == null)
@@ -46,6 +49,12 @@ public class PlayerPosingHandler
         int useTime = player.getUseItemRemainingTicks();
 
         if (!(mainStack.getItem() instanceof WeaponBaseItem)) {
+            return;
+        }
+
+        if (WeaponBaseItem.hasActiveSpecial(mainStack) && WeaponBaseItem.getStoredSpecialWeapon(mainStack).getItem() instanceof UltraStampSpecialItem)
+        {
+            applyUltraStampPose(model, mainHand, offHand, mainStack, deltaTicks);
             return;
         }
 
@@ -132,6 +141,49 @@ public class PlayerPosingHandler
                     break;
             }
         }
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    private static void applyUltraStampPose(PlayerModel model, ModelPart mainHand, ModelPart offHand, ItemStack mainStack, float deltaTicks)
+    {
+        int phase = UltraStampSpecialItem.getRenderPhase(mainStack);
+        int phaseTicks = UltraStampSpecialItem.getRenderPhaseTicks(mainStack);
+        int maxPhaseTicks = UltraStampSpecialItem.getRenderPhaseMaxTicks(mainStack);
+        float progress = maxPhaseTicks > 0 ? Mth.clamp((maxPhaseTicks - phaseTicks + deltaTicks) / maxPhaseTicks, 0.0F, 1.0F) : 0.0F;
+        float swing = 0.0F;
+
+        if (phase == UltraStampSpecialItem.PHASE_SWING)
+            swing = Mth.sin(progress * ((float) Math.PI / 2.0F));
+        else if (phase == UltraStampSpecialItem.PHASE_RUSH)
+            swing = Mth.sin(progress * (float) Math.PI);
+
+        mainHand.yRot = model.getHead().yRot - 0.38F;
+        offHand.yRot = model.getHead().yRot + 0.46F;
+        mainHand.xRot = -1.65F + model.getHead().xRot * 0.35F;
+        offHand.xRot = -1.45F + model.getHead().xRot * 0.35F;
+        mainHand.zRot = -0.18F;
+        offHand.zRot = 0.28F;
+
+        if (phase == UltraStampSpecialItem.PHASE_THROW_STARTUP)
+        {
+            mainHand.xRot -= progress * 0.45F;
+            offHand.xRot -= progress * 0.35F;
+            mainHand.yRot -= progress * 0.15F;
+            offHand.yRot += progress * 0.05F;
+            return;
+        }
+
+        if (phase == UltraStampSpecialItem.PHASE_END_LAG)
+        {
+            mainHand.xRot += 0.15F;
+            offHand.xRot += 0.1F;
+            return;
+        }
+
+        mainHand.xRot += swing * 2.15F;
+        offHand.xRot += swing * 1.9F;
+        mainHand.yRot -= swing * 0.08F;
+        offHand.yRot += swing * 0.16F;
     }
 
     public enum WeaponPose

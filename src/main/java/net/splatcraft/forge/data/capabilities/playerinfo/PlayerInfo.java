@@ -145,6 +145,11 @@ public class PlayerInfo
         specialTicksRemaining = Math.max(0, specialTicksRemaining - 1);
     }
 
+    public void setSpecialTicksRemaining(int specialTicksRemaining)
+    {
+        this.specialTicksRemaining = Math.max(0, specialTicksRemaining);
+    }
+
     public void clearSpecial()
     {
         specialSourceSlot = -1;

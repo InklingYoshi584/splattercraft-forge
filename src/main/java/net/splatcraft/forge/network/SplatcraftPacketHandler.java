@@ -55,6 +55,7 @@ public class SplatcraftPacketHandler
         registerMessage(UseStoredSubWeaponPacket.class, UseStoredSubWeaponPacket::decode);
         registerMessage(OpenWeaponLoadoutPacket.class, OpenWeaponLoadoutPacket::decode);
         registerMessage(UseStoredSpecialPacket.class, UseStoredSpecialPacket::decode);
+        registerMessage(UseUltraStampThrowPacket.class, UseUltraStampThrowPacket::decode);
     }
 
     private static <MSG extends SplatcraftPacket> void registerMessage(Class<MSG> messageType, Function<FriendlyByteBuf, MSG> decoder)

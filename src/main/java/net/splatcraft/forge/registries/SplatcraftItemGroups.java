@@ -48,6 +48,7 @@ public class SplatcraftItemGroups {
             output.accept(inkzooka.get());
             output.accept(inkStrike.get());
             output.accept(tripleInkStrike.get());
+            output.accept(ultraStamp.get());
 
             output.accept(splatfestBand.get());
             output.accept(clearBand.get());

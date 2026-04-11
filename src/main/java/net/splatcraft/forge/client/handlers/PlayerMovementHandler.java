@@ -3,6 +3,7 @@ package net.splatcraft.forge.client.handlers;
 import java.util.UUID;
 import net.minecraft.client.player.Input;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -18,6 +19,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.splatcraft.forge.data.capabilities.playerinfo.PlayerInfoCapability;
 import net.splatcraft.forge.items.weapons.RollerItem;
+import net.splatcraft.forge.items.weapons.UltraStampSpecialItem;
 import net.splatcraft.forge.items.weapons.WeaponBaseItem;
 import net.splatcraft.forge.registries.SplatcraftItems;
 import net.splatcraft.forge.util.InkBlockUtils;
@@ -31,6 +33,9 @@ public class PlayerMovementHandler
     private static final AttributeModifier SQUID_SWIM_SPEED = new AttributeModifier("Squid swim speed boost", 0.5D, AttributeModifier.Operation.MULTIPLY_TOTAL);
     private static final AttributeModifier ENEMY_INK_SPEED = new AttributeModifier("Enemy ink speed penalty", -0.5D, AttributeModifier.Operation.MULTIPLY_TOTAL);
     private static final AttributeModifier SLOW_FALLING = new AttributeModifier(UUID.fromString("A5B6CF2A-2F7C-31EF-9022-7C3E7D5E6ABA"), "Slow falling acceleration reduction", -0.07, AttributeModifier.Operation.ADDITION); // Add -0.07 to 0.08 so we get the vanilla default of 0.01
+    private static float lastYaw;
+    private static float lastPitch;
+    private static boolean trackedRotation;
 
     @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
@@ -95,6 +100,8 @@ public class PlayerMovementHandler
                 player.moveRelative((float) player.getAttributeValue(SplatcraftItems.INK_SWIM_SPEED) * (player.onGround() ? 1 : 0.75f), new Vec3(player.xxa, 0.0f, player.zza).normalize());
 
         }
+
+        limitUltraStampTurning(player);
     }
 
     @SubscribeEvent
@@ -167,5 +174,39 @@ public class PlayerMovementHandler
                 input.shiftKeyDown = !player.getAbilities().flying;
             }
         }
+    }
+
+    private static void limitUltraStampTurning(LocalPlayer player)
+    {
+        ItemStack stack = player.getMainHandItem();
+        if (!(stack.getItem() instanceof WeaponBaseItem<?>) || !WeaponBaseItem.hasActiveSpecial(stack) || !UltraStampSpecialItem.isRushPhase(stack))
+        {
+            lastYaw = player.getYRot();
+            lastPitch = player.getXRot();
+            trackedRotation = true;
+            return;
+        }
+
+        if (!trackedRotation)
+        {
+            lastYaw = player.getYRot();
+            lastPitch = player.getXRot();
+            trackedRotation = true;
+        }
+
+        float yaw = lastYaw + Mth.clamp(Mth.wrapDegrees(player.getYRot() - lastYaw), -5.0F, 5.0F);
+        float pitch = Mth.clamp(lastPitch + Mth.clamp(player.getXRot() - lastPitch, -4.0F, 4.0F), -90.0F, 90.0F);
+
+        player.setYRot(yaw);
+        player.setYHeadRot(yaw);
+        player.setYBodyRot(yaw);
+        player.yRotO = yaw;
+        player.yHeadRotO = yaw;
+        player.yBodyRotO = yaw;
+        player.setXRot(pitch);
+        player.xRotO = pitch;
+
+        lastYaw = yaw;
+        lastPitch = pitch;
     }
 }

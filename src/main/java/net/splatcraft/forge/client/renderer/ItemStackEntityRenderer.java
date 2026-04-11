@@ -35,6 +35,8 @@ public class ItemStackEntityRenderer<T extends Entity & ItemSupplier> extends En
         poseStack.mulPose(Axis.YP.rotationDegrees(Mth.lerp(partialTicks, entity.yRotO, entity.getYRot()) + getYawOffset(entity)));
         poseStack.mulPose(Axis.ZP.rotationDegrees(Mth.lerp(partialTicks, entity.xRotO, entity.getXRot()) + getPitchOffset(entity)));
         poseStack.mulPose(Axis.XP.rotationDegrees(getRollOffset(entity)));
+        float scale = getScale(entity);
+        poseStack.scale(scale, scale, scale);
         itemRenderer.renderStatic(entity.getItem(), getDisplayContext(entity), packedLight, OverlayTexture.NO_OVERLAY, poseStack, buffer, entity.level(), entity.getId());
         poseStack.popPose();
 
@@ -70,5 +72,10 @@ public class ItemStackEntityRenderer<T extends Entity & ItemSupplier> extends En
     protected ItemDisplayContext getDisplayContext(T entity)
     {
         return ItemDisplayContext.GROUND;
+    }
+
+    protected float getScale(T entity)
+    {
+        return 1.0F;
     }
 }

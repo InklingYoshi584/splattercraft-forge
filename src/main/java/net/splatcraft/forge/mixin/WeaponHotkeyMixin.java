@@ -6,10 +6,12 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.splatcraft.forge.client.handlers.SplatcraftKeyHandler;
+import net.splatcraft.forge.items.weapons.UltraStampSpecialItem;
 import net.splatcraft.forge.items.weapons.WeaponBaseItem;
 import net.splatcraft.forge.network.SplatcraftPacketHandler;
 import net.splatcraft.forge.network.c2s.UseStoredSpecialPacket;
 import net.splatcraft.forge.network.c2s.UseStoredSubWeaponPacket;
+import net.splatcraft.forge.network.c2s.UseUltraStampThrowPacket;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -53,6 +55,13 @@ public class WeaponHotkeyMixin
 			Minecraft minecraft = (Minecraft) (Object) this;
 			if (minecraft.player == null || minecraft.screen != null)
 				return;
+
+			if (UltraStampSpecialItem.isActive(minecraft.player))
+			{
+				SplatcraftPacketHandler.sendToServer(new UseUltraStampThrowPacket());
+				cir.setReturnValue(false);
+				return;
+			}
 
 			ItemStack stack = minecraft.player.getMainHandItem();
 			if (stack.getItem() instanceof WeaponBaseItem<?> && !WeaponBaseItem.getStoredSubWeapon(stack).isEmpty())

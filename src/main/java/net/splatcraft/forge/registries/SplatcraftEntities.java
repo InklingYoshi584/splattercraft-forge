@@ -48,6 +48,7 @@ import net.splatcraft.forge.client.renderer.ItemStackEntityRenderer;
 import net.splatcraft.forge.client.renderer.InkzookaTornadoRenderer;
 import net.splatcraft.forge.client.renderer.SpawnShieldRenderer;
 import net.splatcraft.forge.client.renderer.SquidBumperRenderer;
+import net.splatcraft.forge.client.renderer.UltraStampThrownEntityRenderer;
 import net.splatcraft.forge.client.renderer.subs.BurstBombRenderer;
 import net.splatcraft.forge.client.renderer.subs.CurlingBombRenderer;
 import net.splatcraft.forge.client.renderer.subs.SplatBombRenderer;
@@ -60,6 +61,7 @@ import net.splatcraft.forge.entities.InkSquidEntity;
 import net.splatcraft.forge.entities.InkzookaTornadoEntity;
 import net.splatcraft.forge.entities.SpawnShieldEntity;
 import net.splatcraft.forge.entities.SquidBumperEntity;
+import net.splatcraft.forge.entities.UltraStampThrownEntity;
 import net.splatcraft.forge.entities.subs.BurstBombEntity;
 import net.splatcraft.forge.entities.subs.CurlingBombEntity;
 import net.splatcraft.forge.entities.subs.SplatBombEntity;
@@ -79,6 +81,7 @@ public class SplatcraftEntities {
     public static final RegistryObject<EntityType<InkstrikeBeaconEntity>> INKSTRIKE_BEACON = create("inkstrike_beacon", InkstrikeBeaconEntity::new, MobCategory.MISC, 0.25f, 0.25f);
     public static final RegistryObject<EntityType<InkstrikeEntity>> INKSTRIKE = create("inkstrike", InkstrikeEntity::new, MobCategory.MISC, 0.75f, 0.75f);
     public static final RegistryObject<EntityType<InkstrikeTornadoEntity>> INKSTRIKE_TORNADO = create("inkstrike_tornado", InkstrikeTornadoEntity::new, MobCategory.MISC, 1.0f, 20.0f);
+    public static final RegistryObject<EntityType<UltraStampThrownEntity>> ULTRA_STAMP_THROWN = create("ultra_stamp_thrown", UltraStampThrownEntity::new, MobCategory.MISC, 3.0f, 3.0f);
     public static final RegistryObject<EntityType<SquidBumperEntity>> SQUID_BUMPER = create("squid_bumper", SquidBumperEntity::new, MobCategory.MISC, 0.6f, 1.8f);
     public static final RegistryObject<EntityType<SpawnShieldEntity>> SPAWN_SHIELD = create("spawn_shield", SpawnShieldEntity::new, MobCategory.MISC, 1, 1);
 
@@ -103,6 +106,7 @@ public class SplatcraftEntities {
         EntityRenderers.register(INKSTRIKE_BEACON.get(), ItemStackEntityRenderer::new);
         EntityRenderers.register(INKSTRIKE.get(), InkstrikeEntityRenderer::new);
         EntityRenderers.register(INKSTRIKE_TORNADO.get(), InkstrikeTornadoRenderer::new);
+        EntityRenderers.register(ULTRA_STAMP_THROWN.get(), UltraStampThrownEntityRenderer::new);
         EntityRenderers.register(INK_SQUID.get(), InkSquidRenderer::new);
         EntityRenderers.register(SQUID_BUMPER.get(), SquidBumperRenderer::new);
 

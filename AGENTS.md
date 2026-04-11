@@ -26,6 +26,7 @@ Repository guide for coding agents working in `D:\workspace\splattercraft-forge`
 - The repository currently has no dedicated lint configuration (`checkstyle`, `spotless`, `pmd`, `.editorconfig`) checked in.
 - There are currently no `src/test` or `src/gametest` Java sources checked in.
 - Because of that, `compileJava` is the fastest reliable validation command for most edits.
+- For feature work that touches both Java and hand-authored resource/data JSON, `compileJava` plus `processResources` is the current best default validation pair.
 - Prefer small, targeted changes that match existing patterns over broad refactors.
 
 ## Build Commands
@@ -63,7 +64,9 @@ Repository guide for coding agents working in `D:\workspace\splattercraft-forge`
 
 - Java-only gameplay logic: `./gradlew compileJava`
 - Resource or lang changes: `./gradlew processResources`
+- Recipe, loot, tag, or damage type JSON changes: `./gradlew processResources`
 - Registry, mixin, menu, networking, or item changes: `./gradlew compileJava`
+- New gameplay features that touch code and JSON/resources: `./gradlew compileJava` and `./gradlew processResources`
 - Data generation changes: `./gradlew runData`
 - Release-oriented changes: `./gradlew build`
 
@@ -83,6 +86,11 @@ Repository guide for coding agents working in `D:\workspace\splattercraft-forge`
 - Client-only setup is typically under `net.splatcraft.forge.client`.
 - Menus/containers often live under `net.splatcraft.forge.tileentities.container`.
 - Data-driven weapon settings are loaded by reload listeners in `handlers/DataHandler.java`.
+- Special weapon lifecycle hooks live on `items/weapons/SpecialWeaponItem.java`; runtime per-special state can be stored in `PlayerInfo.getSpecialData()`.
+- Active special held-item replacement is intercepted in `mixin/ItemRendererMixin.java`; specials can override `getMainWeaponReplacementRenderStack(...)` when the held model should differ from the registered special item.
+- Custom entity registration and renderer binding are both handled in `registries/SplatcraftEntities.java`.
+- Item-like projectile/entity visuals can often reuse `client/renderer/ItemStackEntityRenderer.java` instead of needing a bespoke model renderer.
+- Custom damage types are keyed in `registries/SplatcraftDamageTypes.java`, defined in `data/splatcraft/damage_type`, and can pick up vanilla behavior through files under `data/minecraft/tags/damage_type`.
 
 ## Code Style: General
 
@@ -146,9 +154,23 @@ Repository guide for coding agents working in `D:\workspace\splattercraft-forge`
 
 - Lang keys belong in `assets/splatcraft/lang/en_us.json` and should follow existing naming patterns.
 - Item/block model ids should match registry names.
+- Recipes live under `data/splatcraft/recipes`.
 - Weapon settings JSON lives under `data/splatcraft/weapon_settings`.
+- Custom damage type JSON lives under `data/splatcraft/damage_type`.
+- Vanilla tag overrides used by the mod, such as damage type behavior tags, live under `data/minecraft/tags`.
+- Simple model aliases are acceptable when multiple items intentionally share the same item render.
 - Data generation outputs should go to `src/generated/resources` via `runData`.
 - Do not hand-edit generated output unless the project already treats that file as source.
+
+## General Feature-Adding Process
+
+- Start by finding the closest existing weapon, entity, packet, renderer, or handler and copy its pattern before introducing a new abstraction.
+- For new special weapons, add the item class under `items/weapons`, register it in `SplatcraftItems`, expose it in `SplatcraftItemGroups` if appropriate, add lang entries in `assets/splatcraft/lang/en_us.json`, and add recipe/model files under `src/main/resources`.
+- If a special replaces the main weapon while active, use `replacesMainWeapon(...)`; if the held render should be different from the stored special item, also override `getMainWeaponReplacementRenderStack(...)`.
+- Store per-activation counters, UUIDs, and other transient special runtime state in `PlayerInfo.getSpecialData()` instead of scattering one-off fields elsewhere.
+- For new entities, add the class under `entities` or `entities/subs`, register the `EntityType` and renderer in `SplatcraftEntities`, and prefer existing renderer helpers where possible.
+- For new damage behaviors, add a key in `SplatcraftDamageTypes`, add the matching JSON under `data/splatcraft/damage_type`, and use vanilla damage type tags under `data/minecraft/tags/damage_type` when behavior such as bypassing armor or cooldown should be data-driven.
+- For mixed feature work, validate the narrowest useful commands first: `processResources` for JSON/resource wiring, `compileJava` for code wiring, and both for full feature additions.
 
 ## When Editing Legacy Files
 
