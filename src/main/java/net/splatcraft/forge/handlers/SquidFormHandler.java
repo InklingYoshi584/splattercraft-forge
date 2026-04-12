@@ -29,6 +29,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.splatcraft.forge.commands.SuperJumpCommand;
 import net.splatcraft.forge.blocks.InkwellBlock;
 import net.splatcraft.forge.blocks.SpawnPadBlock;
 import net.splatcraft.forge.data.capabilities.inkoverlay.InkOverlayCapability;
@@ -166,7 +167,10 @@ public class SquidFormHandler {
                 InkColorTileEntity spawnPad = (InkColorTileEntity) player.level().getBlockEntity(posBelow);
 
                 if (player instanceof ServerPlayer && ColorUtils.colorEquals(player, spawnPad))
+                {
                     ((ServerPlayer) player).setRespawnPosition(player.level().dimension(), posBelow, player.level().getBlockState(posBelow).getValue(SpawnPadBlock.DIRECTION).toYRot(), false, true);
+                    SuperJumpCommand.syncSpawnPosition((ServerPlayer) player);
+                }
 
             }
         }

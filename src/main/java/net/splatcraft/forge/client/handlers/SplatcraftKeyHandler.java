@@ -23,6 +23,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.splatcraft.forge.Splatcraft;
 import net.splatcraft.forge.SplatcraftConfig;
+import net.splatcraft.forge.commands.SuperJumpCommand;
 import net.splatcraft.forge.data.capabilities.playerinfo.PlayerInfo;
 import net.splatcraft.forge.data.capabilities.playerinfo.PlayerInfoCapability;
 import net.splatcraft.forge.items.weapons.IChargeableWeapon;
@@ -49,6 +50,7 @@ public class SplatcraftKeyHandler {
     private static ToggleableKey subWeaponHotkey;
     private static ToggleableKey weaponLoadoutHotkey;
     private static ToggleableKey specialWeaponHotkey;
+    private static ToggleableKey superJumpOverlayHotkey;
 
     private static int slot = -1;
 
@@ -67,6 +69,10 @@ public class SplatcraftKeyHandler {
         event.register(weaponLoadoutMapping);
         weaponLoadoutHotkey = new ToggleableKey(weaponLoadoutMapping);
 
+        KeyMapping superJumpOverlayMapping = new KeyMapping("key.superJumpOverlay", GLFW.GLFW_KEY_V, "key.categories.splatcraft");
+        event.register(superJumpOverlayMapping);
+        superJumpOverlayHotkey = new ToggleableKey(superJumpOverlayMapping);
+
         specialWeaponHotkey = new ToggleableKey(Minecraft.getInstance().options.keyPickItem);
     }
 
@@ -75,6 +81,9 @@ public class SplatcraftKeyHandler {
     }
     public static boolean isSpecialWeaponHotkeyDown() {
         return specialWeaponHotkey != null && specialWeaponHotkey.active;
+    }
+    public static boolean isSuperJumpOverlayKeyDown() {
+        return superJumpOverlayHotkey != null && superJumpOverlayHotkey.active;
     }
     public static boolean isSquidKeyDown() {
         return !pressState.isEmpty() && Iterables.getLast(pressState).equals(squidKey);
@@ -97,25 +106,37 @@ public class SplatcraftKeyHandler {
         }
 
         boolean canHold = canHoldKeys(Minecraft.getInstance());
+        boolean superJumpLocked = SuperJumpCommand.isSuperJumping(player);
 
-        fireKey.tick(KeyMode.HOLD, canHold);
+        if (superJumpOverlayHotkey != null)
+            superJumpOverlayHotkey.tick(KeyMode.HOLD, canHold);
+
+        fireKey.tick(KeyMode.HOLD, canHold && !isSuperJumpOverlayKeyDown() && !superJumpLocked);
         updatePressState(fireKey, autoSquidDelay);
 
         PlayerInfo info = PlayerInfoCapability.get(player);
         KeyMode squidKeyMode = SplatcraftConfig.Client.squidKeyMode.get();
 
-        squidKey.tick(squidKeyMode, canHold);
+        squidKey.tick(squidKeyMode, canHold && !superJumpLocked);
         updatePressState(squidKey, 0);
 
-        subWeaponHotkey.tick(KeyMode.HOLD, canHold);
+        subWeaponHotkey.tick(KeyMode.HOLD, canHold && !superJumpLocked);
         updatePressState(subWeaponHotkey, autoSquidDelay);
 
-        weaponLoadoutHotkey.tick(KeyMode.HOLD, canHold);
+        weaponLoadoutHotkey.tick(KeyMode.HOLD, canHold && !superJumpLocked);
         if (weaponLoadoutHotkey.pressed && player.getMainHandItem().getItem() instanceof WeaponBaseItem<?>)
             SplatcraftPacketHandler.sendToServer(new OpenWeaponLoadoutPacket());
 
         if (specialWeaponHotkey != null)
-            specialWeaponHotkey.tick(KeyMode.HOLD, canHold);
+            specialWeaponHotkey.tick(KeyMode.HOLD, canHold && !superJumpLocked);
+
+        if (superJumpLocked)
+        {
+            pressState.remove(fireKey);
+            pressState.remove(squidKey);
+            pressState.remove(subWeaponHotkey);
+            autoSquidDelay = 0;
+        }
 
         if ((PlayerCooldown.hasPlayerCooldown(player) && !(PlayerCooldown.getPlayerCooldown(player).cancellable && squidKey.active))
                 || CommonUtils.anyWeaponOnCooldown(player))

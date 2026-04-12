@@ -421,7 +421,10 @@ public class StageCommand
 					player.teleportTo((ServerLevel) stageLevel, te.getBlockPos().getX() + .5, te.getBlockPos().getY() + .5, te.getBlockPos().getZ(), pitch, 0);
 
 				if(setSpawn)
+				{
 					player.setRespawnPosition(player.level().dimension(), te.getBlockPos(), player.level().getBlockState(te.getBlockPos()).getValue(SpawnPadBlock.DIRECTION).toYRot(), false, true);
+					SuperJumpCommand.syncSpawnPosition(player);
+				}
 
 				playersTeleported.put(playerColor, playersTeleported.get(playerColor) + 1);
 			}
@@ -481,7 +484,10 @@ public class StageCommand
 					player.teleportTo((ServerLevel) stageLevel, te.getBlockPos().getX() + .5, te.getBlockPos().getY() + .5, te.getBlockPos().getZ(), pitch, 0);
 
 				if(setSpawn)
+				{
 					player.setRespawnPosition(player.level().dimension(), te.getBlockPos(), player.level().getBlockState(te.getBlockPos()).getValue(SpawnPadBlock.DIRECTION).toYRot(), false, true);
+					SuperJumpCommand.syncSpawnPosition(player);
+				}
 
 				playersTeleported++;
 

@@ -1,7 +1,9 @@
 package net.splatcraft.forge.data.capabilities.playerinfo;
 
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -22,6 +24,8 @@ public class PlayerInfo
     private Player player;
 
     private ItemStack inkBand = ItemStack.EMPTY;
+    private BlockPos superJumpSpawnPos = null;
+    private String superJumpSpawnDimension = "";
     private int specialSourceSlot = -1;
     private int specialTicksRemaining = 0;
     private int specialMaxTicks = 0;
@@ -79,6 +83,28 @@ public class PlayerInfo
 
     public ItemStack getInkBand() {
         return inkBand;
+    }
+
+    public BlockPos getSuperJumpSpawnPos()
+    {
+        return superJumpSpawnPos;
+    }
+
+    public String getSuperJumpSpawnDimension()
+    {
+        return superJumpSpawnDimension;
+    }
+
+    public void setSuperJumpSpawn(BlockPos pos, String dimension)
+    {
+        superJumpSpawnPos = pos;
+        superJumpSpawnDimension = dimension == null ? "" : dimension;
+    }
+
+    public void clearSuperJumpSpawn()
+    {
+        superJumpSpawnPos = null;
+        superJumpSpawnDimension = "";
     }
 
     
@@ -213,6 +239,11 @@ public class PlayerInfo
         if(!inkBand.isEmpty())
             nbt.put("InkBand", getInkBand().serializeNBT());
 
+        if (superJumpSpawnPos != null)
+            nbt.put("SuperJumpSpawnPos", NbtUtils.writeBlockPos(superJumpSpawnPos));
+        if (!superJumpSpawnDimension.isEmpty())
+            nbt.putString("SuperJumpSpawnDimension", superJumpSpawnDimension);
+
         nbt.putInt("SpecialSourceSlot", specialSourceSlot);
         nbt.putInt("SpecialTicksRemaining", specialTicksRemaining);
         nbt.putInt("SpecialMaxTicks", specialMaxTicks);
@@ -247,6 +278,11 @@ public class PlayerInfo
         if(nbt.contains("InkBand"))
             setInkBand(ItemStack.of(nbt.getCompound("InkBand")));
         else setInkBand(ItemStack.EMPTY);
+
+        if (nbt.contains("SuperJumpSpawnPos"))
+            superJumpSpawnPos = NbtUtils.readBlockPos(nbt.getCompound("SuperJumpSpawnPos"));
+        else superJumpSpawnPos = null;
+        superJumpSpawnDimension = nbt.getString("SuperJumpSpawnDimension");
 
         specialSourceSlot = nbt.getInt("SpecialSourceSlot");
         specialTicksRemaining = nbt.getInt("SpecialTicksRemaining");

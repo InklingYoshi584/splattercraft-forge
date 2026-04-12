@@ -5,7 +5,9 @@ import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.splatcraft.forge.commands.SuperJumpCommand;
 import net.splatcraft.forge.client.handlers.SplatcraftKeyHandler;
+import net.splatcraft.forge.client.handlers.SuperJumpOverlayHandler;
 import net.splatcraft.forge.items.weapons.UltraStampSpecialItem;
 import net.splatcraft.forge.items.weapons.WeaponBaseItem;
 import net.splatcraft.forge.network.SplatcraftPacketHandler;
@@ -38,6 +40,19 @@ public class WeaponHotkeyMixin
 		@Inject(method = "startUseItem", at = @At("HEAD"), cancellable = true)
 		private void startUseItem(CallbackInfo ci)
 		{
+			Minecraft minecraft = (Minecraft) (Object) this;
+			if (minecraft.player != null && SuperJumpCommand.isSuperJumping(minecraft.player))
+			{
+				ci.cancel();
+				return;
+			}
+
+			if (SuperJumpOverlayHandler.interceptUseClick())
+			{
+				ci.cancel();
+				return;
+			}
+
 			if (SplatcraftKeyHandler.isSubWeaponHotkeyDown())
 			{
 				SplatcraftKeyHandler.startUsingItemInHand(InteractionHand.OFF_HAND);
@@ -55,6 +70,12 @@ public class WeaponHotkeyMixin
 			Minecraft minecraft = (Minecraft) (Object) this;
 			if (minecraft.player == null || minecraft.screen != null)
 				return;
+
+			if (SuperJumpCommand.isSuperJumping(minecraft.player))
+			{
+				cir.setReturnValue(false);
+				return;
+			}
 
 			if (UltraStampSpecialItem.isActive(minecraft.player))
 			{
@@ -81,6 +102,12 @@ public class WeaponHotkeyMixin
 			Minecraft minecraft = (Minecraft) (Object) this;
 			if (minecraft.player == null || minecraft.screen != null || !SplatcraftKeyHandler.isSpecialWeaponHotkeyDown())
 				return;
+
+			if (SuperJumpCommand.isSuperJumping(minecraft.player))
+			{
+				ci.cancel();
+				return;
+			}
 
 			ItemStack stack = minecraft.player.getMainHandItem();
 			if (stack.getItem() instanceof WeaponBaseItem<?> && WeaponBaseItem.canUseStoredSpecial(stack))

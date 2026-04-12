@@ -42,6 +42,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.splatcraft.forge.SplatcraftConfig;
 import net.splatcraft.forge.blocks.IColoredBlock;
+import net.splatcraft.forge.commands.SuperJumpCommand;
 import net.splatcraft.forge.client.layer.PlayerInkColoredSkinLayer;
 import net.splatcraft.forge.data.SplatcraftTags;
 import net.splatcraft.forge.data.capabilities.inkoverlay.InkOverlayCapability;
@@ -291,6 +292,8 @@ public class SplatcraftCommonHandler {
 
                 if (event.side.isClient()) {
                     SplatcraftPacketHandler.sendToServer(new RequestPlayerInfoPacket(event.player));
+                } else if (event.player instanceof ServerPlayer serverPlayer) {
+                    SuperJumpCommand.syncSpawnPosition(serverPlayer);
                 }
             }
 
