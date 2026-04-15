@@ -21,6 +21,9 @@ import net.splatcraft.forge.data.capabilities.playerinfo.PlayerInfoCapability;
 import net.splatcraft.forge.items.weapons.RollerItem;
 import net.splatcraft.forge.items.weapons.UltraStampSpecialItem;
 import net.splatcraft.forge.items.weapons.WeaponBaseItem;
+import net.splatcraft.forge.items.weapons.ZipcasterSpecialItem;
+import net.splatcraft.forge.network.SplatcraftPacketHandler;
+import net.splatcraft.forge.network.c2s.ZipcasterLatchActionPacket;
 import net.splatcraft.forge.registries.SplatcraftItems;
 import net.splatcraft.forge.util.InkBlockUtils;
 import net.splatcraft.forge.util.PlayerCooldown;
@@ -36,6 +39,8 @@ public class PlayerMovementHandler
     private static float lastYaw;
     private static float lastPitch;
     private static boolean trackedRotation;
+    private static boolean zipcasterLatchMoveHeld;
+    private static boolean zipcasterLatchJumpHeld;
 
     @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
@@ -102,6 +107,30 @@ public class PlayerMovementHandler
         }
 
         limitUltraStampTurning(player);
+
+        if (ZipcasterSpecialItem.getPhase(player) == ZipcasterSpecialItem.PHASE_REEL)
+        {
+            player.setNoGravity(true);
+            player.noPhysics = true;
+            player.fallDistance = 0.0F;
+        }
+        else if (ZipcasterSpecialItem.isLatched(player) || (ZipcasterSpecialItem.getPhase(player) == ZipcasterSpecialItem.PHASE_END_LAG && ZipcasterSpecialItem.getLatchFace(player) != null))
+        {
+            player.setNoGravity(true);
+            player.noPhysics = false;
+            player.setDeltaMovement(Vec3.ZERO);
+            player.fallDistance = 0.0F;
+        }
+        else if (player.isNoGravity())
+        {
+            player.setNoGravity(false);
+        }
+
+        if (!ZipcasterSpecialItem.isLatched(player))
+        {
+            zipcasterLatchMoveHeld = false;
+            zipcasterLatchJumpHeld = false;
+        }
     }
 
     @SubscribeEvent
@@ -173,6 +202,26 @@ public class PlayerMovementHandler
             if (cooldown.forceCrouch() && cooldown.getTime() > 1) {
                 input.shiftKeyDown = !player.getAbilities().flying;
             }
+        }
+
+        if (ZipcasterSpecialItem.isLatched(player))
+        {
+            boolean moving = Math.abs(input.forwardImpulse) > 0.01F || Math.abs(input.leftImpulse) > 0.01F;
+            if (input.jumping && !zipcasterLatchJumpHeld)
+                SplatcraftPacketHandler.sendToServer(new ZipcasterLatchActionPacket(ZipcasterSpecialItem.LATCH_ACTION_JUMP));
+            else if (moving && !zipcasterLatchMoveHeld)
+                SplatcraftPacketHandler.sendToServer(new ZipcasterLatchActionPacket(ZipcasterSpecialItem.LATCH_ACTION_DETACH));
+
+            zipcasterLatchMoveHeld = moving;
+            zipcasterLatchJumpHeld = input.jumping;
+            input.forwardImpulse = 0;
+            input.leftImpulse = 0;
+            input.jumping = false;
+        }
+        else
+        {
+            zipcasterLatchMoveHeld = false;
+            zipcasterLatchJumpHeld = false;
         }
     }
 

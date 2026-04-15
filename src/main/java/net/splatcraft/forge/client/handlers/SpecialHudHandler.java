@@ -12,6 +12,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.splatcraft.forge.Splatcraft;
 import net.splatcraft.forge.items.weapons.WeaponBaseItem;
+import net.splatcraft.forge.items.weapons.ZipcasterSpecialItem;
 
 @Mod.EventBusSubscriber(modid = Splatcraft.MODID, value = Dist.CLIENT)
 public class SpecialHudHandler
@@ -41,8 +42,8 @@ public class SpecialHudHandler
         if (specialStack.isEmpty())
             return;
 
-        int current = WeaponBaseItem.getSpecialPoints(weaponStack);
-        int required = Math.max(WeaponBaseItem.getRequiredSpecialPoints(weaponStack), 1);
+        int current = ZipcasterSpecialItem.isActive(minecraft.player) ? ZipcasterSpecialItem.getDisplayCurrent(minecraft.player, weaponStack) : WeaponBaseItem.getSpecialPoints(weaponStack);
+        int required = Math.max(ZipcasterSpecialItem.isActive(minecraft.player) ? ZipcasterSpecialItem.getDisplayRequired(minecraft.player) : WeaponBaseItem.getRequiredSpecialPoints(weaponStack), 1);
 
         renderHud(event.getGuiGraphics(), minecraft.font, subStack, specialStack, current, required, event.getWindow().getGuiScaledWidth(), event.getWindow().getGuiScaledHeight());
     }

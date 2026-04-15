@@ -25,6 +25,7 @@ import net.splatcraft.forge.data.SplatcraftTags;
 import net.splatcraft.forge.data.capabilities.playerinfo.PlayerInfoCapability;
 import net.splatcraft.forge.items.weapons.RollerItem;
 import net.splatcraft.forge.items.weapons.WeaponBaseItem;
+import net.splatcraft.forge.items.weapons.ZipcasterSpecialItem;
 import net.splatcraft.forge.registries.SplatcraftGameRules;
 import net.splatcraft.forge.registries.SplatcraftItemGroups;
 import net.splatcraft.forge.registries.SplatcraftItems;
@@ -109,6 +110,7 @@ public class InkTankItem extends ColoredArmorItem {
             if (canRecharge(stack, true) && player.getItemBySlot(EquipmentSlot.CHEST).equals(stack) && ColorUtils.colorEquals(player, stack) && ink < capacity
                     && !PlayerCooldown.hasPlayerCooldown(player)
                     && !PlayerCharge.hasCharge(player)
+                    && !ZipcasterSpecialItem.isActive(player)
                     && (!(using instanceof WeaponBaseItem)
                     || (using instanceof RollerItem r && !r.isMoving))
             ) {

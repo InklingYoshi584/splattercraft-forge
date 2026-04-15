@@ -259,6 +259,8 @@
   "item.splatcraft.triple_ink_strike.tooltip": "Throw three beacons to call down three towering expanding inkstrikes.",
   "item.splatcraft.ultra_stamp": "Ultra Stamp",
   "item.splatcraft.ultra_stamp.tooltip": "Hammer through foes, then hurl the stamp in a final explosive toss.",
+  "item.splatcraft.zipcaster": "Zipcaster",
+  "item.splatcraft.zipcaster.tooltip": "Ride a temporary ink tank, zip to surfaces, and recall back when the special runs dry.",
   "item.splatcraft.special.points": "Points Needed: %s",
   "item.splatcraft.main_weapon.sub": "Sub: %s",
   "item.splatcraft.main_weapon.special": "Special: %s",
@@ -567,6 +569,7 @@
   "status.special.ink_strike": "Inkstrike online!",
   "status.special.triple_ink_strike": "Triple Inkstrike online!",
   "status.special.ultra_stamp": "Ultra Stamp ready!",
+  "status.special.zipcaster": "Zipcaster online!",
 
   "status.blueprint.invalid": "This Blueprint is empty.",
   "status.blueprint.already_unlocked.single": "You already have this Blueprint.",

@@ -5,6 +5,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.splatcraft.forge.items.weapons.SubWeaponItem;
 import net.splatcraft.forge.items.weapons.WeaponBaseItem;
+import net.splatcraft.forge.items.weapons.ZipcasterSpecialItem;
 import net.splatcraft.forge.util.AbilityAccessUtils;
 import net.splatcraft.forge.util.ColorUtils;
 import net.splatcraft.forge.util.CommonUtils;
@@ -23,6 +24,12 @@ public class UseStoredSubWeaponPacket extends PlayC2SPacket
         ItemStack mainWeapon = player.getMainHandItem();
         if (!(mainWeapon.getItem() instanceof WeaponBaseItem<?>))
             return;
+
+        if (ZipcasterSpecialItem.isActive(player))
+        {
+            ZipcasterSpecialItem.tryUseZip(player, mainWeapon);
+            return;
+        }
 
         ItemStack subStack = WeaponBaseItem.getStoredSubWeapon(mainWeapon);
         if (!(subStack.getItem() instanceof SubWeaponItem subWeapon))

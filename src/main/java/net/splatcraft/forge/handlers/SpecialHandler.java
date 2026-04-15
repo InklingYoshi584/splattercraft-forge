@@ -11,6 +11,8 @@ import net.splatcraft.forge.data.capabilities.playerinfo.PlayerInfo;
 import net.splatcraft.forge.data.capabilities.playerinfo.PlayerInfoCapability;
 import net.splatcraft.forge.items.weapons.SpecialWeaponItem;
 import net.splatcraft.forge.items.weapons.WeaponBaseItem;
+import net.splatcraft.forge.network.SplatcraftPacketHandler;
+import net.splatcraft.forge.network.s2c.UpdatePlayerInfoPacket;
 import net.splatcraft.forge.util.AbilityAccessUtils;
 
 @Mod.EventBusSubscriber(modid = Splatcraft.MODID)
@@ -114,6 +116,8 @@ public class SpecialHandler
     {
         specialWeapon.onSpecialEnd(player.level(), player, specialStack, weaponStack, interrupted);
         PlayerInfoCapability.get(player).clearSpecial();
+        if (!player.level().isClientSide && player instanceof net.minecraft.server.level.ServerPlayer serverPlayer)
+            SplatcraftPacketHandler.sendToTrackersAndSelf(new UpdatePlayerInfoPacket(serverPlayer), serverPlayer);
     }
 
     public static ItemStack getActiveSpecialStack(Player player)

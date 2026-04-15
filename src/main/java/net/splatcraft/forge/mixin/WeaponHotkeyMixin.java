@@ -10,6 +10,7 @@ import net.splatcraft.forge.client.handlers.SplatcraftKeyHandler;
 import net.splatcraft.forge.client.handlers.SuperJumpOverlayHandler;
 import net.splatcraft.forge.items.weapons.UltraStampSpecialItem;
 import net.splatcraft.forge.items.weapons.WeaponBaseItem;
+import net.splatcraft.forge.items.weapons.ZipcasterSpecialItem;
 import net.splatcraft.forge.network.SplatcraftPacketHandler;
 import net.splatcraft.forge.network.c2s.UseStoredSpecialPacket;
 import net.splatcraft.forge.network.c2s.UseStoredSubWeaponPacket;
@@ -47,6 +48,18 @@ public class WeaponHotkeyMixin
 				return;
 			}
 
+			if (minecraft.player != null && ZipcasterSpecialItem.isBusy(minecraft.player))
+			{
+				ci.cancel();
+				return;
+			}
+
+			if (minecraft.player != null && ZipcasterSpecialItem.isEndingSoon(minecraft.player))
+			{
+				ci.cancel();
+				return;
+			}
+
 			if (SuperJumpOverlayHandler.interceptUseClick())
 			{
 				ci.cancel();
@@ -55,6 +68,13 @@ public class WeaponHotkeyMixin
 
 			if (SplatcraftKeyHandler.isSubWeaponHotkeyDown())
 			{
+				if (minecraft.player != null && ZipcasterSpecialItem.isActive(minecraft.player))
+				{
+					SplatcraftPacketHandler.sendToServer(new UseStoredSubWeaponPacket());
+					ci.cancel();
+					return;
+				}
+
 				SplatcraftKeyHandler.startUsingItemInHand(InteractionHand.OFF_HAND);
 				ci.cancel();
 			}
@@ -82,6 +102,15 @@ public class WeaponHotkeyMixin
 				SplatcraftPacketHandler.sendToServer(new UseUltraStampThrowPacket());
 				cir.setReturnValue(false);
 				return;
+			}
+
+			if (ZipcasterSpecialItem.isActive(minecraft.player))
+			{
+				if (ZipcasterSpecialItem.isActionLocked(minecraft.player))
+				{
+					cir.setReturnValue(false);
+					return;
+				}
 			}
 
 			ItemStack stack = minecraft.player.getMainHandItem();

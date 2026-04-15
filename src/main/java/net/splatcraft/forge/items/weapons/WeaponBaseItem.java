@@ -243,6 +243,8 @@ public abstract class WeaponBaseItem<S extends AbstractWeaponSettings<S, ?>> ext
         if (!force && !enoughInk(player, item, amount, recoveryCooldown, sendMessage, false)) return false;
         if (player instanceof Player actualPlayer && SpecialHandler.hasInfiniteInkSpecial(actualPlayer))
             return true;
+        if (ZipcasterSpecialItem.usesSpecialInk(player))
+            return ZipcasterSpecialItem.consumeMainWeaponInk(player, player.getMainHandItem(), amount);
         ItemStack tank = player.getItemBySlot(EquipmentSlot.CHEST);
         if (tank.getItem() instanceof InkTankItem)
             InkTankItem.setInkAmount(tank, InkTankItem.getInkAmount(tank) - amount);
@@ -251,6 +253,9 @@ public abstract class WeaponBaseItem<S extends AbstractWeaponSettings<S, ?>> ext
 
     public static boolean refundInk(LivingEntity player, float amount)
     {
+        if (ZipcasterSpecialItem.usesSpecialInk(player))
+            return ZipcasterSpecialItem.refundMainWeaponInk(player, player.getMainHandItem(), amount);
+
         ItemStack tank = player.getItemBySlot(EquipmentSlot.CHEST);
         if (tank.getItem() instanceof InkTankItem inkTank)
             InkTankItem.setInkAmount(tank, Math.min(inkTank.capacity, InkTankItem.getInkAmount(tank) + amount));
@@ -264,6 +269,8 @@ public abstract class WeaponBaseItem<S extends AbstractWeaponSettings<S, ?>> ext
     public static boolean enoughInk(LivingEntity player, Item item, float consumption, int recoveryCooldown, boolean sendMessage, boolean sub) {
         if (player instanceof Player actualPlayer && SpecialHandler.hasInfiniteInkSpecial(actualPlayer))
             return true;
+        if (!sub && ZipcasterSpecialItem.usesSpecialInk(player))
+            return ZipcasterSpecialItem.hasEnoughSpecialInk(player, consumption);
 
         ItemStack tank = player.getItemBySlot(EquipmentSlot.CHEST);
         if (!SplatcraftGameRules.getLocalizedRule(player.level(), player.blockPosition(), SplatcraftGameRules.REQUIRE_INK_TANK)

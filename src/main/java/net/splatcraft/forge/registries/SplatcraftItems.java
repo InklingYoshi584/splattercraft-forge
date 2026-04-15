@@ -156,6 +156,7 @@ public class SplatcraftItems {
     public static final RegistryObject<InkstrikeSpecialItem> inkStrike = REGISTRY.register("ink_strike", InkstrikeSpecialItem::new);
     public static final RegistryObject<TripleInkstrikeSpecialItem> tripleInkStrike = REGISTRY.register("triple_ink_strike", TripleInkstrikeSpecialItem::new);
     public static final RegistryObject<UltraStampSpecialItem> ultraStamp = REGISTRY.register("ultra_stamp", UltraStampSpecialItem::new);
+    public static final RegistryObject<ZipcasterSpecialItem> zipcaster = REGISTRY.register("zipcaster", ZipcasterSpecialItem::new);
 
     //Vanity
     public static final RegistryObject<Item> inkClothHelmet = REGISTRY.register("ink_cloth_helmet", () -> new ColoredArmorItem(INK_CLOTH, EquipmentSlot.HEAD));

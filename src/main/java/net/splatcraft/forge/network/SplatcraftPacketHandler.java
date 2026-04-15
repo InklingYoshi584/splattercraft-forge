@@ -56,6 +56,7 @@ public class SplatcraftPacketHandler
         registerMessage(OpenWeaponLoadoutPacket.class, OpenWeaponLoadoutPacket::decode);
         registerMessage(UseStoredSpecialPacket.class, UseStoredSpecialPacket::decode);
         registerMessage(UseUltraStampThrowPacket.class, UseUltraStampThrowPacket::decode);
+        registerMessage(ZipcasterLatchActionPacket.class, ZipcasterLatchActionPacket::decode);
         registerMessage(SuperJumpSelectPacket.class, SuperJumpSelectPacket::decode);
     }
 

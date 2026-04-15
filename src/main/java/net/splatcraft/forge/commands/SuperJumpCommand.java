@@ -172,23 +172,12 @@ public class SuperJumpCommand
 
 	public static boolean startSuperJump(ServerPlayer player, Vec3 target)
 	{
-		if (!canStartSuperJump(player))
-			return false;
+		return startJump(player, target, true, false);
+	}
 
-		SuperJump jump = new SuperJump(player.getInventory().selected, player.position(), target, player.noPhysics);
-		PlayerCooldown.setPlayerCooldown(player, jump);
-
-		player.stopUsingItem();
-		player.stopFallFlying();
-		player.getAbilities().flying = false;
-		player.setDeltaMovement(Vec3.ZERO);
-		player.hurtMarked = true;
-		player.fallDistance = 0;
-
-		setJumpSquid(player, true);
-		spawnJumpParticles(player);
-		SplatcraftPacketHandler.sendToTrackersAndSelf(new UpdatePlayerInfoPacket(player), player);
-		return true;
+	public static boolean startForcedSuperJump(ServerPlayer player, Vec3 target)
+	{
+		return startJump(player, target, false, true);
 	}
 
 	public static boolean isInStartup(LivingEntity entity)
@@ -211,6 +200,34 @@ public class SuperJumpCommand
 		else info.clearSuperJumpSpawn();
 
 		SplatcraftPacketHandler.sendToTrackersAndSelf(new UpdatePlayerInfoPacket(player), player);
+	}
+
+	public static Optional<Vec3> resolveSafeLanding(Player player, BlockPos origin)
+	{
+		return findSafeLanding(player, origin);
+	}
+
+	private static boolean startJump(ServerPlayer player, Vec3 target, boolean validate, boolean instantStartup)
+	{
+		if ((validate && !canStartSuperJump(player)) || player == null || player.isSpectator() || !player.isAlive() || (!instantStartup && PlayerCooldown.hasPlayerCooldown(player)))
+			return false;
+
+		SuperJump jump = new SuperJump(player.getInventory().selected, player.position(), target, player.noPhysics);
+		if (instantStartup)
+			jump.setTime(TRAVEL_TICKS);
+		PlayerCooldown.setPlayerCooldown(player, jump);
+
+		player.stopUsingItem();
+		player.stopFallFlying();
+		player.getAbilities().flying = false;
+		player.setDeltaMovement(Vec3.ZERO);
+		player.hurtMarked = true;
+		player.fallDistance = 0;
+
+		setJumpSquid(player, true);
+		spawnJumpParticles(player);
+		SplatcraftPacketHandler.sendToTrackersAndSelf(new UpdatePlayerInfoPacket(player), player);
+		return true;
 	}
 
 	private static Optional<Vec3> findSafeLanding(Player player, BlockPos origin)
