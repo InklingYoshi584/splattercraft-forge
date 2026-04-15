@@ -43,6 +43,7 @@ import net.splatcraft.forge.items.InkTankItem;
 import net.splatcraft.forge.items.weapons.settings.*;
 import net.splatcraft.forge.network.SplatcraftPacketHandler;
 import net.splatcraft.forge.network.s2c.PlayerSetSquidS2CPacket;
+import net.splatcraft.forge.network.s2c.UpdatePlayerInfoPacket;
 import net.splatcraft.forge.registries.SplatcraftGameRules;
 import net.splatcraft.forge.registries.SplatcraftItemGroups;
 import net.splatcraft.forge.registries.SplatcraftItems;
@@ -163,6 +164,10 @@ public abstract class WeaponBaseItem<S extends AbstractWeaponSettings<S, ?>> ext
 
         if (!specialWeapon.useSpecial(level, player, specialStack, weaponStack))
             return false;
+
+        if (!level.isClientSide && player instanceof ServerPlayer serverPlayer && PlayerInfoCapability.hasCapability(player))
+            SplatcraftPacketHandler.sendToTrackersAndSelf(new UpdatePlayerInfoPacket(serverPlayer), serverPlayer);
+
         return true;
     }
 
@@ -353,6 +358,14 @@ public abstract class WeaponBaseItem<S extends AbstractWeaponSettings<S, ?>> ext
             if (!ColorUtils.isColorLocked(stack) && ColorUtils.getInkColor(stack) != ColorUtils.getPlayerColor(player)
                     && PlayerInfoCapability.hasCapability(player))
                 ColorUtils.setInkColor(stack, ColorUtils.getPlayerColor(player));
+
+            int weaponColor = ColorUtils.getInkColor(stack);
+            ItemStack storedSpecial = getStoredSpecialWeapon(stack);
+            if (weaponColor != -1 && storedSpecial.getItem() instanceof UltraStampSpecialItem && ColorUtils.getInkColor(storedSpecial) != weaponColor)
+            {
+                ColorUtils.setInkColor(storedSpecial, weaponColor);
+                setStoredSpecialWeapon(stack, storedSpecial);
+            }
 
             if (player.getCooldowns().isOnCooldown(stack.getItem())) {
                 if (PlayerInfoCapability.isSquid(player)) {

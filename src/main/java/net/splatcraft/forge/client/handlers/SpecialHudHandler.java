@@ -3,6 +3,7 @@ package net.splatcraft.forge.client.handlers;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.FastColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
@@ -11,8 +12,15 @@ import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.splatcraft.forge.Splatcraft;
+import net.splatcraft.forge.handlers.SpecialHandler;
+import net.splatcraft.forge.items.weapons.BombRushSpecialItem;
+import net.splatcraft.forge.items.weapons.InkstrikeSpecialItem;
+import net.splatcraft.forge.items.weapons.InkzookaSpecialItem;
+import net.splatcraft.forge.items.weapons.TripleInkstrikeSpecialItem;
+import net.splatcraft.forge.items.weapons.UltraStampSpecialItem;
 import net.splatcraft.forge.items.weapons.WeaponBaseItem;
 import net.splatcraft.forge.items.weapons.ZipcasterSpecialItem;
+import org.jetbrains.annotations.Nullable;
 
 @Mod.EventBusSubscriber(modid = Splatcraft.MODID, value = Dist.CLIENT)
 public class SpecialHudHandler
@@ -22,6 +30,8 @@ public class SpecialHudHandler
     private static final int FILL = FastColor.ARGB32.color(255, 242, 186, 73);
     private static final int READY = FastColor.ARGB32.color(255, 112, 205, 106);
     private static final int READY_TEXT = FastColor.ARGB32.color(255, 159, 255, 139);
+    private static final int HINT_TEXT = FastColor.ARGB32.color(255, 255, 252, 242);
+    private static final float HINT_SCALE = 1.5F;
 
     @SubscribeEvent
     public static void onRenderGuiOverlay(RenderGuiOverlayEvent.Post event)
@@ -46,6 +56,11 @@ public class SpecialHudHandler
         int required = Math.max(ZipcasterSpecialItem.isActive(minecraft.player) ? ZipcasterSpecialItem.getDisplayRequired(minecraft.player) : WeaponBaseItem.getRequiredSpecialPoints(weaponStack), 1);
 
         renderHud(event.getGuiGraphics(), minecraft.font, subStack, specialStack, current, required, event.getWindow().getGuiScaledWidth(), event.getWindow().getGuiScaledHeight());
+
+        ItemStack activeSpecial = getDisplayedActiveSpecial(minecraft.player, weaponStack);
+        Component activeHint = getActiveHint(activeSpecial);
+        if (activeHint != null)
+            renderActiveHint(event.getGuiGraphics(), minecraft.font, activeHint, event.getWindow().getGuiScaledWidth(), event.getWindow().getGuiScaledHeight());
     }
 
     private static void renderHud(GuiGraphics guiGraphics, Font font, ItemStack subStack, ItemStack specialStack, int current, int required, int screenWidth, int screenHeight)
@@ -79,5 +94,49 @@ public class SpecialHudHandler
         if (isReady)
             guiGraphics.drawString(font, "READY!", (int) (((barX + barWidth / 2) - font.width("READY!") * 0.75F / 2) / 0.75F), (int) ((y + 3) / 0.75F), READY_TEXT, false);
         guiGraphics.pose().popPose();
+    }
+
+    private static void renderActiveHint(GuiGraphics guiGraphics, Font font, Component text, int screenWidth, int screenHeight)
+    {
+        int textWidth = font.width(text);
+        float scaledWidth = textWidth * HINT_SCALE;
+        float x = (screenWidth - scaledWidth) * 0.5F;
+        float y = screenHeight - 74.0F;
+
+        guiGraphics.pose().pushPose();
+        guiGraphics.pose().translate(x, y, 0.0F);
+        guiGraphics.pose().scale(HINT_SCALE, HINT_SCALE, 1.0F);
+        guiGraphics.drawString(font, text, 0, 0, HINT_TEXT, true);
+        guiGraphics.pose().popPose();
+    }
+
+    private static ItemStack getDisplayedActiveSpecial(net.minecraft.world.entity.player.Player player, ItemStack weaponStack)
+    {
+        ItemStack activeSpecial = SpecialHandler.getActiveSpecialStack(player);
+        if (!activeSpecial.isEmpty())
+            return activeSpecial;
+
+        if (WeaponBaseItem.hasActiveSpecial(weaponStack))
+            return WeaponBaseItem.getStoredSpecialWeapon(weaponStack);
+
+        return ItemStack.EMPTY;
+    }
+
+    @Nullable
+    private static Component getActiveHint(ItemStack specialStack)
+    {
+        if (specialStack.getItem() instanceof TripleInkstrikeSpecialItem)
+            return Component.translatable("hud.splatcraft.special_hint.triple_ink_strike");
+        if (specialStack.getItem() instanceof UltraStampSpecialItem)
+            return Component.translatable("hud.splatcraft.special_hint.ultra_stamp");
+        if (specialStack.getItem() instanceof ZipcasterSpecialItem)
+            return Component.translatable("hud.splatcraft.special_hint.zipcaster");
+        if (specialStack.getItem() instanceof InkstrikeSpecialItem)
+            return Component.translatable("hud.splatcraft.special_hint.ink_strike");
+        if (specialStack.getItem() instanceof BombRushSpecialItem)
+            return Component.translatable("hud.splatcraft.special_hint.bomb_rush");
+        if (specialStack.getItem() instanceof InkzookaSpecialItem)
+            return Component.translatable("hud.splatcraft.special_hint.inkzooka");
+        return null;
     }
 }

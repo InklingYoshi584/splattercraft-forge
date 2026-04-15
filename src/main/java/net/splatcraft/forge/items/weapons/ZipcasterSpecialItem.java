@@ -42,6 +42,7 @@ public class ZipcasterSpecialItem extends SpecialWeaponItem
     public static final int POINTS_REQUIRED = 500;
     public static final int ACTIVE_TICKS = 200;
     public static final int ZIP_INK_COST = 6;
+    public static final int MIN_ZIP_ACTION_INK = 10;
     public static final int ARMOR_HEALTH = 16;
     public static final int ZIP_RANGE = 80;
     public static final float REEL_MAX_SPEED = 3.2F;
@@ -191,8 +192,7 @@ public class ZipcasterSpecialItem extends SpecialWeaponItem
 
     public static boolean tryUseZip(Player player, ItemStack mainWeapon)
     {
-        int phase = getPhase(player);
-        if (!isActive(player) || isEndingSoon(player) || (phase != PHASE_IDLE && phase != PHASE_LATCH) || getInk(player) < ZIP_INK_COST)
+        if (!canUseZipAction(player))
             return false;
 
         Vec3 eyePos = player.getEyePosition();
@@ -247,6 +247,12 @@ public class ZipcasterSpecialItem extends SpecialWeaponItem
     public static boolean isActionLocked(Player player)
     {
         return isBusy(player) || isEndingSoon(player);
+    }
+
+    public static boolean canUseZipAction(Player player)
+    {
+        int phase = getPhase(player);
+        return isActive(player) && !isEndingSoon(player) && (phase == PHASE_IDLE || phase == PHASE_LATCH) && getInk(player) >= MIN_ZIP_ACTION_INK;
     }
 
     public static boolean isLatched(Player player)
@@ -516,6 +522,8 @@ public class ZipcasterSpecialItem extends SpecialWeaponItem
     {
         PlayerInfo info = PlayerInfoCapability.get(player);
         int ink = Math.max(0, info.getSpecialTicksRemaining() - amount);
+        if (ink <= 0 && info.hasActiveSpecial())
+            ink = 1;
         info.setSpecialTicksRemaining(ink);
         WeaponBaseItem.setSpecialPoints(mainWeapon, ink);
         syncRuntime(player);

@@ -22,10 +22,13 @@ import net.splatcraft.forge.data.capabilities.playerinfo.PlayerInfoCapability;
 import net.splatcraft.forge.entities.SquidBumperEntity;
 import net.splatcraft.forge.entities.UltraStampThrownEntity;
 import net.splatcraft.forge.handlers.SpecialHandler;
+import net.splatcraft.forge.registries.SplatcraftItems;
 import net.splatcraft.forge.registries.SplatcraftSounds;
 import net.splatcraft.forge.util.ColorUtils;
 import net.splatcraft.forge.util.InkBlockUtils;
 import net.splatcraft.forge.util.InkDamageUtils;
+import net.splatcraft.forge.util.PlayerCharge;
+import net.splatcraft.forge.util.PlayerCooldown;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -67,6 +70,7 @@ public class UltraStampSpecialItem extends SpecialWeaponItem
     public UltraStampSpecialItem()
     {
         super(POINTS_REQUIRED);
+        SplatcraftItems.inkColoredItems.add(this);
     }
 
     @Override
@@ -80,6 +84,8 @@ public class UltraStampSpecialItem extends SpecialWeaponItem
     {
         if (!PlayerInfoCapability.hasCapability(player))
             return false;
+
+        clearMainWeaponState(player);
 
         PlayerInfo info = PlayerInfoCapability.get(player);
         info.startSpecial(player.getInventory().selected, 0, getActiveTicks(specialStack));
@@ -193,6 +199,18 @@ public class UltraStampSpecialItem extends SpecialWeaponItem
             return true;
 
         return SpecialHandler.getActiveSpecialStack(player).getItem() instanceof UltraStampSpecialItem;
+    }
+
+    public static void clearMainWeaponState(Player player)
+    {
+        if (PlayerInfoCapability.hasCapability(player))
+        {
+            PlayerCooldown.setPlayerCooldown(player, null);
+            PlayerCharge.setCharge(player, null);
+            if (!player.level().isClientSide && PlayerCharge.hasCharge(player))
+                PlayerCharge.updateServerMap(player, false);
+        }
+        player.stopUsingItem();
     }
 
     public static boolean tryStartThrow(Player player)

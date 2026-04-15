@@ -20,6 +20,7 @@ import net.splatcraft.forge.client.particles.InkExplosionParticleData;
 import net.splatcraft.forge.registries.SplatcraftEntities;
 import net.splatcraft.forge.registries.SplatcraftItems;
 import net.splatcraft.forge.registries.SplatcraftSounds;
+import net.splatcraft.forge.util.ColorUtils;
 import net.splatcraft.forge.util.InkBlockUtils;
 import net.splatcraft.forge.util.InkExplosion;
 import org.jetbrains.annotations.NotNull;
@@ -53,7 +54,7 @@ public class UltraStampThrownEntity extends ThrowableItemProjectile
         this.sourceWeapon = sourceWeapon.copy();
         this.inkType = inkType;
         this.color = color;
-        setItem(new ItemStack(SplatcraftItems.ultraStamp.get()));
+        setItem(createDisplayStack());
     }
 
     @Override
@@ -169,7 +170,14 @@ public class UltraStampThrownEntity extends ThrowableItemProjectile
         if (tag.contains("Color"))
             color = tag.getInt("Color");
         impacted = tag.getBoolean("Impacted");
-        if (getItem().isEmpty())
+        if (tag.contains("Color"))
+            setItem(createDisplayStack());
+        else if (getItem().isEmpty())
             setItem(new ItemStack(SplatcraftItems.ultraStamp.get()));
+    }
+
+    private ItemStack createDisplayStack()
+    {
+        return ColorUtils.setInkColor(new ItemStack(SplatcraftItems.ultraStamp.get()), color);
     }
 }

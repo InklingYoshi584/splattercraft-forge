@@ -70,7 +70,8 @@ public class WeaponHotkeyMixin
 			{
 				if (minecraft.player != null && ZipcasterSpecialItem.isActive(minecraft.player))
 				{
-					SplatcraftPacketHandler.sendToServer(new UseStoredSubWeaponPacket());
+					if (ZipcasterSpecialItem.canUseZipAction(minecraft.player))
+						SplatcraftPacketHandler.sendToServer(new UseStoredSubWeaponPacket());
 					ci.cancel();
 					return;
 				}
@@ -106,7 +107,7 @@ public class WeaponHotkeyMixin
 
 			if (ZipcasterSpecialItem.isActive(minecraft.player))
 			{
-				if (ZipcasterSpecialItem.isActionLocked(minecraft.player))
+				if (ZipcasterSpecialItem.isActionLocked(minecraft.player) || !ZipcasterSpecialItem.canUseZipAction(minecraft.player))
 				{
 					cir.setReturnValue(false);
 					return;
@@ -141,6 +142,8 @@ public class WeaponHotkeyMixin
 			ItemStack stack = minecraft.player.getMainHandItem();
 			if (stack.getItem() instanceof WeaponBaseItem<?> && WeaponBaseItem.canUseStoredSpecial(stack))
 			{
+				if (WeaponBaseItem.getStoredSpecialWeapon(stack).getItem() instanceof UltraStampSpecialItem)
+					UltraStampSpecialItem.clearMainWeaponState(minecraft.player);
 				SplatcraftPacketHandler.sendToServer(new UseStoredSpecialPacket());
 				ci.cancel();
 			}
