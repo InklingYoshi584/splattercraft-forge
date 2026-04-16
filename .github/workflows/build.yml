@@ -1,5 +1,5 @@
 name: Build splatcraft-forge
-on: [ pull_request, push ]
+on: [ pull_request, push, registry_package ]
 
 jobs:
   build:
