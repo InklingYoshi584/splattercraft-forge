@@ -61,6 +61,8 @@ public class ZipcasterSpecialItem extends SpecialWeaponItem
     public static final int PHASE_END_LAG = 3;
 
     private static final int END_LAG_TICKS = 10;
+    private static final int MIN_STARTUP_LAG_TICKS = 2;
+    private static final int MAX_STARTUP_LAG_TICKS = 6;
 
     public static final int LATCH_ACTION_DETACH = 0;
     public static final int LATCH_ACTION_JUMP = 1;
@@ -77,6 +79,7 @@ public class ZipcasterSpecialItem extends SpecialWeaponItem
     private static final String TAG_TARGET = "ZipcasterTarget";
     private static final String TAG_LATCH_FACE = "ZipcasterLatchFace";
     private static final String TAG_LATCH_POS = "ZipcasterLatchPos";
+    private static final String TAG_STARTUP_TICKS = "ZipcasterStartupTicks";
     private static final String TAG_END_LAG_TICKS = "ZipcasterEndLagTicks";
 
     public ZipcasterSpecialItem()
@@ -108,6 +111,7 @@ public class ZipcasterSpecialItem extends SpecialWeaponItem
         data.remove(TAG_ANCHOR);
         data.remove(TAG_TARGET);
         data.putFloat(TAG_REEL_SPEED, 0.0F);
+        data.putInt(TAG_STARTUP_TICKS, 0);
         data.putInt(TAG_END_LAG_TICKS, 0);
         player.setNoGravity(false);
 
@@ -213,12 +217,17 @@ public class ZipcasterSpecialItem extends SpecialWeaponItem
         CompoundTag data = getRuntimeData(player);
         data.putInt(TAG_PHASE, PHASE_REEL);
         data.putFloat(TAG_REEL_SPEED, 0.0F);
+        data.putInt(TAG_STARTUP_TICKS, getStartupLagTicks(player, anchorPos));
         data.putInt(TAG_END_LAG_TICKS, 0);
         setVec3(data, TAG_ANCHOR, anchorPos);
         setVec3(data, TAG_TARGET, targetPos);
         data.putString(TAG_LATCH_FACE, hit.getDirection().getSerializedName());
 
         player.setNoGravity(true);
+        player.noPhysics = true;
+        player.setDeltaMovement(Vec3.ZERO);
+        player.hurtMarked = true;
+        player.fallDistance = 0.0F;
         player.setAbsorptionAmount(Math.max(player.getAbsorptionAmount(), ARMOR_HEALTH));
         updateInkOverlay(player, player.getMaxHealth());
 
@@ -358,6 +367,19 @@ public class ZipcasterSpecialItem extends SpecialWeaponItem
             return;
         }
 
+        CompoundTag data = getRuntimeData(player);
+        int startupTicks = data.getInt(TAG_STARTUP_TICKS);
+        if (startupTicks > 0)
+        {
+            data.putInt(TAG_STARTUP_TICKS, startupTicks - 1);
+            player.setNoGravity(true);
+            player.noPhysics = true;
+            player.setDeltaMovement(Vec3.ZERO);
+            player.hurtMarked = true;
+            player.fallDistance = 0.0F;
+            return;
+        }
+
         Vec3 center = player.position().add(0.0D, player.getBbHeight() * 0.45D, 0.0D);
         Vec3 offset = targetPos.subtract(center);
         double distance = offset.length();
@@ -367,7 +389,6 @@ public class ZipcasterSpecialItem extends SpecialWeaponItem
             return;
         }
 
-        CompoundTag data = getRuntimeData(player);
         float speed = Math.min(REEL_MAX_SPEED, data.getFloat(TAG_REEL_SPEED) + REEL_ACCELERATION);
         data.putFloat(TAG_REEL_SPEED, speed);
 
@@ -464,6 +485,7 @@ public class ZipcasterSpecialItem extends SpecialWeaponItem
         data.putFloat(TAG_REEL_SPEED, 0.0F);
         data.putString(TAG_LATCH_FACE, face.getSerializedName());
         setVec3(data, TAG_LATCH_POS, anchorPos);
+        data.putInt(TAG_STARTUP_TICKS, 0);
         data.putInt(TAG_END_LAG_TICKS, 0);
         data.remove(TAG_TARGET);
         player.setNoGravity(true);
@@ -507,10 +529,18 @@ public class ZipcasterSpecialItem extends SpecialWeaponItem
         CompoundTag data = getRuntimeData(player);
         data.putInt(TAG_PHASE, PHASE_IDLE);
         data.putFloat(TAG_REEL_SPEED, 0.0F);
+        data.putInt(TAG_STARTUP_TICKS, 0);
         data.putInt(TAG_END_LAG_TICKS, 0);
         data.remove(TAG_ANCHOR);
         data.remove(TAG_TARGET);
         releaseLatch(player);
+    }
+
+    private static int getStartupLagTicks(Player player, Vec3 anchorPos)
+    {
+        Vec3 armStart = player.position().add(0.0D, player.getBbHeight() * 0.55D, 0.0D);
+        float distanceFactor = Mth.clamp((float) (armStart.distanceTo(anchorPos) / ZIP_RANGE), 0.0F, 1.0F);
+        return Mth.clamp(Math.round(Mth.lerp(distanceFactor, (float) MIN_STARTUP_LAG_TICKS, (float) MAX_STARTUP_LAG_TICKS)), MIN_STARTUP_LAG_TICKS, MAX_STARTUP_LAG_TICKS);
     }
 
     private static Vec3 resolveRecallPoint(Player player)
