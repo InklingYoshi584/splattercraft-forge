@@ -67,6 +67,8 @@
   "block.splatcraft.remote_pedestal": "Remote Pedestal",
   "block.splatcraft.splat_switch": "Splat-Switch",
   "block.splatcraft.spawn_pad": "Spawn Pad",
+  "block.splatcraft.ink_rail": "Ink Rail",
+  "block.splatcraft.ink_rail_node": "Ink Rail Node",
 
   "block.splatcraft.stage_barrier": "Stage Barrier",
   "block.splatcraft.stage_void": "Stage Void",
@@ -576,6 +578,14 @@
   "status.special.triple_ink_strike": "Triple Inkstrike online!",
   "status.special.ultra_stamp": "Ultra Stamp ready!",
   "status.special.zipcaster": "Zipcaster online!",
+  "status.ink_rail.selected": "Point Selected: (%s, %s, %s)",
+  "status.ink_rail.selection_cleared": "Selection Cleared",
+  "status.ink_rail.linked": "Link Successful",
+  "status.ink_rail.unlinked": "Link Removed",
+  "status.ink_rail.too_far": "§cThat link is too long.",
+  "status.ink_rail.blocked": "§cThat link is blocked.",
+  "status.ink_rail.multiple_hosts": "§cInk rail networks can only have one host.",
+  "status.ink_rail.invalid_target": "§cThat target cannot be linked.",
 
   "status.blueprint.invalid": "This Blueprint is empty.",
   "status.blueprint.already_unlocked.single": "You already have this Blueprint.",

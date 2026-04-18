@@ -28,6 +28,8 @@ import net.splatcraft.forge.blocks.GrateRampBlock;
 import net.splatcraft.forge.blocks.InkStainedBlock;
 import net.splatcraft.forge.blocks.InkStainedSlabBlock;
 import net.splatcraft.forge.blocks.InkStainedStairBlock;
+import net.splatcraft.forge.blocks.InkRailBlock;
+import net.splatcraft.forge.blocks.InkRailNodeBlock;
 import net.splatcraft.forge.blocks.InkVatBlock;
 import net.splatcraft.forge.blocks.InkedBlock;
 import net.splatcraft.forge.blocks.InkedCarpetBlock;
@@ -70,6 +72,8 @@ public class SplatcraftBlocks
     public static final RegistryObject<Block> inkVat = REGISTRY.register("ink_vat", InkVatBlock::new);
     public static final RegistryObject<Block> weaponWorkbench = REGISTRY.register("ammo_knights_workbench", () -> new WeaponWorkbenchBlock());
     public static final RegistryObject<Block> remotePedestal = REGISTRY.register("remote_pedestal", RemotePedestalBlock::new);
+    public static final RegistryObject<Block> inkRail = REGISTRY.register("ink_rail", InkRailBlock::new);
+    public static final RegistryObject<Block> inkRailNode = REGISTRY.register("ink_rail_node", InkRailNodeBlock::new);
 
     public static final RegistryObject<Block> emptyInkwell = REGISTRY.register("empty_inkwell", () -> new EmptyInkwellBlock(Block.Properties.of().instrument(NoteBlockInstrument.HAT).isRedstoneConductor((blockState, blockGetter, blockPos) -> false).strength(0.3F).sound(SoundType.GLASS)));
     public static final RegistryObject<Block> inkwell = REGISTRY.register("inkwell", InkwellBlock::new);
@@ -112,6 +116,8 @@ public class SplatcraftBlocks
         ItemBlockRenderTypes.setRenderLayer(remotePedestal.get(), RenderType.cutout());
         ItemBlockRenderTypes.setRenderLayer(splatSwitch.get(), RenderType.cutout());
         ItemBlockRenderTypes.setRenderLayer(glassCover.get(), RenderType.cutout());
+        ItemBlockRenderTypes.setRenderLayer(inkRail.get(), RenderType.cutout());
+        ItemBlockRenderTypes.setRenderLayer(inkRailNode.get(), RenderType.cutout());
     }
 
 

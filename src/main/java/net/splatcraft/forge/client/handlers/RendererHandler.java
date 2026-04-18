@@ -14,6 +14,7 @@ import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.ItemRenderer;
@@ -57,6 +58,7 @@ import net.splatcraft.forge.items.weapons.IChargeableWeapon;
 import net.splatcraft.forge.items.weapons.SubWeaponItem;
 import net.splatcraft.forge.items.weapons.WeaponBaseItem;
 import net.splatcraft.forge.registries.SplatcraftGameRules;
+import net.splatcraft.forge.registries.SplatcraftItems;
 import net.splatcraft.forge.util.AbilityAccessUtils;
 import net.splatcraft.forge.util.*;
 
@@ -96,6 +98,15 @@ public class RendererHandler
 
         Player player = event.getEntity();
         if (player.isSpectator()) return;
+
+        net.splatcraft.forge.data.capabilities.playerinfo.PlayerInfo playerInfo = PlayerInfoCapability.hasCapability(player) ? PlayerInfoCapability.get(player) : null;
+        if (playerInfo != null && playerInfo.isInkRailRiding())
+        {
+            event.setCanceled(true);
+            if (!playerInfo.isInkRailHidden())
+                renderInkRailCube(player, event.getPoseStack(), event.getMultiBufferSource(), event.getPackedLight());
+            return;
+        }
 
         if (PlayerInfoCapability.isSquid(player))
         {
@@ -142,6 +153,12 @@ public class RendererHandler
     public static void renderHand(RenderHandEvent event)
     {
         Player player = Minecraft.getInstance().player;
+        if (player != null && PlayerInfoCapability.hasCapability(player) && PlayerInfoCapability.get(player).isInkRailRiding())
+        {
+            event.setCanceled(true);
+            return;
+        }
+
         if (PlayerInfoCapability.isSquid(player))
         {
             if (!AbilityAccessUtils.canUseInkAbilities(player))
@@ -183,6 +200,17 @@ public class RendererHandler
         {
             tickTime = 0;
         }
+    }
+
+    private static void renderInkRailCube(Player player, PoseStack poseStack, MultiBufferSource buffer, int packedLight)
+    {
+        ItemStack stack = ColorUtils.setColorLocked(ColorUtils.setInkColor(new ItemStack(SplatcraftItems.inkedWool.get()), ColorUtils.getEntityColor(player)), true);
+        poseStack.pushPose();
+        poseStack.translate(0.0D, 0.38D, 0.0D);
+        poseStack.mulPose(Axis.YP.rotationDegrees(180.0F - player.getYRot()));
+        poseStack.scale(1.15F, 1.15F, 1.15F);
+        Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemDisplayContext.FIXED, packedLight, OverlayTexture.NO_OVERLAY, poseStack, buffer, player.level(), player.getId());
+        poseStack.popPose();
     }
 
     public static boolean renderSubWeapon(ItemStack stack, ItemDisplayContext transformType, PoseStack poseStack, MultiBufferSource source, int light, float partialTicks)

@@ -42,6 +42,8 @@ public class SplatcraftItemGroups {
             output.accept(inkDisruptor.get());
             output.accept(colorChanger.get());
             output.accept(remotePedestal.get());
+            output.accept(inkRail.get());
+            output.accept(inkRailNode.get());
             output.accept(dummySpecial.get());
             output.accept(inkArmor.get());
             output.accept(bombRush.get());
@@ -89,6 +91,8 @@ public class SplatcraftItemGroups {
             output.accept(crate.get());
             output.accept(sunkenCrate.get());
             output.accept(splatSwitch.get());
+            output.accept(inkRail.get());
+            output.accept(inkRailNode.get());
 
             output.accept(stageBarrier.get());
             output.accept(stageVoid.get());

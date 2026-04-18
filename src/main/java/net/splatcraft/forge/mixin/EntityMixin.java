@@ -22,6 +22,12 @@ public class EntityMixin
 			return;
 		}
 
+		if (PlayerInfoCapability.get(player).isInkRailHidden())
+		{
+			cir.setReturnValue(true);
+			return;
+		}
+
 		if (InkBlockUtils.canSquidHide(player) && PlayerInfoCapability.get(player).isSquid())
 			cir.setReturnValue(true);
 	}

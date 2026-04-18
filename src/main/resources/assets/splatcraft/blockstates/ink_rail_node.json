@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "active=false,flashing=false,occupied=false": {
+      "model": "splatcraft:block/ink_rail_node"
+    },
+    "active=false,flashing=false,occupied=true": {
+      "model": "splatcraft:block/ink_rail_node_occupied"
+    },
+    "active=false,flashing=true,occupied=false": {
+      "model": "splatcraft:block/ink_rail_node_flashing"
+    },
+    "active=false,flashing=true,occupied=true": {
+      "model": "splatcraft:block/ink_rail_node_flashing_occupied"
+    },
+    "active=true,flashing=false,occupied=false": {
+      "model": "splatcraft:block/ink_rail_node_active"
+    },
+    "active=true,flashing=false,occupied=true": {
+      "model": "splatcraft:block/ink_rail_node_active_occupied"
+    },
+    "active=true,flashing=true,occupied=false": {
+      "model": "splatcraft:block/ink_rail_node_flashing"
+    },
+    "active=true,flashing=true,occupied=true": {
+      "model": "splatcraft:block/ink_rail_node_flashing_occupied"
+    }
+  }
+}

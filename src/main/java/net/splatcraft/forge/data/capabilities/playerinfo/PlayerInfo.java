@@ -32,6 +32,8 @@ public class PlayerInfo
     private int specialWindupTicksRemaining = 0;
     private int specialWindupMaxTicks = 0;
     private CompoundTag specialData = new CompoundTag();
+    private boolean inkRailRiding = false;
+    private boolean inkRailHidden = false;
 
     public PlayerInfo(int defaultColor)
     {
@@ -191,6 +193,36 @@ public class PlayerInfo
         return specialData;
     }
 
+    public boolean isInkRailRiding()
+    {
+        return inkRailRiding;
+    }
+
+    public void setInkRailRiding(boolean inkRailRiding)
+    {
+        if (this.inkRailRiding != inkRailRiding)
+        {
+            this.inkRailRiding = inkRailRiding;
+            if (player != null)
+                player.refreshDimensions();
+        }
+    }
+
+    public boolean isInkRailHidden()
+    {
+        return inkRailHidden;
+    }
+
+    public void setInkRailHidden(boolean inkRailHidden)
+    {
+        if (this.inkRailHidden != inkRailHidden)
+        {
+            this.inkRailHidden = inkRailHidden;
+            if (player != null)
+                player.refreshDimensions();
+        }
+    }
+
     public NonNullList<ItemStack> getMatchInventory()
     {
         return matchInventory;
@@ -249,6 +281,8 @@ public class PlayerInfo
         nbt.putInt("SpecialMaxTicks", specialMaxTicks);
         nbt.putInt("SpecialWindupTicksRemaining", specialWindupTicksRemaining);
         nbt.putInt("SpecialWindupMaxTicks", specialWindupMaxTicks);
+        nbt.putBoolean("InkRailRiding", inkRailRiding);
+        nbt.putBoolean("InkRailHidden", inkRailHidden);
         if (!specialData.isEmpty())
             nbt.put("SpecialData", specialData.copy());
 
@@ -289,6 +323,8 @@ public class PlayerInfo
         specialMaxTicks = nbt.getInt("SpecialMaxTicks");
         specialWindupTicksRemaining = nbt.getInt("SpecialWindupTicksRemaining");
         specialWindupMaxTicks = nbt.getInt("SpecialWindupMaxTicks");
+        setInkRailRiding(nbt.getBoolean("InkRailRiding"));
+        setInkRailHidden(nbt.getBoolean("InkRailHidden"));
         specialData = nbt.contains("SpecialData") ? nbt.getCompound("SpecialData").copy() : new CompoundTag();
 
         if (nbt.contains("MatchInventory"))

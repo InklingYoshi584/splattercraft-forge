@@ -57,6 +57,7 @@ public class SplatcraftPacketHandler
         registerMessage(UseStoredSpecialPacket.class, UseStoredSpecialPacket::decode);
         registerMessage(UseUltraStampThrowPacket.class, UseUltraStampThrowPacket::decode);
         registerMessage(ZipcasterLatchActionPacket.class, ZipcasterLatchActionPacket::decode);
+        registerMessage(InkRailRideActionPacket.class, InkRailRideActionPacket::decode);
         registerMessage(SuperJumpSelectPacket.class, SuperJumpSelectPacket::decode);
     }
 

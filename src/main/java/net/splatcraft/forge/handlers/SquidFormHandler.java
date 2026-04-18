@@ -32,6 +32,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.splatcraft.forge.commands.SuperJumpCommand;
 import net.splatcraft.forge.blocks.InkwellBlock;
 import net.splatcraft.forge.blocks.SpawnPadBlock;
+import net.splatcraft.forge.handlers.InkRailHandler;
 import net.splatcraft.forge.data.capabilities.inkoverlay.InkOverlayCapability;
 import net.splatcraft.forge.data.capabilities.inkoverlay.InkOverlayInfo;
 import net.splatcraft.forge.data.capabilities.playerinfo.PlayerInfo;
@@ -200,6 +201,12 @@ public class SquidFormHandler {
 
         PlayerInfo info = PlayerInfoCapability.get((LivingEntity) event.getEntity());
 
+        if (info.isInkRailRiding()) {
+            event.setNewSize(new EntityDimensions(0.65f, 0.65f, false));
+            event.setNewEyeHeight(info.isInkRailHidden() ? 0.25f : 0.32f);
+            return;
+        }
+
         if (info.isSquid()) {
             event.setNewSize(new EntityDimensions(0.6f, 0.5f, false));
             event.setNewEyeHeight(InkBlockUtils.canSquidHide((LivingEntity) event.getEntity()) ? 0.3f : 0.4f);
@@ -213,7 +220,10 @@ public class SquidFormHandler {
             return;
         }
 
-        if (PlayerInfoCapability.hasCapability(player) && PlayerInfoCapability.get(player).isSquid() && InkBlockUtils.canSquidHide(player)) {
+        if (PlayerInfoCapability.hasCapability(player) && PlayerInfoCapability.get(player).isInkRailHidden()) {
+            event.modifyVisibility(0.0F);
+        }
+        else if (PlayerInfoCapability.hasCapability(player) && PlayerInfoCapability.get(player).isSquid() && InkBlockUtils.canSquidHide(player)) {
             event.modifyVisibility(Math.abs(player.getX() - player.xo) > 0.14 || Math.abs(player.getY() - player.yo) > 0.07 || Math.abs(player.getZ() - player.zo) > 0.14 ? 0.7 : 0);
         }
     }
@@ -264,6 +274,11 @@ public class SquidFormHandler {
     @SubscribeEvent
     public static void onPlayerJump(LivingEvent.LivingJumpEvent event) {
         if (!(event.getEntity() instanceof Player player) || !PlayerInfoCapability.hasCapability(event.getEntity())) {
+            return;
+        }
+
+        if (PlayerInfoCapability.get(player).isInkRailRiding()) {
+            InkRailHandler.detach(player);
             return;
         }
 
