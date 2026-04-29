@@ -269,6 +269,7 @@
   "hud.splatcraft.special_hint.ink_strike": "(Right Click) Make a twister!",
   "hud.splatcraft.special_hint.bomb_rush": "(Left Click) Bombs Away!",
   "hud.splatcraft.special_hint.inkzooka": "(Right Click) Shoot tornadoes!",
+  "hud.splatcraft.death_recap.respawning": "Respawning in %s",
   "item.splatcraft.special.points": "Points Needed: %s",
   "item.splatcraft.main_weapon.sub": "Sub: %s",
   "item.splatcraft.main_weapon.special": "Special: %s",
@@ -554,6 +555,8 @@
   "gamerule.splatcraft.inkableGround.description": "Allows weapons to replace blocks with Inked Blocks",
   "gamerule.splatcraft.rechargeableInkTank": "Rechargeable Ink Tank",
   "gamerule.splatcraft.rechargeableInkTank.description": "Allows Ink Tanks to passively recover ink, recharge rate increases when swimming on ink",
+  "gamerule.splatcraft.deathRecap": "Death recap",
+  "gamerule.splatcraft.deathRecap.description": "Shows a 5-second death recap with an angled view of your killer or death location before auto-respawning.",
 
   "status.coord_set.a": "Set first position to X: %s Y: %s Z: %s",
   "status.coord_set.b": "Set second position to X: %s Y: %s Z: %s",

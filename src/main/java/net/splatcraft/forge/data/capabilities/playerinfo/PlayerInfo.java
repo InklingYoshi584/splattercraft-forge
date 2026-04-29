@@ -32,6 +32,7 @@ public class PlayerInfo
     private int specialWindupTicksRemaining = 0;
     private int specialWindupMaxTicks = 0;
     private CompoundTag specialData = new CompoundTag();
+    private int inkArmorInvincibilityTicks = 0;
     private boolean inkRailRiding = false;
     private boolean inkRailHidden = false;
 
@@ -191,6 +192,26 @@ public class PlayerInfo
     public CompoundTag getSpecialData()
     {
         return specialData;
+    }
+
+    public int getInkArmorInvincibilityTicks()
+    {
+        return inkArmorInvincibilityTicks;
+    }
+
+    public boolean hasInkArmorInvincibility()
+    {
+        return inkArmorInvincibilityTicks > 0;
+    }
+
+    public void setInkArmorInvincibilityTicks(int inkArmorInvincibilityTicks)
+    {
+        this.inkArmorInvincibilityTicks = Math.max(0, inkArmorInvincibilityTicks);
+    }
+
+    public void tickInkArmorInvincibility()
+    {
+        inkArmorInvincibilityTicks = Math.max(0, inkArmorInvincibilityTicks - 1);
     }
 
     public boolean isInkRailRiding()

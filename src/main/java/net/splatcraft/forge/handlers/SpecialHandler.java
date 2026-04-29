@@ -1,14 +1,19 @@
 package net.splatcraft.forge.handlers;
 
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
+import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.splatcraft.forge.Splatcraft;
 import net.splatcraft.forge.data.capabilities.playerinfo.PlayerInfo;
 import net.splatcraft.forge.data.capabilities.playerinfo.PlayerInfoCapability;
+import net.splatcraft.forge.items.weapons.InkArmorSpecialItem;
 import net.splatcraft.forge.items.weapons.SpecialWeaponItem;
 import net.splatcraft.forge.items.weapons.WeaponBaseItem;
 import net.splatcraft.forge.network.SplatcraftPacketHandler;
@@ -25,22 +30,25 @@ public class SpecialHandler
             return;
 
         Player player = event.player;
+        if (!PlayerInfoCapability.hasCapability(player))
+            return;
+
+        PlayerInfo info = PlayerInfoCapability.get(player);
+        if (info.hasInkArmorInvincibility())
+            info.tickInkArmorInvincibility();
+
         if (!AbilityAccessUtils.canUseInkAbilities(player))
         {
             ItemStack activeSpecial = getActiveSpecialStack(player);
             if (activeSpecial.getItem() instanceof SpecialWeaponItem specialWeapon)
             {
-                int sourceSlot = PlayerInfoCapability.get(player).getSpecialSourceSlot();
+                int sourceSlot = info.getSpecialSourceSlot();
                 if (sourceSlot >= 0 && sourceSlot < player.getInventory().getContainerSize())
                     endSpecial(player, player.getInventory().getItem(sourceSlot), specialWeapon, activeSpecial, true);
             }
             return;
         }
 
-        if (!PlayerInfoCapability.hasCapability(player))
-            return;
-
-        PlayerInfo info = PlayerInfoCapability.get(player);
         if (!info.hasActiveSpecial())
             return;
 
@@ -88,6 +96,31 @@ public class SpecialHandler
 
         if (info.getSpecialTicksRemaining() <= 0)
             endSpecial(player, weaponStack, specialWeapon, specialStack, false);
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void onLivingAttack(LivingAttackEvent event)
+    {
+        if (!(event.getEntity() instanceof Player player) || player.level().isClientSide || !PlayerInfoCapability.hasCapability(player))
+            return;
+
+        PlayerInfo info = PlayerInfoCapability.get(player);
+        if (info.hasInkArmorInvincibility() && !event.getSource().is(DamageTypeTags.BYPASSES_INVULNERABILITY))
+            event.setCanceled(true);
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void onLivingDamage(LivingDamageEvent event)
+    {
+        if (!(event.getEntity() instanceof Player player) || player.level().isClientSide || !InkArmorSpecialItem.isArmorDeployed(player) || InkArmorSpecialItem.isBroken(player))
+            return;
+
+        if (player.getAbsorptionAmount() > 0.0F)
+            return;
+
+        InkArmorSpecialItem.breakArmor(player);
+        if (event.getAmount() > 0.0F)
+            event.setAmount(Math.min(event.getAmount() * InkArmorSpecialItem.OVERFLOW_DAMAGE_MULTIPLIER, InkArmorSpecialItem.OVERFLOW_DAMAGE_CAP));
     }
 
     @SubscribeEvent
