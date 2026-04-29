@@ -11,9 +11,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.Sheep;
@@ -26,6 +29,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
@@ -56,6 +60,7 @@ import net.splatcraft.forge.network.SplatcraftPacketHandler;
 import net.splatcraft.forge.network.c2s.RequestPlayerInfoPacket;
 import net.splatcraft.forge.network.c2s.SendPlayerOverlayPacket;
 import net.splatcraft.forge.network.s2c.ReceivePlayerOverlayPacket;
+import net.splatcraft.forge.network.s2c.OpenDeathRecapPacket;
 import net.splatcraft.forge.network.s2c.UpdateBooleanGamerulesPacket;
 import net.splatcraft.forge.network.s2c.UpdateClientColorsPacket;
 import net.splatcraft.forge.network.s2c.UpdateColorScoresPacket;
@@ -63,6 +68,7 @@ import net.splatcraft.forge.network.s2c.UpdateIntGamerulesPacket;
 import net.splatcraft.forge.network.s2c.UpdatePlayerInfoPacket;
 import net.splatcraft.forge.network.s2c.UpdateStageListPacket;
 import net.splatcraft.forge.network.s2c.UpdateWeaponSettingsPacket;
+import net.splatcraft.forge.items.weapons.WeaponBaseItem;
 import net.splatcraft.forge.registries.SplatcraftGameRules;
 import net.splatcraft.forge.registries.SplatcraftItems;
 import net.splatcraft.forge.tileentities.InkedBlockTileEntity;
@@ -73,6 +79,10 @@ import net.splatcraft.forge.util.PlayerCooldown;
 
 @Mod.EventBusSubscriber
 public class SplatcraftCommonHandler {
+    private static final int DEATH_RECAP_RESPAWN_TICKS = 100;
+    private static final HashMap<UUID, UUID> PENDING_DEATH_RECAP_CAMERAS = new HashMap<>();
+    private static final HashMap<UUID, Long> ACTIVE_DEATH_RECAPS = new HashMap<>();
+
     @SubscribeEvent
     public static void onPlayerJump(LivingEvent.LivingJumpEvent event) {
         LivingEntity entity = event.getEntity();
@@ -128,6 +138,13 @@ public class SplatcraftCommonHandler {
             PlayerInfoCapability.get(player).setMatchInventory(NonNullList.create());
         }
         PlayerCooldown.setPlayerCooldown(player, null);
+        player.setInvisible(false);
+
+        if (player instanceof ServerPlayer serverPlayer)
+            serverPlayer.setCamera(serverPlayer);
+
+        PENDING_DEATH_RECAP_CAMERAS.remove(player.getUUID());
+        ACTIVE_DEATH_RECAPS.remove(player.getUUID());
     }
 
     private static boolean putStackInSlot(Inventory inventory, ItemStack stack, int i) {
@@ -156,6 +173,76 @@ public class SplatcraftCommonHandler {
         if (stack.getItem() instanceof InkTankItem) {
             ((InkTankItem) stack.getItem()).refill(stack);
         }
+
+        if (entity instanceof Player player)
+        {
+            applyDeathSpecialPenalty(player);
+            sendDeathRecap(player, event);
+        }
+    }
+
+    private static void sendDeathRecap(Player player, LivingDeathEvent event)
+    {
+        if (!(player instanceof ServerPlayer serverPlayer)
+                || !SplatcraftGameRules.getBooleanRuleValue(player.level(), SplatcraftGameRules.DEATH_RECAP))
+            return;
+
+        Component deathMessage = player.getCombatTracker().getDeathMessage();
+        if (deathMessage == null)
+            deathMessage = event.getSource().getLocalizedDeathMessage(player);
+
+        Player killer = event.getSource().getEntity() instanceof Player sourcePlayer ? sourcePlayer : null;
+        ResourceLocation dimension = player.level().dimension().location();
+
+        ACTIVE_DEATH_RECAPS.put(serverPlayer.getUUID(), serverPlayer.level().getGameTime() + DEATH_RECAP_RESPAWN_TICKS + 20L);
+        serverPlayer.setInvisible(true);
+
+        SplatcraftPacketHandler.sendToPlayer(
+                new OpenDeathRecapPacket(
+                        deathMessage,
+                        player.position(),
+                        dimension,
+                        killer != null ? killer.getUUID() : null,
+                        ColorUtils.getPlayerColor(player),
+                        DEATH_RECAP_RESPAWN_TICKS),
+                serverPlayer);
+
+        if (killer != null && killer.level() == player.level())
+            PENDING_DEATH_RECAP_CAMERAS.put(serverPlayer.getUUID(), killer.getUUID());
+    }
+
+    private static Vec3 getRecapFocus(Entity target)
+    {
+        return new Vec3(target.getX(), target.getY() + target.getBbHeight() * 0.75D, target.getZ());
+    }
+
+    private static void applyDeathSpecialPenalty(Player player)
+    {
+        if (!PlayerInfoCapability.hasCapability(player))
+            return;
+
+        PlayerInfo info = PlayerInfoCapability.get(player);
+        ItemStack weaponStack = player.getMainHandItem();
+
+        if (info.hasActiveSpecial())
+        {
+            int sourceSlot = info.getSpecialSourceSlot();
+            if (sourceSlot >= 0 && sourceSlot < player.getInventory().getContainerSize())
+                weaponStack = player.getInventory().getItem(sourceSlot);
+
+            if (weaponStack.getItem() instanceof WeaponBaseItem<?>)
+                WeaponBaseItem.setSpecialPoints(weaponStack, 0);
+            return;
+        }
+
+        if (weaponStack.getItem() instanceof WeaponBaseItem<?>)
+            WeaponBaseItem.setSpecialPoints(weaponStack, WeaponBaseItem.getSpecialPoints(weaponStack) / 2);
+    }
+
+    public static boolean shouldHoldServerPlayerDeath(ServerPlayer player)
+    {
+        Long expiresAt = ACTIVE_DEATH_RECAPS.get(player.getUUID());
+        return expiresAt != null && player.level().getGameTime() <= expiresAt;
     }
 
     @SubscribeEvent
@@ -281,6 +368,30 @@ public class SplatcraftCommonHandler {
 
     @SubscribeEvent
     public static void capabilityUpdateEvent(TickEvent.PlayerTickEvent event) {
+        if (event.side.isServer() && event.phase == TickEvent.Phase.END && event.player instanceof ServerPlayer serverPlayer) {
+            Long recapExpires = ACTIVE_DEATH_RECAPS.get(serverPlayer.getUUID());
+            if (recapExpires != null && (!serverPlayer.isDeadOrDying() || serverPlayer.level().getGameTime() > recapExpires)) {
+                ACTIVE_DEATH_RECAPS.remove(serverPlayer.getUUID());
+                if (serverPlayer.getCamera() != serverPlayer)
+                    serverPlayer.setCamera(serverPlayer);
+                serverPlayer.setInvisible(false);
+            }
+
+            UUID cameraId = PENDING_DEATH_RECAP_CAMERAS.get(serverPlayer.getUUID());
+
+            if (cameraId != null && serverPlayer.isDeadOrDying()) {
+                Entity killer = serverPlayer.serverLevel().getEntity(cameraId);
+                if (killer instanceof LivingEntity) {
+                    serverPlayer.setCamera(killer);
+                }
+
+                if (!(killer instanceof LivingEntity))
+                    PENDING_DEATH_RECAP_CAMERAS.remove(serverPlayer.getUUID());
+            } else if (cameraId != null) {
+                PENDING_DEATH_RECAP_CAMERAS.remove(serverPlayer.getUUID());
+            }
+        }
+
         if (PlayerInfoCapability.hasCapability(event.player)) {
             PlayerInfo info = PlayerInfoCapability.get(event.player);
             if (event.player.deathTime <= 0 && !info.isInitialized()) {

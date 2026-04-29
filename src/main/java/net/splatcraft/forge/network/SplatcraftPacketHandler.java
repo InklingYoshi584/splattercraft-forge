@@ -33,6 +33,7 @@ public class SplatcraftPacketHandler
         registerMessage(PlayerColorPacket.class, PlayerColorPacket::decode);
         registerMessage(PlayerSetSquidC2SPacket.class, PlayerSetSquidC2SPacket::decode);
         registerMessage(PlayerSetSquidS2CPacket.class, PlayerSetSquidS2CPacket::decode);
+        registerMessage(OpenDeathRecapPacket.class, OpenDeathRecapPacket::decode);
         registerMessage(UpdateBooleanGamerulesPacket.class, UpdateBooleanGamerulesPacket::decode);
         registerMessage(UpdateIntGamerulesPacket.class, UpdateIntGamerulesPacket::decode);
         registerMessage(RequestPlayerInfoPacket.class, RequestPlayerInfoPacket::decode);
@@ -57,6 +58,7 @@ public class SplatcraftPacketHandler
         registerMessage(UseStoredSpecialPacket.class, UseStoredSpecialPacket::decode);
         registerMessage(UseUltraStampThrowPacket.class, UseUltraStampThrowPacket::decode);
         registerMessage(ZipcasterLatchActionPacket.class, ZipcasterLatchActionPacket::decode);
+        registerMessage(InkRailRideActionPacket.class, InkRailRideActionPacket::decode);
         registerMessage(SuperJumpSelectPacket.class, SuperJumpSelectPacket::decode);
     }
 

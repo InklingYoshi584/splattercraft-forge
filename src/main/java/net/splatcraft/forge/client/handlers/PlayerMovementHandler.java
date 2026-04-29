@@ -18,11 +18,13 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.splatcraft.forge.data.capabilities.playerinfo.PlayerInfoCapability;
+import net.splatcraft.forge.commands.SuperJumpCommand;
 import net.splatcraft.forge.items.weapons.RollerItem;
 import net.splatcraft.forge.items.weapons.UltraStampSpecialItem;
 import net.splatcraft.forge.items.weapons.WeaponBaseItem;
 import net.splatcraft.forge.items.weapons.ZipcasterSpecialItem;
 import net.splatcraft.forge.network.SplatcraftPacketHandler;
+import net.splatcraft.forge.network.c2s.InkRailRideActionPacket;
 import net.splatcraft.forge.network.c2s.ZipcasterLatchActionPacket;
 import net.splatcraft.forge.registries.SplatcraftItems;
 import net.splatcraft.forge.util.InkBlockUtils;
@@ -39,6 +41,8 @@ public class PlayerMovementHandler
     private static float lastYaw;
     private static float lastPitch;
     private static boolean trackedRotation;
+    private static int inkRailMoveState;
+    private static boolean inkRailJumpHeld;
     private static boolean zipcasterLatchMoveHeld;
     private static boolean zipcasterLatchJumpHeld;
 
@@ -53,6 +57,7 @@ public class PlayerMovementHandler
         //MovementInput input = player.movementInput;
         AttributeInstance speedAttribute = player.getAttribute(Attributes.MOVEMENT_SPEED);
         AttributeInstance swimAttribute = player.getAttribute(ForgeMod.SWIM_SPEED.get());
+        boolean onInkRail = PlayerInfoCapability.hasCapability(player) && PlayerInfoCapability.get(player).isInkRailRiding();
 
         if (speedAttribute.hasModifier(INK_SWIM_SPEED))
             speedAttribute.removeModifier(INK_SWIM_SPEED);
@@ -108,7 +113,14 @@ public class PlayerMovementHandler
 
         limitUltraStampTurning(player);
 
-        if (ZipcasterSpecialItem.getPhase(player) == ZipcasterSpecialItem.PHASE_REEL)
+        if (onInkRail)
+        {
+            player.setNoGravity(true);
+            player.noPhysics = true;
+            player.fallDistance = 0.0F;
+            player.setDeltaMovement(player.getDeltaMovement().multiply(1.0D, 0.0D, 1.0D));
+        }
+        else if (ZipcasterSpecialItem.getPhase(player) == ZipcasterSpecialItem.PHASE_REEL)
         {
             player.setNoGravity(true);
             player.noPhysics = true;
@@ -124,6 +136,8 @@ public class PlayerMovementHandler
         else if (player.isNoGravity())
         {
             player.setNoGravity(false);
+            if (!SuperJumpCommand.isSuperJumping(player))
+                player.noPhysics = false;
         }
 
         if (!ZipcasterSpecialItem.isLatched(player))
@@ -139,6 +153,29 @@ public class PlayerMovementHandler
 
         Input input = event.getInput();
         Player player = event.getEntity();
+
+        if (PlayerInfoCapability.hasCapability(player) && PlayerInfoCapability.get(player).isInkRailRiding())
+        {
+            int moveIntent = input.forwardImpulse > 0.01F ? 1 : input.forwardImpulse < -0.01F ? -1 : 0;
+            if (input.jumping && !inkRailJumpHeld)
+                SplatcraftPacketHandler.sendToServer(new InkRailRideActionPacket(InkRailRideActionPacket.ACTION_DETACH));
+            if (moveIntent != inkRailMoveState)
+                SplatcraftPacketHandler.sendToServer(new InkRailRideActionPacket(InkRailRideActionPacket.ACTION_MOVE, moveIntent));
+
+            inkRailMoveState = moveIntent;
+            inkRailJumpHeld = input.jumping;
+            input.forwardImpulse = 0.0F;
+            input.leftImpulse = 0.0F;
+            input.jumping = false;
+            return;
+        }
+
+        if (inkRailMoveState != 0)
+        {
+            inkRailMoveState = 0;
+            SplatcraftPacketHandler.sendToServer(new InkRailRideActionPacket(InkRailRideActionPacket.ACTION_MOVE, 0));
+        }
+        inkRailJumpHeld = false;
 
         float speedMod = !input.shiftKeyDown ? PlayerInfoCapability.isSquid(player) && InkBlockUtils.canSquidHide(player) ? 30f : 2f : 1f;
 

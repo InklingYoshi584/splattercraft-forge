@@ -33,6 +33,7 @@ import net.splatcraft.forge.client.models.inktanks.InkTankJrModel;
 import net.splatcraft.forge.client.models.inktanks.InkTankModel;
 import net.splatcraft.forge.dispenser.PlaceBlockDispenseBehavior;
 import net.splatcraft.forge.entities.subs.CurlingBombEntity;
+import net.splatcraft.forge.items.BlockItem;
 import net.splatcraft.forge.items.*;
 import net.splatcraft.forge.items.remotes.ColorChangerItem;
 import net.splatcraft.forge.items.remotes.InkDisruptorItem;
@@ -218,6 +219,8 @@ public class SplatcraftItems {
     //Redstone Components
     public static final RegistryObject<Item> remotePedestal = REGISTRY.register("remote_pedestal", () -> new ColoredBlockItem(SplatcraftBlocks.remotePedestal.get()));
     public static final RegistryObject<Item> splatSwitch = REGISTRY.register("splat_switch", () -> new BlockItem(SplatcraftBlocks.splatSwitch.get()));
+    public static final RegistryObject<Item> inkRail = REGISTRY.register("ink_rail", () -> new InkRailBlockItem(SplatcraftBlocks.inkRail.get()));
+    public static final RegistryObject<Item> inkRailNode = REGISTRY.register("ink_rail_node", () -> new InkRailNodeItem(SplatcraftBlocks.inkRailNode.get()));
 
     //Ink Stained Blocks
     public static final RegistryObject<Item> inkedWool = REGISTRY.register("ink_stained_wool", () -> new ColoredBlockItem(SplatcraftBlocks.inkedWool.get(), new Item.Properties(), Items.WHITE_WOOL));

@@ -33,6 +33,7 @@ public class SplatcraftGameRules {
     public static GameRules.Key<GameRules.BooleanValue> INK_DAMAGE_COOLDOWN;
     public static GameRules.Key<GameRules.BooleanValue> INFINITE_INK_IN_CREATIVE;
     public static GameRules.Key<GameRules.BooleanValue> RECHARGEABLE_INK_TANK;
+    public static GameRules.Key<GameRules.BooleanValue> DEATH_RECAP;
 
     public static void registerGamerules() {
         INK_DECAY = createBooleanRule("inkDecay", GameRules.Category.UPDATES, true);
@@ -52,6 +53,7 @@ public class SplatcraftGameRules {
         INKABLE_GROUND = createBooleanRule("inkableGround", GameRules.Category.MISC, true);
         INK_DESTROYS_FOLIAGE = createBooleanRule("inkDestroysFoliage", GameRules.Category.MISC, true);
         RECHARGEABLE_INK_TANK = createBooleanRule("rechargeableInkTank", GameRules.Category.PLAYER, true);
+        DEATH_RECAP = createBooleanRule("deathRecap", GameRules.Category.PLAYER, false);
     }
 
     public static boolean getLocalizedRule(Level level, BlockPos pos, GameRules.Key<GameRules.BooleanValue> rule) {

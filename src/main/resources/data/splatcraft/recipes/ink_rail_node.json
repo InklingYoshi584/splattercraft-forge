@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " G ",
+    "SPS",
+    " G "
+  ],
+  "key": {
+    "G": {
+      "item": "splatcraft:grate"
+    },
+    "P": {
+      "item": "splatcraft:power_egg"
+    },
+    "S": {
+      "item": "splatcraft:sardinium"
+    }
+  },
+  "result": {
+    "item": "splatcraft:ink_rail_node",
+    "count": 2
+  }
+}

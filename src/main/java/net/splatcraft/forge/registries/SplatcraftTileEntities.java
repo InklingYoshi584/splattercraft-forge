@@ -13,6 +13,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import net.splatcraft.forge.client.renderer.tileentity.RemotePedestalTileEntityRenderer;
 import net.splatcraft.forge.client.renderer.tileentity.StageBarrierTileEntityRenderer;
+import net.splatcraft.forge.client.renderer.tileentity.InkRailTileEntityRenderer;
 import net.splatcraft.forge.tileentities.*;
 import net.splatcraft.forge.tileentities.container.InkVatContainer;
 import net.splatcraft.forge.tileentities.container.WeaponLoadoutContainer;
@@ -35,6 +36,8 @@ public class SplatcraftTileEntities
     public static final RegistryObject<BlockEntityType<InkVatTileEntity>> inkVatTileEntity = registerTileEntity("ink_vat", InkVatTileEntity::new, inkVat);
     public static final RegistryObject<BlockEntityType<RemotePedestalTileEntity>>remotePedestalTileEntity = registerTileEntity("remote_pedestal", RemotePedestalTileEntity::new, remotePedestal);
     public static final RegistryObject<BlockEntityType<SpawnPadTileEntity>> spawnPadTileEntity = registerTileEntity("spawn_pad", SpawnPadTileEntity::new, spawnPad);
+    public static final RegistryObject<BlockEntityType<InkRailTileEntity>> inkRailTileEntity = registerTileEntity("ink_rail", InkRailTileEntity::new, inkRail);
+    public static final RegistryObject<BlockEntityType<InkRailNodeTileEntity>> inkRailNodeTileEntity = registerTileEntity("ink_rail_node", InkRailNodeTileEntity::new, inkRailNode);
 
     public static final RegistryObject<MenuType<InkVatContainer>> inkVatContainer = CONTAINER_REGISTRY.register("ink_vat", () -> IForgeMenuType.create(InkVatContainer::new));
     public static final RegistryObject<MenuType<WeaponWorkbenchContainer>> weaponWorkbenchContainer = registerContainer("weapon_workbench", WeaponWorkbenchContainer::new);
@@ -82,5 +85,7 @@ public class SplatcraftTileEntities
         BlockEntityRenderers.register(stageBarrierTileEntity.get(), StageBarrierTileEntityRenderer::new);
         BlockEntityRenderers.register(colorBarrierTileEntity.get(), StageBarrierTileEntityRenderer::new);
         BlockEntityRenderers.register(remotePedestalTileEntity.get(), RemotePedestalTileEntityRenderer::new);
+        BlockEntityRenderers.register(inkRailTileEntity.get(), InkRailTileEntityRenderer::new);
+        BlockEntityRenderers.register(inkRailNodeTileEntity.get(), InkRailTileEntityRenderer::new);
     }
 }

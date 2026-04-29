@@ -452,13 +452,6 @@ public abstract class WeaponBaseItem<S extends AbstractWeaponSettings<S, ?>> ext
         if (!level.isClientSide && !AbilityAccessUtils.canUseInkAbilities(player))
             return InteractionResultHolder.fail(player.getItemInHand(hand));
 
-        if (hand == InteractionHand.MAIN_HAND && player.isCrouching())
-        {
-            if (!level.isClientSide && player instanceof ServerPlayer serverPlayer)
-                openLoadoutScreen(serverPlayer, hand);
-            return InteractionResultHolder.sidedSuccess(player.getItemInHand(hand), level.isClientSide());
-        }
-
         if(!(player.isSwimming() && !player.isInWater()))
             player.startUsingItem(hand);
         return useSuper(level, player, hand);

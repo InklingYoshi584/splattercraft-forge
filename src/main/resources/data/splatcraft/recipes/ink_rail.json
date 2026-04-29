@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GPG",
+    "SRS",
+    "GSG"
+  ],
+  "key": {
+    "G": {
+      "item": "splatcraft:grate"
+    },
+    "P": {
+      "item": "splatcraft:power_egg"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "S": {
+      "item": "splatcraft:sardinium"
+    }
+  },
+  "result": {
+    "item": "splatcraft:ink_rail"
+  }
+}
