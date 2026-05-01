@@ -30,6 +30,7 @@ import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.splatcraft.forge.Splatcraft;
+import net.splatcraft.forge.client.models.SuperJumpMarkerModel;
 import net.splatcraft.forge.commands.SuperJumpCommand;
 import net.splatcraft.forge.data.capabilities.playerinfo.PlayerInfoCapability;
 import net.splatcraft.forge.items.weapons.WeaponBaseItem;
@@ -53,6 +54,7 @@ public class SuperJumpOverlayHandler
 	private static final float ACTIVE_MARKER_START_OFFSET = 3.2F;
 	private static final float CIRCLE_HEIGHT = 0.0625F;
 	private static final int CIRCLE_SEGMENTS = 28;
+	private static final SuperJumpMarkerModel JUMP_MARKER_MODEL = new SuperJumpMarkerModel();
 	private static final RenderStateShard.TransparencyStateShard TRANSLUCENT_TRANSPARENCY = new RenderStateShard.TransparencyStateShard("translucent_transparency", () -> {
 		RenderSystem.enableBlend();
 		RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
@@ -149,7 +151,7 @@ public class SuperJumpOverlayHandler
 			List<TargetCandidate> targets = collectTargets(player);
 			TargetCandidate hoveredTarget = getHoveredTarget(player, targets);
 			for (TargetCandidate target : targets)
-				renderTarget(poseStack, buffer, cameraPos, target, hoveredTarget == target, true, 0.0F);
+				renderSelectionTarget(poseStack, buffer, cameraPos, target, hoveredTarget == target);
 		}
 
 		buffer.endBatch();
@@ -166,11 +168,16 @@ public class SuperJumpOverlayHandler
 			if (!(cooldown instanceof SuperJumpCommand.SuperJump jump))
 				continue;
 
-			float progress = 1.0F - Mth.clamp((jump.getTime() - 1) / (float) Math.max(1, jump.getMaxTime()), 0.0F, 1.0F);
-			float elementOffset = Mth.lerp(progress, ACTIVE_MARKER_START_OFFSET, 0.0F);
-			TargetCandidate marker = new TargetCandidate(jump.getTarget(), false, player.getUUID(), player.getDisplayName(), ItemStack.EMPTY, player, ColorUtils.getPlayerColor(player));
-			renderTarget(poseStack, buffer, cameraPos, marker, false, false, elementOffset);
+			renderActiveTarget(poseStack, buffer, cameraPos, jump.getTarget(), ColorUtils.getPlayerColor(player));
 		}
+	}
+
+	private static void renderActiveTarget(PoseStack poseStack, MultiBufferSource buffer, Vec3 cameraPos, Vec3 position, int color)
+	{
+		poseStack.pushPose();
+		poseStack.translate(position.x - cameraPos.x, position.y - cameraPos.y, position.z - cameraPos.z);
+		renderCircleAndArrow(poseStack, buffer, getMarkerColor(color), false);
+		poseStack.popPose();
 	}
 
 	private static List<TargetCandidate> collectTargets(LocalPlayer player)
@@ -256,6 +263,22 @@ public class SuperJumpOverlayHandler
 		poseStack.popPose();
 	}
 
+	private static void renderSelectionTarget(PoseStack poseStack, MultiBufferSource buffer, Vec3 cameraPos, TargetCandidate target, boolean highlighted)
+	{
+		poseStack.pushPose();
+		poseStack.translate(target.position.x - cameraPos.x, target.position.y - cameraPos.y, target.position.z - cameraPos.z);
+		float scale = getDistanceScale((float) target.position.distanceTo(cameraPos));
+		poseStack.scale(scale, scale, scale);
+
+		renderSelectionCircle(poseStack, buffer, getMarkerColor(target.color), highlighted);
+		if (target.icon.isEmpty())
+			renderPlayerHead(poseStack, buffer, target.displayPlayer, highlighted, 0.0F);
+		else renderItemIcon(poseStack, buffer, target.icon, highlighted, 0.0F);
+
+		renderLabel(poseStack, buffer, target.label, highlighted, 0.0F);
+		poseStack.popPose();
+	}
+
 	private static int getMarkerColor(int color)
 	{
 		return color == -1 ? 0xFFFFFF : color;
@@ -263,44 +286,12 @@ public class SuperJumpOverlayHandler
 
 	private static void renderCircleAndArrow(PoseStack poseStack, MultiBufferSource buffer, int color, boolean highlighted)
 	{
-		renderFilledCircle(poseStack, buffer, color, highlighted);
-
-		VertexConsumer consumer = buffer.getBuffer(RenderType.lines());
-		Matrix4f pose = poseStack.last().pose();
-		Matrix3f normal = poseStack.last().normal();
-
-		float radius = highlighted ? 1.1F : 0.9F;
-		float alpha = highlighted ? 1.0F : 0.8F;
-		float red = ((color >> 16) & 0xFF) / 255.0F;
-		float green = ((color >> 8) & 0xFF) / 255.0F;
-		float blue = (color & 0xFF) / 255.0F;
-		int segments = 28;
-		for (int i = 0; i < segments; i++)
-		{
-			double startAngle = Math.PI * 2.0D * i / segments;
-			double endAngle = Math.PI * 2.0D * (i + 1) / segments;
-			addLine(consumer, pose, normal,
-					(float) (Math.cos(startAngle) * radius), 0.05F, (float) (Math.sin(startAngle) * radius),
-					(float) (Math.cos(endAngle) * radius), 0.05F, (float) (Math.sin(endAngle) * radius),
-					red, green, blue, alpha);
-		}
-
-		if (highlighted)
-		{
-			float innerRadius = radius * 0.8F;
-			for (int i = 0; i < segments; i++)
-			{
-				double startAngle = Math.PI * 2.0D * i / segments;
-				double endAngle = Math.PI * 2.0D * (i + 1) / segments;
-				addLine(consumer, pose, normal,
-						(float) (Math.cos(startAngle) * innerRadius), 0.05F, (float) (Math.sin(startAngle) * innerRadius),
-						(float) (Math.cos(endAngle) * innerRadius), 0.05F, (float) (Math.sin(endAngle) * innerRadius),
-						1.0F, 1.0F, 1.0F, 0.9F);
-			}
-		}
+		Minecraft minecraft = Minecraft.getInstance();
+		float animationTime = (minecraft.level.getGameTime() + minecraft.getFrameTime()) / 20.0F;
+		JUMP_MARKER_MODEL.render(poseStack, buffer, FULL_BRIGHT, OverlayTexture.NO_OVERLAY, color, highlighted, animationTime);
 	}
 
-	private static void renderFilledCircle(PoseStack poseStack, MultiBufferSource buffer, int color, boolean highlighted)
+	private static void renderSelectionCircle(PoseStack poseStack, MultiBufferSource buffer, int color, boolean highlighted)
 	{
 		float red = ((color >> 16) & 0xFF) / 255.0F;
 		float green = ((color >> 8) & 0xFF) / 255.0F;
@@ -385,10 +376,12 @@ public class SuperJumpOverlayHandler
 		poseStack.popPose();
 	}
 
-	private static void addLine(VertexConsumer consumer, Matrix4f pose, Matrix3f normal, float x1, float y1, float z1, float x2, float y2, float z2, float r, float g, float b, float a)
+	private static void addBillboardQuad(VertexConsumer consumer, Matrix4f pose, float minX, float minY, float maxX, float maxY, float red, float green, float blue, float alpha)
 	{
-		consumer.vertex(pose, x1, y1, z1).color(r, g, b, a).normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
-		consumer.vertex(pose, x2, y2, z2).color(r, g, b, a).normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
+		consumer.vertex(pose, minX, maxY, 0.0F).color(red, green, blue, alpha).endVertex();
+		consumer.vertex(pose, maxX, maxY, 0.0F).color(red, green, blue, alpha).endVertex();
+		consumer.vertex(pose, maxX, minY, 0.0F).color(red, green, blue, alpha).endVertex();
+		consumer.vertex(pose, minX, minY, 0.0F).color(red, green, blue, alpha).endVertex();
 	}
 
 	private static void addDisk(VertexConsumer consumer, Matrix4f pose, float radius, float red, float green, float blue, float alpha)
@@ -399,14 +392,6 @@ public class SuperJumpOverlayHandler
 			double angle = Math.PI * 2.0D * i / CIRCLE_SEGMENTS;
 			consumer.vertex(pose, (float) (Math.cos(angle) * radius), CIRCLE_HEIGHT, (float) (Math.sin(angle) * radius)).color(red, green, blue, alpha).endVertex();
 		}
-	}
-
-	private static void addBillboardQuad(VertexConsumer consumer, Matrix4f pose, float minX, float minY, float maxX, float maxY, float red, float green, float blue, float alpha)
-	{
-		consumer.vertex(pose, minX, maxY, 0.0F).color(red, green, blue, alpha).endVertex();
-		consumer.vertex(pose, maxX, maxY, 0.0F).color(red, green, blue, alpha).endVertex();
-		consumer.vertex(pose, maxX, minY, 0.0F).color(red, green, blue, alpha).endVertex();
-		consumer.vertex(pose, minX, minY, 0.0F).color(red, green, blue, alpha).endVertex();
 	}
 
 	private static void renderFaceQuad(VertexConsumer consumer, Matrix4f pose, Matrix3f normal, float minX, float minY, float maxX, float maxY, float minU, float minV, float maxU, float maxV, int light)

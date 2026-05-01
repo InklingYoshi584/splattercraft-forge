@@ -19,10 +19,9 @@ import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.splatcraft.forge.Splatcraft;
-import net.splatcraft.forge.commands.SuperJumpCommand;
+import net.splatcraft.forge.data.capabilities.playerinfo.PlayerInfoCapability;
 import net.splatcraft.forge.items.weapons.ZipcasterSpecialItem;
 import net.splatcraft.forge.util.ColorUtils;
-import net.splatcraft.forge.util.PlayerCooldown;
 import org.joml.Matrix4f;
 
 @Mod.EventBusSubscriber(value = Dist.CLIENT, modid = Splatcraft.MODID)
@@ -66,6 +65,9 @@ public class ZipcasterRenderHandler
 
         for (Player player : minecraft.level.players())
         {
+            if (!hasVisibleZipcasterMarker(player))
+                continue;
+
             Vec3 recall = getRecallMarkerPos(player);
             if (recall != null)
                 renderMarker(poseStack, buffer, cameraPos, recall, getMarkerColor(player), 0.9F);
@@ -118,15 +120,14 @@ public class ZipcasterRenderHandler
 
     private static Vec3 getRecallMarkerPos(Player player)
     {
-        Vec3 recall = ZipcasterSpecialItem.getRecallPos(player);
-        if (recall != null)
-            return recall;
+        return ZipcasterSpecialItem.getRecallPos(player);
+    }
 
-        if (!SuperJumpCommand.isSuperJumping(player))
-            return null;
-
-        PlayerCooldown cooldown = PlayerCooldown.getPlayerCooldown(player);
-        return cooldown instanceof SuperJumpCommand.SuperJump jump ? jump.getTarget() : null;
+    private static boolean hasVisibleZipcasterMarker(Player player)
+    {
+        return PlayerInfoCapability.hasCapability(player)
+                && PlayerInfoCapability.get(player).hasActiveSpecial()
+                && ZipcasterSpecialItem.isActive(player);
     }
 
     private static void renderBeam(PoseStack poseStack, MultiBufferSource buffer, Vec3 cameraPos, Player player, Vec3 anchor, int color)
