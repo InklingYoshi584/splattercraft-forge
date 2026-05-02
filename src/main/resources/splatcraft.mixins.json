@@ -27,6 +27,7 @@
     "ItemRendererMixin",
     "LocalPlayerMixin",
     "MinecraftClientAccessor",
+    "MouseHandlerMixin",
     "PlayerModelMixin",
     "RecipeCategoryMixin",
     "SheepWoolLayerMixin",

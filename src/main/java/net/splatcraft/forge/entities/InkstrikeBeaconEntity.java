@@ -77,7 +77,8 @@ public class InkstrikeBeaconEntity extends ThrowableItemProjectile
 
         LivingEntity owner = getOwnerEntity();
         Vec3 target = resolveTarget(hitLocation);
-        InkstrikeEntity inkstrike = new InkstrikeEntity(level(), owner, ownerUUID, sourceWeapon, inkType, color, target);
+        level().addFreshEntity(new InkstrikeLandingIndicatorEntity(level(), target.x, target.y, target.z, color, InkstrikeProfile.TRIPLE.travelTicks()));
+        InkstrikeEntity inkstrike = new InkstrikeEntity(level(), owner, ownerUUID, sourceWeapon, inkType, color, target, InkstrikeProfile.TRIPLE);
         level().addFreshEntity(inkstrike);
 
         discard();
@@ -97,6 +98,22 @@ public class InkstrikeBeaconEntity extends ThrowableItemProjectile
         }
 
         return new Vec3(hitLocation.x, level().getMinBuildHeight() + 1.0D, hitLocation.z);
+    }
+
+    public static Vec3 resolveTargetAt(Level level, int x, int z)
+    {
+        BlockPos pos = new BlockPos(x, level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, x, z), z);
+
+        while (pos.getY() > level.getMinBuildHeight())
+        {
+            BlockState state = level.getBlockState(pos);
+            if (!state.getCollisionShape(level, pos).isEmpty())
+                return new Vec3(x + 0.5D, pos.getY() + 1.05D, z + 0.5D);
+
+            pos = pos.below();
+        }
+
+        return new Vec3(x + 0.5D, level.getMinBuildHeight() + 1.0D, z + 0.5D);
     }
 
     @Nullable

@@ -2,6 +2,7 @@
   "replace": false,
   "values": [
     "splatcraft:ink_strike_tornado",
-    "splatcraft:ink_splat"
+    "splatcraft:ink_splat",
+    "splatcraft:enemy_ink"
   ]
 }

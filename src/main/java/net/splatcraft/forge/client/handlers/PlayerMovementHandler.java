@@ -18,6 +18,7 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.splatcraft.forge.data.capabilities.playerinfo.PlayerInfoCapability;
+import net.splatcraft.forge.client.handlers.InkstrikeTacticalOverlayHandler;
 import net.splatcraft.forge.commands.SuperJumpCommand;
 import net.splatcraft.forge.items.weapons.RollerItem;
 import net.splatcraft.forge.items.weapons.UltraStampSpecialItem;
@@ -181,10 +182,16 @@ public class PlayerMovementHandler
 
         input.forwardImpulse *= speedMod;
         //input = player.movementInput;
-        input.leftImpulse *= speedMod;
-        //input = player.movementInput;
+		input.leftImpulse *= speedMod;
+		//input = player.movementInput;
 
-        if (PlayerInfoCapability.isSquid(player) && InkBlockUtils.canSquidClimb(player) && !player.getAbilities().flying)
+		if (InkstrikeTacticalOverlayHandler.isOverlayActive(player))
+		{
+			input.forwardImpulse *= 0.15F;
+			input.leftImpulse *= 0.15F;
+		}
+
+		if (PlayerInfoCapability.isSquid(player) && InkBlockUtils.canSquidClimb(player) && !player.getAbilities().flying)
         {
             AttributeInstance gravity = player.getAttribute(net.minecraftforge.common.ForgeMod.ENTITY_GRAVITY.get());
             boolean flag = player.getDeltaMovement().y <= 0.0D;

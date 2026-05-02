@@ -6,6 +6,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.splatcraft.forge.commands.SuperJumpCommand;
+import net.splatcraft.forge.client.handlers.InkstrikeTacticalOverlayHandler;
 import net.splatcraft.forge.client.handlers.SplatcraftKeyHandler;
 import net.splatcraft.forge.client.handlers.SuperJumpOverlayHandler;
 import net.splatcraft.forge.items.weapons.UltraStampSpecialItem;
@@ -55,6 +56,12 @@ public class WeaponHotkeyMixin
 			}
 
 			if (minecraft.player != null && ZipcasterSpecialItem.isEndingSoon(minecraft.player))
+			{
+				ci.cancel();
+				return;
+			}
+
+			if (InkstrikeTacticalOverlayHandler.interceptUseClick())
 			{
 				ci.cancel();
 				return;

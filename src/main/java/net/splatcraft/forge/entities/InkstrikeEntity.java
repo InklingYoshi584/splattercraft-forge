@@ -25,7 +25,6 @@ import org.jetbrains.annotations.Nullable;
 public class InkstrikeEntity extends ThrowableItemProjectile
 {
     private static final double FALL_HEIGHT = 32.0D;
-    private static final double FALL_SPEED = 2.35D;
     private static final double LAUNCH_SPEED = 1.45D;
     private static final int LAUNCH_LIFESPAN = 20;
 
@@ -36,6 +35,12 @@ public class InkstrikeEntity extends ThrowableItemProjectile
     private Vec3 targetPos = Vec3.ZERO;
     private boolean cosmeticLaunch;
     private boolean impacted;
+    private int travelTicks = InkstrikeProfile.TRIPLE.travelTicks();
+    private float tornadoDiameter = InkstrikeProfile.TRIPLE.tornadoDiameter();
+    private int tornadoDurationTicks = InkstrikeProfile.TRIPLE.tornadoDurationTicks();
+    private float tornadoDamagePerTick = InkstrikeProfile.TRIPLE.damagePerTick();
+    private boolean landingIndicatorSpawned;
+    private boolean spawnLandingIndicator = true;
 
     public InkstrikeEntity(EntityType<? extends InkstrikeEntity> type, Level level)
     {
@@ -43,6 +48,11 @@ public class InkstrikeEntity extends ThrowableItemProjectile
     }
 
     public InkstrikeEntity(Level level, @Nullable LivingEntity owner, @Nullable UUID ownerUUID, ItemStack sourceWeapon, InkBlockUtils.InkType inkType, int color, Vec3 targetPos)
+    {
+        this(level, owner, ownerUUID, sourceWeapon, inkType, color, targetPos, InkstrikeProfile.TRIPLE);
+    }
+
+    public InkstrikeEntity(Level level, @Nullable LivingEntity owner, @Nullable UUID ownerUUID, ItemStack sourceWeapon, InkBlockUtils.InkType inkType, int color, Vec3 targetPos, InkstrikeProfile profile)
     {
         this(SplatcraftEntities.INKSTRIKE.get(), level);
         if (owner != null)
@@ -52,9 +62,12 @@ public class InkstrikeEntity extends ThrowableItemProjectile
         this.inkType = inkType;
         this.color = color;
         this.targetPos = targetPos;
+        this.travelTicks = Math.max(1, profile.travelTicks());
+        this.tornadoDiameter = profile.tornadoDiameter();
+        this.tornadoDurationTicks = profile.tornadoDurationTicks();
+        this.tornadoDamagePerTick = profile.damagePerTick();
         setItem(new ItemStack(SplatcraftItems.inkStrike.get()));
         setPos(targetPos.x, targetPos.y + FALL_HEIGHT, targetPos.z);
-        setDeltaMovement(0.0D, -FALL_SPEED, 0.0D);
     }
 
     public static InkstrikeEntity createLaunchEffect(Level level, LivingEntity owner, ItemStack sourceWeapon, InkBlockUtils.InkType inkType, int color)
@@ -70,6 +83,7 @@ public class InkstrikeEntity extends ThrowableItemProjectile
         entity.inkType = inkType;
         entity.color = color;
         entity.cosmeticLaunch = true;
+        entity.spawnLandingIndicator = false;
         entity.setOwner(owner);
         entity.setItem(new ItemStack(SplatcraftItems.inkStrike.get()));
         entity.setPos(owner.getX() + positionOffset.x, owner.getEyeY() - 0.15D + positionOffset.y, owner.getZ() + positionOffset.z);
@@ -110,7 +124,16 @@ public class InkstrikeEntity extends ThrowableItemProjectile
             return;
         }
 
-        if (!level().isClientSide && !impacted && getY() <= targetPos.y)
+        double progress = Math.min(1.0D, tickCount / (double)Math.max(travelTicks, 1));
+        setPos(targetPos.x, targetPos.y + FALL_HEIGHT * (1.0D - progress), targetPos.z);
+
+        if (!level().isClientSide && spawnLandingIndicator && !landingIndicatorSpawned)
+        {
+            landingIndicatorSpawned = true;
+            level().addFreshEntity(new InkstrikeLandingIndicatorEntity(level(), targetPos.x, targetPos.y, targetPos.z, color, travelTicks));
+        }
+
+        if (!level().isClientSide && !impacted && tickCount >= travelTicks)
         {
             setPos(targetPos.x, targetPos.y, targetPos.z);
             impact();
@@ -163,7 +186,7 @@ public class InkstrikeEntity extends ThrowableItemProjectile
 
         impacted = true;
         LivingEntity owner = getOwnerEntity();
-        InkstrikeTornadoEntity tornado = new InkstrikeTornadoEntity(level(), owner, ownerUUID, sourceWeapon, inkType, color, position());
+        InkstrikeTornadoEntity tornado = new InkstrikeTornadoEntity(level(), owner, ownerUUID, sourceWeapon, inkType, color, position(), tornadoDiameter, tornadoDurationTicks, tornadoDamagePerTick);
         level().addFreshEntity(tornado);
 
         discard();
@@ -200,6 +223,11 @@ public class InkstrikeEntity extends ThrowableItemProjectile
         tag.putDouble("TargetZ", targetPos.z);
         tag.putBoolean("CosmeticLaunch", cosmeticLaunch);
         tag.putBoolean("Impacted", impacted);
+        tag.putInt("TravelTicks", travelTicks);
+        tag.putFloat("TornadoDiameter", tornadoDiameter);
+        tag.putInt("TornadoDurationTicks", tornadoDurationTicks);
+        tag.putFloat("TornadoDamagePerTick", tornadoDamagePerTick);
+        tag.putBoolean("SpawnLandingIndicator", spawnLandingIndicator);
     }
 
     @Override
@@ -217,6 +245,15 @@ public class InkstrikeEntity extends ThrowableItemProjectile
         targetPos = new Vec3(tag.getDouble("TargetX"), tag.getDouble("TargetY"), tag.getDouble("TargetZ"));
         cosmeticLaunch = tag.getBoolean("CosmeticLaunch");
         impacted = tag.getBoolean("Impacted");
+        if (tag.contains("TravelTicks"))
+            travelTicks = Math.max(1, tag.getInt("TravelTicks"));
+        if (tag.contains("TornadoDiameter"))
+            tornadoDiameter = tag.getFloat("TornadoDiameter");
+        if (tag.contains("TornadoDurationTicks"))
+            tornadoDurationTicks = tag.getInt("TornadoDurationTicks");
+        if (tag.contains("TornadoDamagePerTick"))
+            tornadoDamagePerTick = tag.getFloat("TornadoDamagePerTick");
+        spawnLandingIndicator = !tag.contains("SpawnLandingIndicator") || tag.getBoolean("SpawnLandingIndicator");
         setItem(new ItemStack(SplatcraftItems.inkStrike.get()));
     }
 }

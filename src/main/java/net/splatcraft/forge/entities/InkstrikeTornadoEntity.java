@@ -32,17 +32,17 @@ public class InkstrikeTornadoEntity extends Entity implements IColoredEntity
     private static final EntityDataAccessor<Integer> COLOR = SynchedEntityData.defineId(InkstrikeTornadoEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Float> WIDTH = SynchedEntityData.defineId(InkstrikeTornadoEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Float> HEIGHT = SynchedEntityData.defineId(InkstrikeTornadoEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Integer> DURATION_TICKS = SynchedEntityData.defineId(InkstrikeTornadoEntity.class, EntityDataSerializers.INT);
     private static final float START_WIDTH = 1.0F;
-    private static final float END_WIDTH = 15.0F;
     private static final float TORNADO_HEIGHT = 20.0F;
-    private static final int EXPANSION_TICKS = 40;
-    private static final float DAMAGE_PER_TICK = 4.0F;
     private static final float BLOCK_INK_STRENGTH = 0.8F;
 
     private UUID ownerUUID;
     private ItemStack sourceWeapon = ItemStack.EMPTY;
     private InkBlockUtils.InkType inkType = InkBlockUtils.InkType.NORMAL;
     private boolean sequenceFinished;
+    private float endWidth = InkstrikeProfile.TRIPLE.tornadoDiameter();
+    private float damagePerTick = InkstrikeProfile.TRIPLE.damagePerTick();
 
     public InkstrikeTornadoEntity(EntityType<? extends InkstrikeTornadoEntity> type, Level level)
     {
@@ -51,13 +51,21 @@ public class InkstrikeTornadoEntity extends Entity implements IColoredEntity
 
     public InkstrikeTornadoEntity(Level level, @Nullable LivingEntity owner, @Nullable UUID ownerUUID, ItemStack sourceWeapon, InkBlockUtils.InkType inkType, int color, Vec3 pos)
     {
+        this(level, owner, ownerUUID, sourceWeapon, inkType, color, pos, InkstrikeProfile.TRIPLE.tornadoDiameter(), InkstrikeProfile.TRIPLE.tornadoDurationTicks(), InkstrikeProfile.TRIPLE.damagePerTick());
+    }
+
+    public InkstrikeTornadoEntity(Level level, @Nullable LivingEntity owner, @Nullable UUID ownerUUID, ItemStack sourceWeapon, InkBlockUtils.InkType inkType, int color, Vec3 pos, float endWidth, int durationTicks, float damagePerTick)
+    {
         this(SplatcraftEntities.INKSTRIKE_TORNADO.get(), level);
         this.ownerUUID = owner != null ? owner.getUUID() : ownerUUID;
         this.sourceWeapon = sourceWeapon.copy();
         this.inkType = inkType;
+        this.endWidth = endWidth;
+        this.damagePerTick = damagePerTick;
         setColor(color);
         setPos(pos.x, pos.y, pos.z);
         setTornadoWidth(START_WIDTH);
+        setDurationTicks(durationTicks);
     }
 
     @Override
@@ -66,6 +74,7 @@ public class InkstrikeTornadoEntity extends Entity implements IColoredEntity
         entityData.define(COLOR, ColorUtils.DEFAULT);
         entityData.define(WIDTH, START_WIDTH);
         entityData.define(HEIGHT, TORNADO_HEIGHT);
+        entityData.define(DURATION_TICKS, InkstrikeProfile.TRIPLE.tornadoDurationTicks());
     }
 
     @Override
@@ -82,21 +91,22 @@ public class InkstrikeTornadoEntity extends Entity implements IColoredEntity
     {
         super.tick();
 
-        float progress = EXPANSION_TICKS <= 1 ? 1.0F : Math.min(1.0F, Math.max(0.0F, (tickCount - 1) / (float) (EXPANSION_TICKS - 1)));
-        float width = Mth.lerp(progress, START_WIDTH, END_WIDTH);
-        setTornadoWidth(width);
-
         if (level().isClientSide)
         {
             spawnParticles();
-        }
-        else
-        {
-            inkArea(width * 0.5F);
-            damageEntities();
+            if (tickCount >= getDurationTicks())
+                discard();
+            return;
         }
 
-        if (tickCount >= EXPANSION_TICKS)
+        int durationTicks = Math.max(1, getDurationTicks());
+        float progress = durationTicks <= 1 ? 1.0F : Math.min(1.0F, Math.max(0.0F, (tickCount - 1) / (float) (durationTicks - 1)));
+        float width = Mth.lerp(progress, START_WIDTH, endWidth);
+        setTornadoWidth(width);
+        inkArea(width * 0.5F);
+        damageEntities();
+
+        if (tickCount >= durationTicks)
         {
             finishSequence();
             discard();
@@ -135,7 +145,7 @@ public class InkstrikeTornadoEntity extends Entity implements IColoredEntity
         for (int i = 0; i < outerRingParticles; i++)
         {
             double swirl = random.nextDouble() * Math.PI * 2.0D + tickCount * 0.22D;
-            double currentRadius = radius * (0.85D + random.nextDouble() * 0.3D);
+            double currentRadius = radius * (0.98D + random.nextDouble() * 0.07D);
             double x = getX() + Math.cos(swirl) * currentRadius;
             double y = getY() + random.nextDouble() * 1.5D;
             double z = getZ() + Math.sin(swirl) * currentRadius;
@@ -156,7 +166,7 @@ public class InkstrikeTornadoEntity extends Entity implements IColoredEntity
         LivingEntity owner = getOwner();
         for (LivingEntity target : level().getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(0.35D), entity -> entity.isAlive() && entity != owner))
         {
-            InkDamageUtils.doDamage(level(), target, DAMAGE_PER_TICK, getColor(), owner != null ? owner : this, this, sourceWeapon, true, SplatcraftDamageTypes.INK_STRIKE_TORNADO, false);
+            InkDamageUtils.doDamage(level(), target, damagePerTick, getColor(), owner != null ? owner : this, this, sourceWeapon, true, SplatcraftDamageTypes.INK_STRIKE_TORNADO, false);
         }
     }
 
@@ -204,6 +214,12 @@ public class InkstrikeTornadoEntity extends Entity implements IColoredEntity
             setColor(ColorUtils.getColorFromNbt(tag));
         if (tag.contains("Width"))
             setTornadoWidth(tag.getFloat("Width"));
+        if (tag.contains("EndWidth"))
+            endWidth = tag.getFloat("EndWidth");
+        if (tag.contains("DamagePerTick"))
+            damagePerTick = tag.getFloat("DamagePerTick");
+        if (tag.contains("DurationTicks"))
+            setDurationTicks(tag.getInt("DurationTicks"));
     }
 
     @Override
@@ -215,6 +231,9 @@ public class InkstrikeTornadoEntity extends Entity implements IColoredEntity
         tag.putString("InkType", inkType.getSerializedName());
         tag.putInt("Color", getColor());
         tag.putFloat("Width", getTornadoWidth());
+        tag.putFloat("EndWidth", endWidth);
+        tag.putFloat("DamagePerTick", damagePerTick);
+        tag.putInt("DurationTicks", getDurationTicks());
     }
 
     @Override
@@ -239,5 +258,15 @@ public class InkstrikeTornadoEntity extends Entity implements IColoredEntity
     public void setColor(int color)
     {
         entityData.set(COLOR, color);
+    }
+
+    public int getDurationTicks()
+    {
+        return entityData.get(DURATION_TICKS);
+    }
+
+    public void setDurationTicks(int durationTicks)
+    {
+        entityData.set(DURATION_TICKS, Math.max(1, durationTicks));
     }
 }

@@ -5,6 +5,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.splatcraft.forge.entities.InkstrikeEntity;
+import net.splatcraft.forge.entities.InkstrikeProfile;
 import net.splatcraft.forge.util.ColorUtils;
 import net.splatcraft.forge.util.InkBlockUtils;
 
@@ -25,6 +26,8 @@ public class TripleInkstrikeSpecialItem extends InkstrikeSpecialItem
         boolean used = super.useSpecial(level, player, specialStack, mainWeapon);
         if (!used || level.isClientSide)
             return used;
+
+        clearTargetCenter(player);
 
         Vec3 look = player.getLookAngle();
         Vec3 lateral = new Vec3(-look.z, 0.0D, look.x);
@@ -63,5 +66,18 @@ public class TripleInkstrikeSpecialItem extends InkstrikeSpecialItem
     protected String getTooltipKey()
     {
         return "item.splatcraft.triple_ink_strike.tooltip";
+    }
+
+    @Override
+    protected InkstrikeProfile getProfile(ItemStack specialStack)
+    {
+        return InkstrikeProfile.TRIPLE;
+    }
+
+    @Override
+    public void onMainWeaponUseTick(Level level, net.minecraft.world.entity.LivingEntity entity, ItemStack specialStack, ItemStack mainWeapon, int timeLeft)
+    {
+        if (entity instanceof Player player)
+            launchBeacon(level, player, mainWeapon);
     }
 }

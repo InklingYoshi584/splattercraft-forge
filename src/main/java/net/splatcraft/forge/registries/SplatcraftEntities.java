@@ -27,6 +27,7 @@ import net.splatcraft.forge.client.layer.InkAccessoryLayer;
 import net.splatcraft.forge.client.layer.InkOverlayLayer;
 import net.splatcraft.forge.client.layer.PlayerInkColoredSkinLayer;
 import net.splatcraft.forge.client.models.InkSquidModel;
+import net.splatcraft.forge.client.models.InkstrikeLandingModel;
 import net.splatcraft.forge.client.models.SquidBumperModel;
 import net.splatcraft.forge.client.models.inktanks.ArmoredInkTankModel;
 import net.splatcraft.forge.client.models.inktanks.ClassicInkTankModel;
@@ -41,6 +42,7 @@ import net.splatcraft.forge.client.models.subs.CurlingBombModel;
 import net.splatcraft.forge.client.models.subs.SplatBombModel;
 import net.splatcraft.forge.client.models.subs.SuctionBombModel;
 import net.splatcraft.forge.client.renderer.InkstrikeEntityRenderer;
+import net.splatcraft.forge.client.renderer.InkstrikeLandingIndicatorRenderer;
 import net.splatcraft.forge.client.renderer.InkstrikeTornadoRenderer;
 import net.splatcraft.forge.client.renderer.InkProjectileRenderer;
 import net.splatcraft.forge.client.renderer.InkSquidRenderer;
@@ -55,6 +57,7 @@ import net.splatcraft.forge.client.renderer.subs.SplatBombRenderer;
 import net.splatcraft.forge.client.renderer.subs.SuctionBombRenderer;
 import net.splatcraft.forge.entities.InkstrikeBeaconEntity;
 import net.splatcraft.forge.entities.InkstrikeEntity;
+import net.splatcraft.forge.entities.InkstrikeLandingIndicatorEntity;
 import net.splatcraft.forge.entities.InkstrikeTornadoEntity;
 import net.splatcraft.forge.entities.InkProjectileEntity;
 import net.splatcraft.forge.entities.InkSquidEntity;
@@ -80,6 +83,7 @@ public class SplatcraftEntities {
     public static final RegistryObject<EntityType<InkzookaTornadoEntity>> INKZOOKA_TORNADO = create("inkzooka_tornado", InkzookaTornadoEntity::new, MobCategory.MISC, 0.5f, 20.0f);
     public static final RegistryObject<EntityType<InkstrikeBeaconEntity>> INKSTRIKE_BEACON = create("inkstrike_beacon", InkstrikeBeaconEntity::new, MobCategory.MISC, 0.25f, 0.25f);
     public static final RegistryObject<EntityType<InkstrikeEntity>> INKSTRIKE = create("inkstrike", InkstrikeEntity::new, MobCategory.MISC, 0.75f, 0.75f);
+    public static final RegistryObject<EntityType<InkstrikeLandingIndicatorEntity>> INKSTRIKE_LANDING_INDICATOR = create("inkstrike_landing_indicator", InkstrikeLandingIndicatorEntity::new, MobCategory.MISC, 1.5f, 1.0f);
     public static final RegistryObject<EntityType<InkstrikeTornadoEntity>> INKSTRIKE_TORNADO = create("inkstrike_tornado", InkstrikeTornadoEntity::new, MobCategory.MISC, 1.0f, 20.0f);
     public static final RegistryObject<EntityType<UltraStampThrownEntity>> ULTRA_STAMP_THROWN = create("ultra_stamp_thrown", UltraStampThrownEntity::new, MobCategory.MISC, 3.0f, 3.0f);
     public static final RegistryObject<EntityType<SquidBumperEntity>> SQUID_BUMPER = create("squid_bumper", SquidBumperEntity::new, MobCategory.MISC, 0.6f, 1.8f);
@@ -105,6 +109,7 @@ public class SplatcraftEntities {
         EntityRenderers.register(INKZOOKA_TORNADO.get(), InkzookaTornadoRenderer::new);
         EntityRenderers.register(INKSTRIKE_BEACON.get(), ItemStackEntityRenderer::new);
         EntityRenderers.register(INKSTRIKE.get(), InkstrikeEntityRenderer::new);
+        EntityRenderers.register(INKSTRIKE_LANDING_INDICATOR.get(), InkstrikeLandingIndicatorRenderer::new);
         EntityRenderers.register(INKSTRIKE_TORNADO.get(), InkstrikeTornadoRenderer::new);
         EntityRenderers.register(ULTRA_STAMP_THROWN.get(), UltraStampThrownEntityRenderer::new);
         EntityRenderers.register(INK_SQUID.get(), InkSquidRenderer::new);
@@ -122,6 +127,7 @@ public class SplatcraftEntities {
     @SubscribeEvent
     public static void defineModelLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(InkSquidModel.LAYER_LOCATION, InkSquidModel::createBodyLayer);
+        event.registerLayerDefinition(InkstrikeLandingModel.LAYER_LOCATION, InkstrikeLandingModel::createBodyLayer);
         event.registerLayerDefinition(SquidBumperModel.LAYER_LOCATION, SquidBumperModel::createBodyLayer);
 
         event.registerLayerDefinition(SplatBombModel.LAYER_LOCATION, SplatBombModel::createBodyLayer);
