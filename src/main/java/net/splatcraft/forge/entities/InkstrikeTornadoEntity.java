@@ -1,6 +1,7 @@
 package net.splatcraft.forge.entities;
 
 import java.util.UUID;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -13,6 +14,7 @@ import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -23,7 +25,7 @@ import net.splatcraft.forge.registries.SplatcraftEntities;
 import net.splatcraft.forge.util.ColorUtils;
 import net.splatcraft.forge.util.InkBlockUtils;
 import net.splatcraft.forge.util.InkDamageUtils;
-import net.splatcraft.forge.util.InkExplosion;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -34,7 +36,7 @@ public class InkstrikeTornadoEntity extends Entity implements IColoredEntity
     private static final EntityDataAccessor<Float> HEIGHT = SynchedEntityData.defineId(InkstrikeTornadoEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Integer> DURATION_TICKS = SynchedEntityData.defineId(InkstrikeTornadoEntity.class, EntityDataSerializers.INT);
     private static final float START_WIDTH = 1.0F;
-    private static final float TORNADO_HEIGHT = 20.0F;
+    private static final float TORNADO_HEIGHT = 40.0F;
     private static final float BLOCK_INK_STRENGTH = 0.8F;
 
     private UUID ownerUUID;
@@ -158,7 +160,33 @@ public class InkstrikeTornadoEntity extends Entity implements IColoredEntity
     private void inkArea(float radius)
     {
         LivingEntity owner = getOwner();
-        InkExplosion.createInkExplosion(level(), owner != null ? owner : this, blockPosition(), radius, BLOCK_INK_STRENGTH, 0.0F, false, getColor(), inkType, sourceWeapon);
+        int minX = Mth.floor(getX() - radius);
+        int maxX = Mth.floor(getX() + radius);
+        int minY = Mth.floor(getY()) - 1;
+        int maxY = Mth.floor(getY() + TORNADO_HEIGHT);
+        int minZ = Mth.floor(getZ() - radius);
+        int maxZ = Mth.floor(getZ() + radius);
+        float radiusSq = radius * radius;
+
+        for (int y = minY; y <= maxY; y++)
+        {
+            for (int x = minX; x <= maxX; x++)
+            {
+                for (int z = minZ; z <= maxZ; z++)
+                {
+                    double dx = x + 0.5D - getX();
+                    double dz = z + 0.5D - getZ();
+                    if (dx * dx + dz * dz <= radiusSq)
+                    {
+                        BlockPos pos = new BlockPos(x, y, z);
+                        if (owner instanceof Player player)
+                            InkBlockUtils.playerInkBlock(player, level(), pos, getColor(), BLOCK_INK_STRENGTH, inkType);
+                        else
+                            InkBlockUtils.inkBlock(level(), pos, getColor(), BLOCK_INK_STRENGTH, inkType);
+                    }
+                }
+            }
+        }
     }
 
     private void damageEntities()

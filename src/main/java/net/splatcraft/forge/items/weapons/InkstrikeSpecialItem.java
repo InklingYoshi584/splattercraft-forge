@@ -32,7 +32,7 @@ public class InkstrikeSpecialItem extends SpecialWeaponItem
     public static final int ACTIVE_TICKS = 600;
     private static final int THROW_COOLDOWN = 8;
     private static final float BEACON_PITCH_OFFSET = -4.0F;
-    private static final float BEACON_THROW_SPEED = 2.25F;
+    private static final float BEACON_THROW_SPEED = 0.8F;
     public static final int TACTICAL_RADIUS = 100;
     private static final int LAUNCH_LOCK_TICKS = 20;
     private static final String TAG_THROWS_REMAINING = "InkstrikeThrowsRemaining";
@@ -133,7 +133,7 @@ public class InkstrikeSpecialItem extends SpecialWeaponItem
     @Override
     public boolean replacesMainWeapon(Level level, Player player, ItemStack specialStack, ItemStack mainWeapon)
     {
-        return true;
+        return getThrowsRemaining(player) > 0 || hasPendingLaunch(player);
     }
 
     @Override
