@@ -10,6 +10,7 @@
     "LivingEntityDeathMixin",
     "PlayerListMixin",
     "PlayerMixin",
+    "ServerLevelParticleMixin",
     "SheepMixin",
     "SquidPassthroughMixin"
   ],

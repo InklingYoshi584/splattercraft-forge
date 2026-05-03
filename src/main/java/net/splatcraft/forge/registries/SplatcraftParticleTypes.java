@@ -25,25 +25,25 @@ public class SplatcraftParticleTypes
 
     protected static final DeferredRegister<ParticleType<?>> REGISTRY = DeferredRegister.create(ForgeRegistries.PARTICLE_TYPES, MODID);
 
-    public static final RegistryObject<ParticleType<InkSplashParticleData>> INK_SPLASH = REGISTRY.register("ink_splash", () -> new ParticleType<>(false, InkSplashParticleData.DESERIALIZER) {
+    public static final RegistryObject<ParticleType<InkSplashParticleData>> INK_SPLASH = REGISTRY.register("ink_splash", () -> new ParticleType<>(true, InkSplashParticleData.DESERIALIZER) {
         @Override
         public Codec<InkSplashParticleData> codec() {
             return InkSplashParticleData.CODEC;
         }
     });
-    public static final RegistryObject<ParticleType<InkExplosionParticleData>> INK_EXPLOSION = REGISTRY.register("ink_explosion", () -> new ParticleType<>(false, InkExplosionParticleData.DESERIALIZER) {
+    public static final RegistryObject<ParticleType<InkExplosionParticleData>> INK_EXPLOSION = REGISTRY.register("ink_explosion", () -> new ParticleType<>(true, InkExplosionParticleData.DESERIALIZER) {
 	    @Override
 	    public Codec<InkExplosionParticleData> codec() {
 		    return InkExplosionParticleData.CODEC;
 	    }
     });
-    public static final RegistryObject<ParticleType<SquidSoulParticleData>> SQUID_SOUL = REGISTRY.register("squid_soul", () -> new ParticleType<>(false, SquidSoulParticleData.DESERIALIZER) {
+    public static final RegistryObject<ParticleType<SquidSoulParticleData>> SQUID_SOUL = REGISTRY.register("squid_soul", () -> new ParticleType<>(true, SquidSoulParticleData.DESERIALIZER) {
 	    @Override
 	    public Codec<SquidSoulParticleData> codec() {
 		    return SquidSoulParticleData.CODEC;
 	    }
     });
-    public static final RegistryObject<ParticleType<InkTerrainParticleData>> INK_TERRAIN = REGISTRY.register("ink_terrain", () -> new ParticleType<InkTerrainParticleData>(false, InkTerrainParticleData.DESERIALIZER)
+    public static final RegistryObject<ParticleType<InkTerrainParticleData>> INK_TERRAIN = REGISTRY.register("ink_terrain", () -> new ParticleType<InkTerrainParticleData>(true, InkTerrainParticleData.DESERIALIZER)
     {
         @Override
         public Codec<InkTerrainParticleData> codec()
