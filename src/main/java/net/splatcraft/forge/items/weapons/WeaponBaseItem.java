@@ -464,6 +464,23 @@ public abstract class WeaponBaseItem<S extends AbstractWeaponSettings<S, ?>> ext
         super.releaseUsing(stack, level, entity, timeLeft);
     }
 
+    @Override
+    public boolean shouldCauseReequipAnimation(ItemStack oldStack, ItemStack newStack, boolean slotChanged)
+    {
+        if (oldStack.hasTag() && newStack.hasTag())
+        {
+            oldStack = oldStack.copy();
+            newStack = newStack.copy();
+            oldStack.getTag().remove(TAG_SPECIAL_POINTS);
+            newStack.getTag().remove(TAG_SPECIAL_POINTS);
+            oldStack.getTag().remove(TAG_ACTIVE_SPECIAL);
+            newStack.getTag().remove(TAG_ACTIVE_SPECIAL);
+            return !ItemStack.isSameItem(oldStack, newStack);
+        }
+
+        return super.shouldCauseReequipAnimation(oldStack, newStack, slotChanged);
+    }
+
     public void weaponUseTick(Level level, LivingEntity entity, ItemStack stack, int timeLeft)
     {
 
