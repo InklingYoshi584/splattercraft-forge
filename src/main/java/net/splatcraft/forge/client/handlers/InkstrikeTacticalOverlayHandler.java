@@ -106,14 +106,23 @@ public class InkstrikeTacticalOverlayHandler
 	}
 
 	@SubscribeEvent
-	public static void onRenderGuiOverlay(RenderGuiOverlayEvent.Post event)
+	public static void onRenderGuiOverlayPre(RenderGuiOverlayEvent.Pre event)
 	{
-		if (!event.getOverlay().id().equals(VanillaGuiOverlay.HOTBAR.id()))
+		Minecraft mc = Minecraft.getInstance();
+		if (!isOverlayActive(mc.player))
 			return;
 
+		if (event.getOverlay().id().equals(VanillaGuiOverlay.HOTBAR.id()))
+			renderOverlay(event);
+
+		event.setCanceled(true);
+	}
+
+	private static void renderOverlay(RenderGuiOverlayEvent event)
+	{
 		Minecraft mc = Minecraft.getInstance();
 		LocalPlayer player = mc.player;
-		if (!isOverlayActive(player) || mc.options.hideGui)
+		if (mc.options.hideGui)
 			return;
 
 		ensureCursor(player);

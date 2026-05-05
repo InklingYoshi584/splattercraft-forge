@@ -127,12 +127,12 @@ public class SpecialHudHandler
     {
         if (specialStack.getItem() instanceof TripleInkstrikeSpecialItem)
             return Component.translatable("hud.splatcraft.special_hint.triple_ink_strike");
+        if (specialStack.getItem() instanceof InkstrikeSpecialItem)
+            return null;
         if (specialStack.getItem() instanceof UltraStampSpecialItem)
             return Component.translatable("hud.splatcraft.special_hint.ultra_stamp");
         if (specialStack.getItem() instanceof ZipcasterSpecialItem)
             return Component.translatable("hud.splatcraft.special_hint.zipcaster");
-        if (specialStack.getItem() instanceof InkstrikeSpecialItem)
-            return Component.translatable("hud.splatcraft.special_hint.ink_strike");
         if (specialStack.getItem() instanceof BombRushSpecialItem)
             return Component.translatable("hud.splatcraft.special_hint.bomb_rush");
         if (specialStack.getItem() instanceof InkzookaSpecialItem)
