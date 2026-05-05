@@ -14,6 +14,7 @@ import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.splatcraft.forge.Splatcraft;
+import net.splatcraft.forge.entities.InkstrikeProfile;
 import net.splatcraft.forge.handlers.SpecialHandler;
 import net.splatcraft.forge.items.weapons.InkstrikeSpecialItem;
 import net.splatcraft.forge.items.weapons.TripleInkstrikeSpecialItem;
@@ -26,9 +27,7 @@ public class InkstrikeTacticalOverlayHandler
 {
 	private static final int RADIUS = InkstrikeSpecialItem.TACTICAL_RADIUS;
 	private static final int SAMPLE_STEP = 2;
-	private static final int CELL_PX = 2;
 	private static final int CELLS = RADIUS * 2 / SAMPLE_STEP + 1;
-	private static final int MAP_PX = CELLS * CELL_PX;
 	private static final int PAD = 6;
 	private static final int BG = FastColor.ARGB32.color(200, 10, 14, 22);
 	private static final int FRAME = FastColor.ARGB32.color(240, 220, 226, 236);
@@ -130,43 +129,53 @@ public class InkstrikeTacticalOverlayHandler
 
 		int sw = event.getWindow().getGuiScaledWidth();
 		int sh = event.getWindow().getGuiScaledHeight();
-		int left = (sw - MAP_PX) / 2;
-		int top = (sh - MAP_PX) / 2;
+		int avail = Math.min(sw, sh) - 24;
+		int cellPx = Math.max(1, avail / CELLS);
+		int mapPx = CELLS * cellPx;
+		int left = (sw - mapPx) / 2;
+		int top = (sh - mapPx) / 2;
 		GuiGraphics g = event.getGuiGraphics();
 
-		g.fill(left - PAD, top - PAD, left + MAP_PX + PAD, top + MAP_PX + PAD, BG);
-		g.fill(left - PAD, top - PAD, left + MAP_PX + PAD, top - PAD + 1, FRAME);
-		g.fill(left - PAD, top + MAP_PX + PAD - 1, left + MAP_PX + PAD, top + MAP_PX + PAD, FRAME);
-		g.fill(left - PAD, top - PAD, left - PAD + 1, top + MAP_PX + PAD, FRAME);
-		g.fill(left + MAP_PX + PAD - 1, top - PAD, left + MAP_PX + PAD, top + MAP_PX + PAD, FRAME);
+		g.fill(left - PAD, top - PAD, left + mapPx + PAD, top + mapPx + PAD, BG);
+		g.fill(left - PAD, top - PAD, left + mapPx + PAD, top - PAD + 1, FRAME);
+		g.fill(left - PAD, top + mapPx + PAD - 1, left + mapPx + PAD, top + mapPx + PAD, FRAME);
+		g.fill(left - PAD, top - PAD, left - PAD + 1, top + mapPx + PAD, FRAME);
+		g.fill(left + mapPx + PAD - 1, top - PAD, left + mapPx + PAD, top + mapPx + PAD, FRAME);
 
 		for (int z = 0; z < CELLS; z++)
 		{
 			for (int x = 0; x < CELLS; x++)
 			{
-				int px = left + x * CELL_PX;
-				int py = top + z * CELL_PX;
-				g.fill(px, py, px + CELL_PX, py + CELL_PX, cachedColors[z][x]);
+				int px = left + x * cellPx;
+				int py = top + z * cellPx;
+				g.fill(px, py, px + cellPx, py + cellPx, cachedColors[z][x]);
 			}
 		}
 
 		int inkColor = ColorUtils.getPlayerColor(player);
 		int preview = (inkColor & 0x00FFFFFF) | 0x55000000;
-		int cx = left + toPixel(cursorOffX);
-		int cz = top + toPixel(cursorOffZ);
+		int cx = left + toPixel(cursorOffX, cellPx);
+		int cz = top + toPixel(cursorOffZ, cellPx);
 
-		int previewRadiusPx = (int)Math.round(10.0 / SAMPLE_STEP * CELL_PX);
+		float tornadoRadius = InkstrikeProfile.SINGLE.tornadoDiameter() * 0.5F;
+		int previewRadiusPx = Math.round(tornadoRadius / SAMPLE_STEP * cellPx);
 		drawCircle(g, cx, cz, previewRadiusPx, preview);
 
-		int px = left + toPixel(player.getX() - InkstrikeSpecialItem.getTargetCenterX(player));
-		int pz = top + toPixel(player.getZ() - InkstrikeSpecialItem.getTargetCenterZ(player));
+		int px = left + toPixel(player.getX() - InkstrikeSpecialItem.getTargetCenterX(player), cellPx);
+		int pz = top + toPixel(player.getZ() - InkstrikeSpecialItem.getTargetCenterZ(player), cellPx);
 		g.fill(px - 2, pz - 2, px + 2, pz + 2, 0xFFFFFFFF);
 
-		g.fill(cx - 1, cz - 8, cx + 1, cz + 8, 0xFFFFF242);
-		g.fill(cx - 8, cz - 1, cx + 8, cz + 1, 0xFFFFF242);
+		int cursorHalf = Math.max(1, cellPx / 2);
+		int cursorLen = Math.max(4, cellPx * 2);
+		g.fill(cx - cursorHalf, cz - cursorLen, cx + cursorHalf, cz + cursorLen, 0xFFFFF242);
+		g.fill(cx - cursorLen, cz - cursorHalf, cx + cursorLen, cz + cursorHalf, 0xFFFFF242);
 
-		g.drawString(mc.font, "INKSTRIKE TARGETING", left, top - 16, 0xFFF7F1C1, false);
-		g.drawString(mc.font, "(Right Click) Launch    WASD Move    Move Mouse to Aim", left, top + MAP_PX + 4, 0xFFDDDDDD, false);
+		int titleWidth = mc.font.width("INKSTRIKE TARGETING");
+		g.drawString(mc.font, "INKSTRIKE TARGETING", left + (mapPx - titleWidth) / 2, top - 14, 0xFFF7F1C1, false);
+
+		String hint = "(Right Click) Launch    WASD Move    Move Mouse to Aim";
+		int hintWidth = mc.font.width(hint);
+		g.drawString(mc.font, hint, left + (mapPx - hintWidth) / 2, top + mapPx + 14, 0xFFDDDDDD, false);
 	}
 
 	private static void ensureCursor(LocalPlayer player)
@@ -215,10 +224,10 @@ public class InkstrikeTacticalOverlayHandler
 		return FastColor.ARGB32.color(255, 54, 62, 70);
 	}
 
-	private static int toPixel(double blockOff)
+	private static int toPixel(double blockOff, int cellPx)
 	{
 		double c = Mth.clamp(blockOff, -RADIUS, RADIUS);
-		return (int)Math.round((c + RADIUS) / SAMPLE_STEP * CELL_PX);
+		return (int)Math.round((c + RADIUS) / SAMPLE_STEP * cellPx);
 	}
 
 	private static void drawCircle(GuiGraphics g, int cx, int cz, int r, int color)
