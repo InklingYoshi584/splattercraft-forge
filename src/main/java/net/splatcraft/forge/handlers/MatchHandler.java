@@ -11,6 +11,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
@@ -176,28 +177,6 @@ public class MatchHandler
 
             scanTurf(match, server);
 
-            String winner = match.getWinnerTeam();
-            int teamCount = match.getTeamNames().size();
-            float[] pcts = new float[teamCount];
-            String[] names = new String[teamCount];
-            int[] colors = new int[teamCount];
-            int i = 0;
-            Stage stage = match.getStage(server);
-            for (String team : match.getTeamNames())
-            {
-                pcts[i] = match.teamPercentages.getOrDefault(team, 0.0F);
-                names[i] = team;
-                colors[i] = stage != null ? stage.getTeamColor(team) : 0;
-                i++;
-            }
-            MatchResultPacket resultPacket = new MatchResultPacket(match.id, winner, pcts, names, colors);
-            for (UUID uuid : match.getPlayerUUIDs())
-            {
-                ServerPlayer player = match.getPlayer(uuid);
-                if (player != null)
-                    SplatcraftPacketHandler.sendToPlayer(resultPacket, player);
-            }
-
             sendTitleToMatch(match, "\u00a7c\u00a7lGAME!", null, 5, 40, 10);
             return;
         }
@@ -218,25 +197,64 @@ public class MatchHandler
 
         match.finishedTicks++;
 
-        if (match.finishedTicks == 30)
+        // Step 1: teleport to overview (tick 1)
+        if (match.finishedTicks == 1)
         {
             Stage stage = match.getStage(server);
             if (stage != null)
             {
-                BlockPos center = match.getCenterPos(stage);
+                Vec3 center = match.getCenterPos(stage);
                 for (UUID uuid : match.getPlayerUUIDs())
                 {
                     ServerPlayer player = match.getPlayer(uuid);
                     if (player != null)
                     {
                         player.setGameMode(GameType.SPECTATOR);
-                        player.teleportTo(center.getX() + 0.5, center.getY(), center.getZ() + 0.5);
+                        player.connection.teleport(center.x, center.y, center.z, 0, 90);
                     }
                 }
             }
         }
 
-        if (match.finishedTicks >= 140)
+        // Lock camera downward during overview
+        if (match.finishedTicks >= 1 && match.finishedTicks < 140)
+        {
+            for (UUID uuid : match.getPlayerUUIDs())
+            {
+                ServerPlayer player = match.getPlayer(uuid);
+                if (player != null)
+                    player.connection.teleport(player.getX(), player.getY(), player.getZ(), player.getYRot(), 90);
+            }
+        }
+
+        // Step 2: after 3-second pause (60 ticks), send result packet to start animation
+        if (match.finishedTicks == 61 && !match.resultPacketSent)
+        {
+            match.resultPacketSent = true;
+            String winner = match.getWinnerTeam();
+            Stage stage = match.getStage(server);
+            int teamCount = match.getTeamNames().size();
+            float[] pcts = new float[teamCount];
+            String[] names = new String[teamCount];
+            int[] colors = new int[teamCount];
+            int i = 0;
+            for (String team : match.getTeamNames())
+            {
+                pcts[i] = match.teamPercentages.getOrDefault(team, 0.0F);
+                names[i] = team;
+                colors[i] = stage != null ? stage.getTeamColor(team) : 0;
+                i++;
+            }
+            MatchResultPacket resultPacket = new MatchResultPacket(match.id, winner, pcts, names, colors);
+            for (UUID uuid : match.getPlayerUUIDs())
+            {
+                ServerPlayer player = match.getPlayer(uuid);
+                if (player != null)
+                    SplatcraftPacketHandler.sendToPlayer(resultPacket, player);
+            }
+        }
+
+        if (match.finishedTicks >= 200)
         {
             stopMatch(match.id);
         }
@@ -262,15 +280,7 @@ public class MatchHandler
             }
         }
         if (level == null)
-        {
-            for (UUID uuid : match.getPlayerUUIDs())
-            {
-                ServerPlayer p = match.getPlayer(uuid);
-                if (p != null)
-                    p.displayClientMessage(Component.literal("\u00a7c[Match] Could not find stage level!"), false);
-            }
             return;
-        }
 
         BlockPos minPos = new BlockPos(
             Math.min(stage.cornerA.getX(), stage.cornerB.getX()),
@@ -324,21 +334,6 @@ public class MatchHandler
             match.teamScores.put(teamName, score);
             float pct = blockTotal > 0 ? score / (float) blockTotal * 100.0F : 0.0F;
             match.teamPercentages.put(teamName, pct);
-        }
-
-        // Debug broadcast
-        if (match.phase == MatchPhase.FINISHED)
-        {
-            for (UUID uuid : match.getPlayerUUIDs())
-            {
-                ServerPlayer p = match.getPlayer(uuid);
-                if (p != null)
-                {
-                    p.displayClientMessage(Component.literal(
-                        "\u00a7e[Turf Scan]\u00a7r blocks=" + blockTotal +
-                        " colors=" + colorScores), false);
-                }
-            }
         }
     }
 
@@ -405,7 +400,7 @@ public class MatchHandler
 
         if (match.phase == MatchPhase.COUNTDOWN || match.phase == MatchPhase.FINISHED)
         {
-            event.player.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+            event.player.setDeltaMovement(Vec3.ZERO);
             event.player.xxa = 0;
             event.player.zza = 0;
         }
@@ -429,7 +424,7 @@ public class MatchHandler
     public static void onLivingJump(LivingEvent.LivingJumpEvent event)
     {
         if (event.getEntity() instanceof Player player && isPlayerFrozen(player))
-            event.getEntity().setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+            event.getEntity().setDeltaMovement(Vec3.ZERO);
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)

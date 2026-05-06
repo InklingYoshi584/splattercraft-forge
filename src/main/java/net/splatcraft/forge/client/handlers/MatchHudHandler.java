@@ -74,7 +74,8 @@ public class MatchHudHandler
                 || event.getOverlay() == VanillaGuiOverlay.ARMOR_LEVEL.type()
                 || event.getOverlay() == VanillaGuiOverlay.FOOD_LEVEL.type()
                 || event.getOverlay() == VanillaGuiOverlay.AIR_LEVEL.type()
-                || event.getOverlay() == VanillaGuiOverlay.PLAYER_LIST.type())
+                || event.getOverlay() == VanillaGuiOverlay.PLAYER_LIST.type()
+                || event.getOverlay() == VanillaGuiOverlay.PLAYER_HEALTH.type())
             {
                 event.setCanceled(true);
             }

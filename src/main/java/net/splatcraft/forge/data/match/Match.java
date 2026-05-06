@@ -5,6 +5,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 import net.splatcraft.forge.data.Stage;
 import net.splatcraft.forge.items.weapons.WeaponBaseItem;
 
@@ -20,6 +21,7 @@ public class Match
     public int remainingTimeTicks;
     public int countdownTicks = 60;
     public int finishedTicks;
+    public boolean resultPacketSent;
     public final Map<UUID, String> playerTeams = new HashMap<>();
     public final Map<UUID, Boolean> playerAlive = new HashMap<>();
     public final Map<UUID, Boolean> playerSpecialReady = new HashMap<>();
@@ -42,12 +44,17 @@ public class Match
         return net.splatcraft.forge.data.capabilities.saveinfo.SaveInfoCapability.get(server).getStages().get(stageName);
     }
 
-    public BlockPos getCenterPos(Stage stage)
+    public Vec3 getCenterPos(Stage stage)
     {
-        return new BlockPos(
-            (stage.cornerA.getX() + stage.cornerB.getX()) / 2,
-            Math.max(stage.cornerA.getY(), stage.cornerB.getY()) + 20,
-            (stage.cornerA.getZ() + stage.cornerB.getZ()) / 2
+        double stageWidth = Math.abs(stage.cornerA.getX() - stage.cornerB.getX()) + 1;
+        double stageDepth = Math.abs(stage.cornerA.getZ() - stage.cornerB.getZ()) + 1;
+        double maxDim = Math.max(stageWidth, stageDepth);
+        double viewHeight = maxDim / (2.0 * Math.tan(Math.toRadians(35.0)));
+        double y = Math.max(stage.cornerA.getY(), stage.cornerB.getY()) + Math.max(viewHeight, 20);
+        return new Vec3(
+            (stage.cornerA.getX() + stage.cornerB.getX()) / 2.0 + 0.5,
+            y,
+            (stage.cornerA.getZ() + stage.cornerB.getZ()) / 2.0 + 0.5
         );
     }
 

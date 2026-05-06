@@ -131,24 +131,10 @@ public class MatchCommand
             if (teamColor >= 0 && ColorUtils.getPlayerColor(player) != teamColor)
             {
                 ColorUtils.setPlayerColor(player, teamColor);
-                String playerName = player.getName().getString();
-                String finalTeam = assignedTeam;
-                source.sendSuccess(() -> Component.literal("Set " + playerName + "'s ink to team " + finalTeam), true);
             }
         }
 
         MatchHandler.addMatch(match);
-
-        // Show team composition
-        StringBuilder teamSummary = new StringBuilder("\u00a77Teams: ");
-        for (String teamName : stage.getTeamIds())
-        {
-            int count = countPlayersInTeam(match, teamName);
-            int color = stage.getTeamColor(teamName);
-            String hex = String.format("#%06X", color & 0xFFFFFF);
-            teamSummary.append("\u00a7r").append(teamName).append("=").append(count).append(" (").append(hex).append(")  ");
-        }
-        source.sendSuccess(() -> Component.literal(teamSummary.toString()), true);
 
         source.sendSuccess(() -> Component.translatable("commands.match.start.success", stageName,
             Component.literal(matchId.toString()).withStyle(net.minecraft.ChatFormatting.GREEN)), true);
