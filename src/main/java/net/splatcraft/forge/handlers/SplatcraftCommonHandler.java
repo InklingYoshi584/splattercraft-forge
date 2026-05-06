@@ -80,7 +80,6 @@ import net.splatcraft.forge.util.PlayerCooldown;
 @Mod.EventBusSubscriber
 public class SplatcraftCommonHandler {
     private static final int DEATH_RECAP_RESPAWN_TICKS = 100;
-    private static final HashMap<UUID, UUID> PENDING_DEATH_RECAP_CAMERAS = new HashMap<>();
     private static final HashMap<UUID, Long> ACTIVE_DEATH_RECAPS = new HashMap<>();
 
     @SubscribeEvent
@@ -139,11 +138,11 @@ public class SplatcraftCommonHandler {
         }
         PlayerCooldown.setPlayerCooldown(player, null);
         player.setInvisible(false);
+        player.noPhysics = false;
 
         if (player instanceof ServerPlayer serverPlayer)
             serverPlayer.setCamera(serverPlayer);
 
-        PENDING_DEATH_RECAP_CAMERAS.remove(player.getUUID());
         ACTIVE_DEATH_RECAPS.remove(player.getUUID());
     }
 
@@ -196,6 +195,7 @@ public class SplatcraftCommonHandler {
 
         ACTIVE_DEATH_RECAPS.put(serverPlayer.getUUID(), serverPlayer.level().getGameTime() + DEATH_RECAP_RESPAWN_TICKS + 20L);
         serverPlayer.setInvisible(true);
+        serverPlayer.noPhysics = true;
 
         SplatcraftPacketHandler.sendToPlayer(
                 new OpenDeathRecapPacket(
@@ -206,9 +206,6 @@ public class SplatcraftCommonHandler {
                         ColorUtils.getPlayerColor(player),
                         DEATH_RECAP_RESPAWN_TICKS),
                 serverPlayer);
-
-        if (killer != null && killer.level() == player.level())
-            PENDING_DEATH_RECAP_CAMERAS.put(serverPlayer.getUUID(), killer.getUUID());
     }
 
     private static Vec3 getRecapFocus(Entity target)
@@ -375,20 +372,7 @@ public class SplatcraftCommonHandler {
                 if (serverPlayer.getCamera() != serverPlayer)
                     serverPlayer.setCamera(serverPlayer);
                 serverPlayer.setInvisible(false);
-            }
-
-            UUID cameraId = PENDING_DEATH_RECAP_CAMERAS.get(serverPlayer.getUUID());
-
-            if (cameraId != null && serverPlayer.isDeadOrDying()) {
-                Entity killer = serverPlayer.serverLevel().getEntity(cameraId);
-                if (killer instanceof LivingEntity) {
-                    serverPlayer.setCamera(killer);
-                }
-
-                if (!(killer instanceof LivingEntity))
-                    PENDING_DEATH_RECAP_CAMERAS.remove(serverPlayer.getUUID());
-            } else if (cameraId != null) {
-                PENDING_DEATH_RECAP_CAMERAS.remove(serverPlayer.getUUID());
+                serverPlayer.noPhysics = false;
             }
         }
 
