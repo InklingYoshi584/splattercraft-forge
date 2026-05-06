@@ -643,6 +643,13 @@
 
   "attribute.splatcraft.ink_swim_speed": "Ink Swim Speed Bonus",
 
+  "commands.match.start.success": "Match started on %s with ID %s",
+  "commands.match.stop.success": "Match %s stopped",
+  "commands.match.stage_not_found": "Stage %s not found",
+  "commands.match.not_enough_teams": "Stage %s needs at least 2 teams configured",
+  "commands.match.no_players": "No players found inside stage %s",
+  "commands.match.not_found": "Match %s not found",
+
   "disconnect.lost": "A communication error occurred"
 }
 

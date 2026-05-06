@@ -61,6 +61,8 @@ public class SplatcraftPacketHandler
         registerMessage(InkRailRideActionPacket.class, InkRailRideActionPacket::decode);
         registerMessage(SuperJumpSelectPacket.class, SuperJumpSelectPacket::decode);
         registerMessage(InkstrikeTargetPacket.class, InkstrikeTargetPacket::decode);
+        registerMessage(SyncMatchStatePacket.class, SyncMatchStatePacket::decode);
+        registerMessage(MatchResultPacket.class, MatchResultPacket::decode);
     }
 
     private static <MSG extends SplatcraftPacket> void registerMessage(Class<MSG> messageType, Function<FriendlyByteBuf, MSG> decoder)

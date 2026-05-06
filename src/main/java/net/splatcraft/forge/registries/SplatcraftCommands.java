@@ -14,6 +14,7 @@ import net.minecraftforge.registries.RegistryObject;
 import net.splatcraft.forge.Splatcraft;
 import net.splatcraft.forge.commands.ClearInkCommand;
 import net.splatcraft.forge.commands.InkColorCommand;
+import net.splatcraft.forge.commands.MatchCommand;
 import net.splatcraft.forge.commands.ReplaceColorCommand;
 import net.splatcraft.forge.commands.ScanTurfCommand;
 import net.splatcraft.forge.commands.StageCommand;
@@ -43,6 +44,7 @@ public class SplatcraftCommands
 
         SuperJumpCommand.register(dispatcher);
         AbilityWhitelistCommand.register(dispatcher);
+        MatchCommand.register(dispatcher);
     }
 
     public static void registerArguments()

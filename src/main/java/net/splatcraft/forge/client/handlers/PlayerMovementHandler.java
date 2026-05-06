@@ -17,6 +17,7 @@ import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.splatcraft.forge.client.data.ClientMatchData;
 import net.splatcraft.forge.data.capabilities.playerinfo.PlayerInfoCapability;
 import net.splatcraft.forge.client.handlers.InkstrikeTacticalOverlayHandler;
 import net.splatcraft.forge.commands.SuperJumpCommand;
@@ -246,6 +247,12 @@ public class PlayerMovementHandler
             if (cooldown.forceCrouch() && cooldown.getTime() > 1) {
                 input.shiftKeyDown = !player.getAbilities().flying;
             }
+        }
+
+        if (ClientMatchData.isFrozen()) {
+            input.forwardImpulse = 0;
+            input.leftImpulse = 0;
+            input.jumping = false;
         }
 
         if (ZipcasterSpecialItem.isLatched(player))

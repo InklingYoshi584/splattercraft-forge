@@ -6,6 +6,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.splatcraft.forge.commands.SuperJumpCommand;
+import net.splatcraft.forge.client.data.ClientMatchData;
 import net.splatcraft.forge.client.handlers.InkstrikeTacticalOverlayHandler;
 import net.splatcraft.forge.client.handlers.SplatcraftKeyHandler;
 import net.splatcraft.forge.client.handlers.SuperJumpOverlayHandler;
@@ -43,6 +44,12 @@ public class WeaponHotkeyMixin
 		private void startUseItem(CallbackInfo ci)
 		{
 			Minecraft minecraft = (Minecraft) (Object) this;
+			if (minecraft.player != null && ClientMatchData.isFrozen())
+			{
+				ci.cancel();
+				return;
+			}
+
 			if (minecraft.player != null && SuperJumpCommand.isSuperJumping(minecraft.player))
 			{
 				ci.cancel();
@@ -98,6 +105,12 @@ public class WeaponHotkeyMixin
 			Minecraft minecraft = (Minecraft) (Object) this;
 			if (minecraft.player == null || minecraft.screen != null)
 				return;
+
+			if (ClientMatchData.isFrozen())
+			{
+				cir.setReturnValue(false);
+				return;
+			}
 
 			if (SuperJumpCommand.isSuperJumping(minecraft.player))
 			{
