@@ -194,7 +194,14 @@ public class InkstrikeTornadoEntity extends Entity implements IColoredEntity
         LivingEntity owner = getOwner();
         for (LivingEntity target : level().getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(0.35D), entity -> entity.isAlive() && entity != owner))
         {
-            InkDamageUtils.doDamage(level(), target, damagePerTick, getColor(), owner != null ? owner : this, this, sourceWeapon, true, SplatcraftDamageTypes.INK_STRIKE_TORNADO, false);
+            ItemStack deathWeapon = sourceWeapon;
+            if (sourceWeapon.getItem() instanceof net.splatcraft.forge.items.weapons.WeaponBaseItem<?>)
+            {
+                ItemStack special = net.splatcraft.forge.items.weapons.WeaponBaseItem.getStoredSpecialWeapon(sourceWeapon);
+                if (!special.isEmpty())
+                    deathWeapon = special;
+            }
+            InkDamageUtils.doDamage(level(), target, damagePerTick, getColor(), owner != null ? owner : this, this, deathWeapon, true, SplatcraftDamageTypes.INK_STRIKE_TORNADO, false);
         }
     }
 

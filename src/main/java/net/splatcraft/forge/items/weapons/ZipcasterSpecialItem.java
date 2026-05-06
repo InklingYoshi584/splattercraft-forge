@@ -231,7 +231,8 @@ public class ZipcasterSpecialItem extends SpecialWeaponItem
         player.setAbsorptionAmount(Math.max(player.getAbsorptionAmount(), ARMOR_HEALTH));
         updateInkOverlay(player, player.getMaxHealth());
 
-        InkExplosion.createInkExplosion(player.level(), player, BlockPos.containing(anchorPos), ANCHOR_SIZE, ANCHOR_BLOCK_DAMAGE, 0.0F, false, ColorUtils.getPlayerColor(player), InkBlockUtils.getInkType(player), mainWeapon);
+        ItemStack zipWeapon = net.splatcraft.forge.items.weapons.WeaponBaseItem.getStoredSpecialWeapon(mainWeapon);
+        InkExplosion.createInkExplosion(player.level(), player, BlockPos.containing(anchorPos), ANCHOR_SIZE, ANCHOR_BLOCK_DAMAGE, 0.0F, false, ColorUtils.getPlayerColor(player), InkBlockUtils.getInkType(player), zipWeapon.isEmpty() ? mainWeapon : zipWeapon);
         player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SplatcraftSounds.subThrow, SoundSource.PLAYERS, 0.9F, 1.2F);
         syncRuntime(player);
         return true;
@@ -412,7 +413,7 @@ public class ZipcasterSpecialItem extends SpecialWeaponItem
         player.setDeltaMovement(Vec3.ZERO);
         player.hurtMarked = true;
         player.fallDistance = 0.0F;
-        InkExplosion.createInkExplosion(player.level(), player, BlockPos.containing(anchorPos), LANDING_SIZE, LANDING_BLOCK_DAMAGE, LANDING_MIN_DAMAGE, LANDING_MAX_DAMAGE, true, ColorUtils.getPlayerColor(player), InkBlockUtils.getInkType(player), mainWeapon);
+        InkExplosion.createInkExplosion(player.level(), player, BlockPos.containing(anchorPos), LANDING_SIZE, LANDING_BLOCK_DAMAGE, LANDING_MIN_DAMAGE, LANDING_MAX_DAMAGE, true, ColorUtils.getPlayerColor(player), InkBlockUtils.getInkType(player), specialStack.isEmpty() ? mainWeapon : specialStack);
         player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SplatcraftSounds.subDetonate, SoundSource.PLAYERS, 0.9F, 1.0F);
 
         data.putInt(TAG_PHASE, PHASE_END_LAG);

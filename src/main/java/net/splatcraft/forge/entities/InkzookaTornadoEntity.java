@@ -110,8 +110,15 @@ public class InkzookaTornadoEntity extends Entity implements IColoredEntity
     private void inkPath()
     {
         LivingEntity owner = getOwner();
+        ItemStack deathWeapon = sourceWeapon;
+        if (sourceWeapon.getItem() instanceof net.splatcraft.forge.items.weapons.WeaponBaseItem<?>)
+        {
+            ItemStack special = net.splatcraft.forge.items.weapons.WeaponBaseItem.getStoredSpecialWeapon(sourceWeapon);
+            if (!special.isEmpty())
+                deathWeapon = special;
+        }
         for (int y = 0; y < TORNADO_HEIGHT; y += 2)
-            InkExplosion.createInkExplosion(level(), owner, blockPosition().above(y), 0.75F, 0.8F, 0.0F, false, getColor(), inkType, sourceWeapon);
+            InkExplosion.createInkExplosion(level(), owner, blockPosition().above(y), 0.75F, 0.8F, 0.0F, false, getColor(), inkType, deathWeapon);
     }
 
     private void damageEntities()
@@ -122,7 +129,14 @@ public class InkzookaTornadoEntity extends Entity implements IColoredEntity
             if (!hitTargets.add(target.getUUID()))
                 continue;
 
-            InkDamageUtils.doSplatDamage(level(), target, IMPACT_DAMAGE, getColor(), owner != null ? owner : this, sourceWeapon, true);
+            ItemStack deathWeapon = sourceWeapon;
+            if (sourceWeapon.getItem() instanceof net.splatcraft.forge.items.weapons.WeaponBaseItem<?>)
+            {
+                ItemStack special = net.splatcraft.forge.items.weapons.WeaponBaseItem.getStoredSpecialWeapon(sourceWeapon);
+                if (!special.isEmpty())
+                    deathWeapon = special;
+            }
+            InkDamageUtils.doSplatDamage(level(), target, IMPACT_DAMAGE, getColor(), owner != null ? owner : this, deathWeapon, true);
         }
     }
 

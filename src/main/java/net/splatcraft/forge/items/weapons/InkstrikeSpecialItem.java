@@ -155,6 +155,8 @@ public class InkstrikeSpecialItem extends SpecialWeaponItem
 
     private static CompoundTag getRuntimeData(Player player)
     {
+        if (!PlayerInfoCapability.hasCapability(player))
+            return new CompoundTag();
         return PlayerInfoCapability.get(player).getSpecialData();
     }
 

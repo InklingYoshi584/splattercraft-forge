@@ -108,7 +108,7 @@ public class UltraStampThrownEntity extends ThrowableItemProjectile
         setPos(impactPos.x, impactPos.y, impactPos.z);
 
         LivingEntity owner = getOwnerEntity();
-        InkExplosion.createInkExplosion(level(), owner, BlockPos.containing(impactPos), EXPLOSION_SIZE, BLOCK_DAMAGE, SPLASH_DAMAGE, DIRECT_DAMAGE, true, color, inkType, new ItemStack(SplatcraftItems.ultraStamp.get()));
+        InkExplosion.createInkExplosion(level(), owner, BlockPos.containing(impactPos), EXPLOSION_SIZE, BLOCK_DAMAGE, SPLASH_DAMAGE, DIRECT_DAMAGE, true, color, inkType, sourceWeapon);
         level().broadcastEntityEvent(this, (byte) 1);
         level().playSound(null, getX(), getY(), getZ(), SplatcraftSounds.subDetonate, SoundSource.PLAYERS, 0.9F, 0.95F + level().getRandom().nextFloat() * 0.1F);
         discard();
