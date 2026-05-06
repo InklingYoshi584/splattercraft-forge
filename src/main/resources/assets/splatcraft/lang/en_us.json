@@ -650,6 +650,10 @@
   "commands.match.no_players": "No players found inside stage %s",
   "commands.match.not_found": "Match %s not found",
 
+  "commands.startinfinitespecial.item_not_found": "Item '%s' not found in registry",
+  "commands.startinfinitespecial.not_special": "'%s' is not a special weapon",
+  "status.special.no_main_weapon": "No main weapon found in inventory",
+
   "disconnect.lost": "A communication error occurred"
 }
 

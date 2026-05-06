@@ -87,14 +87,16 @@ public class SpecialHandler
 
         if (specialWeapon.shouldInterruptActiveSpecial(player.level(), player, specialStack, weaponStack))
         {
-            endSpecial(player, weaponStack, specialWeapon, specialStack, true);
+            if (!info.isInfiniteSpecial())
+                endSpecial(player, weaponStack, specialWeapon, specialStack, true);
             return;
         }
 
-        info.tickActiveSpecial();
+        if (!info.isInfiniteSpecial())
+            info.tickActiveSpecial();
         specialWeapon.onSpecialActiveTick(player.level(), player, specialStack, weaponStack, info.getSpecialTicksRemaining());
 
-        if (info.getSpecialTicksRemaining() <= 0)
+        if (info.getSpecialTicksRemaining() <= 0 && !info.isInfiniteSpecial())
             endSpecial(player, weaponStack, specialWeapon, specialStack, false);
     }
 

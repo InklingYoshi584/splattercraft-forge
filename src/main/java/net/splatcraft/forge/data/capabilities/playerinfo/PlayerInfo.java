@@ -35,6 +35,7 @@ public class PlayerInfo
     private int inkArmorInvincibilityTicks = 0;
     private boolean inkRailRiding = false;
     private boolean inkRailHidden = false;
+    private boolean infiniteSpecial = false;
 
     public PlayerInfo(int defaultColor)
     {
@@ -187,6 +188,7 @@ public class PlayerInfo
         specialWindupTicksRemaining = 0;
         specialWindupMaxTicks = 0;
         specialData = new CompoundTag();
+        infiniteSpecial = false;
     }
 
     public CompoundTag getSpecialData()
@@ -242,6 +244,16 @@ public class PlayerInfo
             if (player != null)
                 player.refreshDimensions();
         }
+    }
+
+    public boolean isInfiniteSpecial()
+    {
+        return infiniteSpecial;
+    }
+
+    public void setInfiniteSpecial(boolean infinite)
+    {
+        this.infiniteSpecial = infinite;
     }
 
     public NonNullList<ItemStack> getMatchInventory()
