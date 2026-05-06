@@ -630,5 +630,16 @@
 
   "attribute.splatcraft.ink_swim_speed": "墨水游泳速度加成",
 
+  "commands.match.start.success": "比赛已在 %s 上开始，ID: %s",
+  "commands.match.stop.success": "比赛 %s 已停止",
+  "commands.match.stage_not_found": "未找到舞台 %s",
+  "commands.match.not_enough_teams": "舞台 %s 需要至少配置 2 个队伍",
+  "commands.match.no_players": "舞台 %s 内未找到玩家",
+  "commands.match.not_found": "未找到比赛 %s",
+
+  "commands.startinfinitespecial.item_not_found": "注册表中未找到物品 '%s'",
+  "commands.startinfinitespecial.not_special": "'%s' 不是一个特殊武器",
+  "status.special.no_main_weapon": "背包中未找到主武器",
+
   "disconnect.lost": "发生通信错误"
 }
