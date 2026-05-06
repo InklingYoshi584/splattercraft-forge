@@ -11,7 +11,13 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.splatcraft.forge.blocks.SpawnPadBlock;
+import net.splatcraft.forge.tileentities.SpawnPadTileEntity;
 import net.minecraft.world.level.Level;
 import net.splatcraft.forge.data.Stage;
 import net.splatcraft.forge.data.capabilities.saveinfo.SaveInfoCapability;
@@ -46,7 +52,9 @@ public class MatchCommand
                 )
             )
             .then(Commands.literal("stop")
-                .then(Commands.argument("id", StringArgumentType.word()).executes(MatchCommand::stopMatchCmd))
+                .then(Commands.argument("stage", StringArgumentType.word())
+                    .suggests((ctx, builder) -> { MatchHandler.getActiveStages().forEach(builder::suggest); return builder.buildFuture(); })
+                    .executes(MatchCommand::stopMatchCmd))
             )
         );
     }
@@ -134,6 +142,8 @@ public class MatchCommand
             }
         }
 
+        setSpawnPoints(source, stageName, stage, match);
+
         MatchHandler.addMatch(match);
 
         source.sendSuccess(() -> Component.translatable("commands.match.start.success", stageName,
@@ -145,26 +155,17 @@ public class MatchCommand
     private static int stopMatchCmd(CommandContext<CommandSourceStack> context) throws CommandSyntaxException
     {
         CommandSourceStack source = context.getSource();
-        String idStr = StringArgumentType.getString(context, "id");
+        String stageName = StringArgumentType.getString(context, "stage");
 
-        UUID matchId;
-        try
-        {
-            matchId = UUID.fromString(idStr);
-        }
-        catch (IllegalArgumentException e)
-        {
-            throw MATCH_NOT_FOUND.create(idStr);
-        }
-
-        Match match = MatchHandler.getMatch(matchId);
+        Match match = MatchHandler.getMatchByStage(stageName);
         if (match == null)
-            throw MATCH_NOT_FOUND.create(idStr);
+            throw MATCH_NOT_FOUND.create(stageName);
 
+        UUID matchId = match.id;
         MatchHandler.stopMatch(matchId);
 
         source.sendSuccess(() -> Component.translatable("commands.match.stop.success",
-            Component.literal(matchId.toString()).withStyle(net.minecraft.ChatFormatting.GREEN)), true);
+            Component.literal(stageName).withStyle(net.minecraft.ChatFormatting.GREEN)), true);
 
         return 1;
     }
@@ -209,5 +210,52 @@ public class MatchCommand
             stages = SaveInfoCapability.get(source.getServer()).getStages();
 
         return SharedSuggestionProvider.suggest(stages.keySet(), builder);
+    }
+
+    private static void setSpawnPoints(CommandSourceStack source, String stageName, Stage stage, Match match)
+    {
+        Level stageLevel = source.getServer().getLevel(ResourceKey.create(Registries.DIMENSION, stage.dimID));
+        if (stageLevel == null) return;
+
+        BlockPos minPos = new BlockPos(Math.min(stage.cornerA.getX(), stage.cornerB.getX()), Math.min(stage.cornerA.getY(), stage.cornerB.getY()), Math.min(stage.cornerA.getZ(), stage.cornerB.getZ()));
+        BlockPos maxPos = new BlockPos(Math.max(stage.cornerA.getX(), stage.cornerB.getX()), Math.max(stage.cornerA.getY(), stage.cornerB.getY()), Math.max(stage.cornerA.getZ(), stage.cornerB.getZ()));
+
+        Map<Integer, List<SpawnPadTileEntity>> spawnPads = new HashMap<>();
+        for (int x = minPos.getX(); x <= maxPos.getX(); x++)
+            for (int y = minPos.getY(); y <= maxPos.getY(); y++)
+                for (int z = minPos.getZ(); z <= maxPos.getZ(); z++)
+                {
+                    BlockPos pos = new BlockPos(x, y, z);
+                    if (stageLevel.getBlockEntity(pos) instanceof SpawnPadTileEntity te)
+                        spawnPads.computeIfAbsent(te.getColor(), k -> new ArrayList<>()).add(te);
+                }
+
+        if (spawnPads.isEmpty()) return;
+
+        Map<String, Integer> teamUsage = new HashMap<>();
+        for (UUID uuid : match.getPlayerUUIDs())
+        {
+            ServerPlayer player = match.getPlayer(uuid);
+            if (player == null) continue;
+
+            String team = match.getPlayerTeam(uuid);
+            int teamColor = stage.getTeamColor(team);
+            List<SpawnPadTileEntity> pads = spawnPads.get(teamColor);
+            if (pads == null || pads.isEmpty()) continue;
+
+            int idx = teamUsage.getOrDefault(team, 0) % pads.size();
+            SpawnPadTileEntity pad = pads.get(idx);
+            float yaw = stageLevel.getBlockState(pad.getBlockPos()).getValue(SpawnPadBlock.DIRECTION).toYRot();
+
+            if (stageLevel == player.level())
+                player.connection.teleport(pad.getBlockPos().getX() + 0.5, pad.getBlockPos().getY() + 0.5, pad.getBlockPos().getZ() + 0.5, yaw, 0);
+            else
+                player.teleportTo((ServerLevel) stageLevel, pad.getBlockPos().getX() + 0.5, pad.getBlockPos().getY() + 0.5, pad.getBlockPos().getZ() + 0.5, yaw, 0);
+
+            player.setRespawnPosition(player.level().dimension(), pad.getBlockPos(), yaw, false, true);
+            SuperJumpCommand.syncSpawnPosition(player);
+
+            teamUsage.put(team, idx + 1);
+        }
     }
 }

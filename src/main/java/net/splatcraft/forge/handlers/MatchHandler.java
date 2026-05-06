@@ -45,10 +45,12 @@ public class MatchHandler
 {
     private static final Map<UUID, Match> ACTIVE_MATCHES = new HashMap<>();
     private static final Map<UUID, UUID> PLAYER_TO_MATCH = new HashMap<>();
+    private static final Map<String, UUID> STAGE_TO_MATCH = new HashMap<>();
 
     public static void addMatch(Match match)
     {
         ACTIVE_MATCHES.put(match.id, match);
+        STAGE_TO_MATCH.put(match.stageName, match.id);
         for (UUID playerUUID : match.getPlayerUUIDs())
         {
             PLAYER_TO_MATCH.put(playerUUID, match.id);
@@ -58,6 +60,17 @@ public class MatchHandler
     public static Match getMatch(UUID matchId)
     {
         return ACTIVE_MATCHES.get(matchId);
+    }
+
+    public static Match getMatchByStage(String stageName)
+    {
+        UUID matchId = STAGE_TO_MATCH.get(stageName);
+        return matchId != null ? ACTIVE_MATCHES.get(matchId) : null;
+    }
+
+    public static Set<String> getActiveStages()
+    {
+        return STAGE_TO_MATCH.keySet();
     }
 
     public static Match getPlayerMatch(Player player)
@@ -83,6 +96,8 @@ public class MatchHandler
     {
         Match match = ACTIVE_MATCHES.remove(matchId);
         if (match == null) return;
+
+        STAGE_TO_MATCH.remove(match.stageName);
 
         SyncMatchStatePacket clearPacket = SyncMatchStatePacket.createClearPacket();
         for (UUID uuid : match.getPlayerUUIDs())
