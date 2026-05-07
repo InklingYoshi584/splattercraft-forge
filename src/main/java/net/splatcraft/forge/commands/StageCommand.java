@@ -2,6 +2,7 @@ package net.splatcraft.forge.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -87,6 +88,11 @@ public class StageCommand
 										.then(Commands.literal("color").then(Commands.argument("color", InkColorArgument.inkColor()).executes(context -> warp(context, BoolArgumentType.getBool(context,"setSpawn"), InkColorArgument.getInkColor(context, "color")))))
 										.then(Commands.literal("team").then(stageTeam("team", "stage").executes(context -> warpToTeam(context, BoolArgumentType.getBool(context,"setSpawn"), StringArgumentType.getString(context, "team")))))
 										.executes(context -> warp(context, BoolArgumentType.getBool(context,"setSpawn")))))))
+				.then(Commands.literal("zones").then(stageId("stage")
+						.then(Commands.literal("list").executes(StageCommand::listZones))
+						.then(Commands.literal("remove")
+								.then(Commands.argument("index", IntegerArgumentType.integer(0)).executes(StageCommand::removeZone)))
+						.then(Commands.literal("clear").executes(StageCommand::clearZones))))
 		);
 	}
 
@@ -541,5 +547,76 @@ public class StageCommand
 		} else {
 			return blockpos;
 		}
+	}
+
+	private static int listZones(CommandContext<CommandSourceStack> context) throws CommandSyntaxException
+	{
+		CommandSourceStack source = context.getSource();
+		String stageId = StringArgumentType.getString(context, "stage");
+
+		HashMap<String, Stage> stages = source.getLevel().isClientSide()
+			? ClientUtils.clientStages
+			: SaveInfoCapability.get(source.getServer()).getStages();
+
+		if (!stages.containsKey(stageId))
+			throw STAGE_NOT_FOUND.create(stageId);
+
+		Stage stage = stages.get(stageId);
+		var zones = stage.getZones();
+
+		if (zones.isEmpty())
+		{
+			source.sendSuccess(() -> Component.translatable("commands.stage.zones.none", stageId), false);
+			return 0;
+		}
+
+		for (int i = 0; i < zones.size(); i++)
+		{
+			var z = zones.get(i);
+			final int idx = i;
+			source.sendSuccess(() -> Component.translatable("commands.stage.zones.list_entry",
+				idx, z.min.getX(), z.min.getY(), z.min.getZ(),
+				z.max.getX(), z.max.getY(), z.max.getZ()), false);
+		}
+
+		return zones.size();
+	}
+
+	private static int removeZone(CommandContext<CommandSourceStack> context) throws CommandSyntaxException
+	{
+		CommandSourceStack source = context.getSource();
+		String stageId = StringArgumentType.getString(context, "stage");
+		int index = IntegerArgumentType.getInteger(context, "index");
+
+		HashMap<String, Stage> stages = SaveInfoCapability.get(source.getServer()).getStages();
+		if (!stages.containsKey(stageId))
+			throw STAGE_NOT_FOUND.create(stageId);
+
+		Stage stage = stages.get(stageId);
+
+		if (index < 0 || index >= stage.getZones().size())
+		{
+			source.sendFailure(Component.translatable("commands.stage.zones.invalid_index", index));
+			return 0;
+		}
+
+		stage.removeZone(index);
+		source.sendSuccess(() -> Component.translatable("commands.stage.zones.removed", index, stageId), true);
+		return 1;
+	}
+
+	private static int clearZones(CommandContext<CommandSourceStack> context) throws CommandSyntaxException
+	{
+		CommandSourceStack source = context.getSource();
+		String stageId = StringArgumentType.getString(context, "stage");
+
+		HashMap<String, Stage> stages = SaveInfoCapability.get(source.getServer()).getStages();
+		if (!stages.containsKey(stageId))
+			throw STAGE_NOT_FOUND.create(stageId);
+
+		Stage stage = stages.get(stageId);
+		stage.clearZones();
+		source.sendSuccess(() -> Component.translatable("commands.stage.zones.cleared", stageId), true);
+		return 1;
 	}
 }

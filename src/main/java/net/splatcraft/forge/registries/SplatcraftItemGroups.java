@@ -41,6 +41,7 @@ public class SplatcraftItemGroups {
             output.accept(turfScanner.get());
             output.accept(inkDisruptor.get());
             output.accept(colorChanger.get());
+            output.accept(zoneMarker.get());
             output.accept(remotePedestal.get());
             output.accept(inkRail.get());
             output.accept(inkRailNode.get());

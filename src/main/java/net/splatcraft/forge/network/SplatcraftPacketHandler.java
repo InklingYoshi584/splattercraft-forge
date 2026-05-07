@@ -63,6 +63,7 @@ public class SplatcraftPacketHandler
         registerMessage(InkstrikeTargetPacket.class, InkstrikeTargetPacket::decode);
         registerMessage(SyncMatchStatePacket.class, SyncMatchStatePacket::decode);
         registerMessage(MatchResultPacket.class, MatchResultPacket::decode);
+        registerMessage(SyncZonesStatePacket.class, SyncZonesStatePacket::decode);
     }
 
     private static <MSG extends SplatcraftPacket> void registerMessage(Class<MSG> messageType, Function<FriendlyByteBuf, MSG> decoder)

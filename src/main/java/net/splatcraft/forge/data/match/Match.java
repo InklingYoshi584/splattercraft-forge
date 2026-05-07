@@ -28,6 +28,19 @@ public class Match
     public final Map<String, Integer> teamScores = new HashMap<>();
     public int totalBlocks;
     public final Map<String, Float> teamPercentages = new HashMap<>();
+
+    public final Map<String, Integer> zoneTimers = new HashMap<>();
+    public final Map<String, Integer> zonePenalties = new HashMap<>();
+    public final Map<String, Integer> teamControlStartTimers = new HashMap<>();
+    public String controllingTeam;
+    public int[] zoneControllers = new int[0];
+    public boolean overtimeActive;
+    public int overtimeDrainTicks = -1;
+    public String overtimeLosingTeam;
+    public String overtimeWinningTeam;
+    public long lastControlLossTick;
+    public int[][] zoneTeamPcts = new int[0][0];
+
     private final Map<UUID, ServerPlayer> playerCache = new HashMap<>();
 
     public Match(UUID id, String stageName, MatchType type, int totalTimeSeconds)
@@ -129,6 +142,21 @@ public class Match
 
     public String getWinnerTeam()
     {
+        if (type == MatchType.ZONES)
+        {
+            String winner = null;
+            int lowest = Integer.MAX_VALUE;
+            for (Map.Entry<String, Integer> entry : zoneTimers.entrySet())
+            {
+                if (entry.getValue() < lowest)
+                {
+                    lowest = entry.getValue();
+                    winner = entry.getKey();
+                }
+            }
+            return winner;
+        }
+
         String winner = null;
         float highest = -1;
         for (Map.Entry<String, Float> entry : teamPercentages.entrySet())

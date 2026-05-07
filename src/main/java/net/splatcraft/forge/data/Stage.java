@@ -8,6 +8,7 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.splatcraft.forge.data.capabilities.saveinfo.SaveInfoCapability;
+import net.splatcraft.forge.data.match.ZonesData;
 import net.splatcraft.forge.tileentities.SpawnPadTileEntity;
 import net.splatcraft.forge.registries.SplatcraftGameRules;
 import org.jetbrains.annotations.Nullable;
@@ -24,6 +25,7 @@ public class Stage
 
 	private final HashMap<String, Boolean> settings = new HashMap<>();
 	private final HashMap<String, Integer> teams = new HashMap<>();
+	private final ArrayList<ZonesData> zones = new ArrayList<>();
 
 	static
 	{
@@ -58,6 +60,11 @@ public class Stage
 		for(Map.Entry<String, Integer> team : teams.entrySet())
 			teamsNbt.putInt(team.getKey(), team.getValue());
 		nbt.put("Teams", teamsNbt);
+
+		CompoundTag zonesNbt = new CompoundTag();
+		for (int i = 0; i < zones.size(); i++)
+			zonesNbt.put(String.valueOf(i), zones.get(i).writeNBT());
+		nbt.put("Zones", zonesNbt);
 
 		return nbt;
 	}
@@ -109,6 +116,27 @@ public class Stage
 		teams.remove(teamId);
 	}
 
+	public List<ZonesData> getZones()
+	{
+		return zones;
+	}
+
+	public void addZone(BlockPos a, BlockPos b)
+	{
+		zones.add(new ZonesData(a, b));
+	}
+
+	public void removeZone(int index)
+	{
+		if (index >= 0 && index < zones.size())
+			zones.remove(index);
+	}
+
+	public void clearZones()
+	{
+		zones.clear();
+	}
+
 	public Collection<String> getTeamIds()
 	{
 		return teams.keySet();
@@ -129,6 +157,11 @@ public class Stage
 		CompoundTag teamsNbt = nbt.getCompound("Teams");
 		for(String key : teamsNbt.getAllKeys())
 			teams.put(key, teamsNbt.getInt(key));
+
+		zones.clear();
+		CompoundTag zonesNbt = nbt.getCompound("Zones");
+		for (int i = 0; zonesNbt.contains(String.valueOf(i)); i++)
+			zones.add(ZonesData.readNBT(zonesNbt.getCompound(String.valueOf(i))));
 	}
 
 	public Stage(Level level, BlockPos posA, BlockPos posB)

@@ -649,10 +649,26 @@
   "commands.match.not_enough_teams": "Stage %s needs at least 2 teams configured",
   "commands.match.no_players": "No players found inside stage %s",
   "commands.match.not_found": "Match %s not found",
+  "commands.match.no_zones": "Stage %s has no zones defined. Use the Splat Zones tool to add zones first.",
 
   "commands.startinfinitespecial.item_not_found": "Item '%s' not found in registry",
   "commands.startinfinitespecial.not_special": "'%s' is not a special weapon",
   "status.special.no_main_weapon": "No main weapon found in inventory",
+
+  "commands.stage.zones.none": "Stage [%s] has no zones defined",
+  "commands.stage.zones.list_entry": "Zone %s: (%s, %s, %s) to (%s, %s, %s)",
+  "commands.stage.zones.removed": "Removed zone %s from stage [%s]",
+  "commands.stage.zones.cleared": "Cleared all zones from stage [%s]",
+  "commands.stage.zones.invalid_index": "Invalid zone index: %s",
+
+  "status.zone.point_a": "Set zone corner A to (%s, %s, %s). Right-click another block for corner B.",
+  "status.zone.point_b": "Set zone corner B from (%s, %s, %s) to (%s, %s, %s). Right-click air to save to current stage.",
+  "status.zone.saved": "Zone saved to stage [%s] as zone #%s",
+  "status.zone.already_saved": "This marker's zone has already been saved. Clear it to define new zones.",
+  "status.zone.no_stage": "You must be standing inside a stage to save the zone.",
+  "item.zone.saved_to": "Saved to stage [%s] as zone #%s",
+
+  "item.splatcraft.splat_zones": "Splat Zones Marker",
 
   "disconnect.lost": "A communication error occurred"
 }

@@ -1,0 +1,14 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "splatcraft:items/splat_zones"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "splatcraft:active": 1
+      },
+      "model": "splatcraft:item/splat_zones_active"
+    }
+  ]
+}

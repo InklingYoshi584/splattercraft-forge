@@ -2,6 +2,7 @@ package net.splatcraft.forge.client.data;
 
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraft.core.BlockPos;
 import net.splatcraft.forge.data.match.MatchPhase;
 import net.splatcraft.forge.data.match.MatchType;
 
@@ -29,6 +30,16 @@ public class ClientMatchData
     public static long resultAnimStartMs;
     public static final Map<UUID, Long> playerDeathAnim = new HashMap<>();
     public static final Map<UUID, Boolean> playerPrevAlive = new HashMap<>();
+
+    public static int[] zoneTimers = new int[0];
+    public static int[] zonePenalties = new int[0];
+    public static int controllingTeamIdx = -1;
+    public static BlockPos[] zoneMins = new BlockPos[0];
+    public static BlockPos[] zoneMaxs = new BlockPos[0];
+    public static int[][] zoneTeamPcts = new int[0][];
+    public static boolean overtimeActive;
+    public static int overtimeDrain;
+    public static boolean zoneKnockout;
 
     public static void update(UUID matchId, MatchPhase p, int remaining, int total,
                               MatchType type, String[] tNames, int[] tColors, float[] tPcts,
@@ -79,6 +90,32 @@ public class ClientMatchData
         return currentMatchId != null && (phase == MatchPhase.COUNTDOWN || phase == MatchPhase.FINISHED);
     }
 
+    public static void updateZones(UUID matchId, String[] tNames, int[] tColors,
+                                    int[] zTimers, int[] zPenalties, int ctrlIdx,
+                                    BlockPos[] zMins, BlockPos[] zMaxs, int[][] zTeamPcts,
+                                    boolean otActive, int otDrain)
+    {
+        if (currentMatchId != null && !currentMatchId.equals(matchId))
+        {
+            zoneTimers = new int[0];
+            zonePenalties = new int[0];
+            controllingTeamIdx = -1;
+            zoneMins = new BlockPos[0];
+            zoneMaxs = new BlockPos[0];
+            zoneTeamPcts = new int[0][];
+            overtimeActive = false;
+            overtimeDrain = 0;
+        }
+        zoneTimers = zTimers;
+        zonePenalties = zPenalties;
+        controllingTeamIdx = ctrlIdx;
+        zoneMins = zMins;
+        zoneMaxs = zMaxs;
+        zoneTeamPcts = zTeamPcts;
+        overtimeActive = otActive;
+        overtimeDrain = otDrain;
+    }
+
     public static void clear()
     {
         currentMatchId = null;
@@ -95,6 +132,15 @@ public class ClientMatchData
         playerDeathAnim.clear();
         playerPrevAlive.clear();
         resultAnimStartMs = 0;
+        zoneTimers = new int[0];
+        zonePenalties = new int[0];
+        controllingTeamIdx = -1;
+        zoneMins = new BlockPos[0];
+        zoneMaxs = new BlockPos[0];
+        zoneTeamPcts = new int[0][];
+        overtimeActive = false;
+        overtimeDrain = 0;
+        zoneKnockout = false;
     }
 
     public static int getPlayerIndex(UUID uuid)

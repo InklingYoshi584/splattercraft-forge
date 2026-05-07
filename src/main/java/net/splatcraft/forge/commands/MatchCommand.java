@@ -48,6 +48,7 @@ public class MatchCommand
                 .then(Commands.argument("stage", StringArgumentType.word()).suggests(MatchCommand::suggestStages)
                     .then(Commands.argument("time", IntegerArgumentType.integer(30, 3600))
                         .then(Commands.literal("turf").executes(MatchCommand::startMatch))
+                        .then(Commands.literal("zones").executes(MatchCommand::startZonesMatch))
                     )
                 )
             )
@@ -61,6 +62,16 @@ public class MatchCommand
 
     private static int startMatch(CommandContext<CommandSourceStack> context) throws CommandSyntaxException
     {
+        return startMatch(context, MatchType.TURF);
+    }
+
+    private static int startZonesMatch(CommandContext<CommandSourceStack> context) throws CommandSyntaxException
+    {
+        return startMatch(context, MatchType.ZONES);
+    }
+
+    private static int startMatch(CommandContext<CommandSourceStack> context, MatchType type) throws CommandSyntaxException
+    {
         CommandSourceStack source = context.getSource();
         String stageName = StringArgumentType.getString(context, "stage");
         int time = IntegerArgumentType.getInteger(context, "time");
@@ -73,6 +84,10 @@ public class MatchCommand
 
         if (stage.getTeamIds().size() < 2)
             throw NOT_ENOUGH_TEAMS.create(stageName);
+
+        if (type == MatchType.ZONES && stage.getZones().isEmpty())
+            throw new DynamicCommandExceptionType(p ->
+                Component.translatable("commands.match.no_zones", p)).create(stageName);
 
         // Find all players in the stage bounds
         List<ServerPlayer> allPlayers = source.getLevel().players();
@@ -90,7 +105,7 @@ public class MatchCommand
             throw NO_PLAYERS.create(stageName);
 
         UUID matchId = UUID.randomUUID();
-        Match match = new Match(matchId, stageName, MatchType.TURF, time);
+        Match match = new Match(matchId, stageName, type, time);
 
         // Auto-assign players to teams by ink color
         Map<String, Integer> teamColorMap = new HashMap<>();

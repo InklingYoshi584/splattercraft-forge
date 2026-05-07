@@ -5,6 +5,7 @@ import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
@@ -18,6 +19,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.splatcraft.forge.Splatcraft;
 import net.splatcraft.forge.client.data.ClientMatchData;
 import net.splatcraft.forge.data.match.MatchPhase;
+import net.splatcraft.forge.data.match.MatchType;
 
 import java.util.*;
 
@@ -37,7 +39,6 @@ public class MatchHudHandler
     private static final int DEATH_OVERLAY = 0x22000000;
     private static final int DEATH_X_COLOR = 0xFF888888;
     private static final float DEATH_X_SLAM_SCALE = 5F;
-    private static final int DANGER_COLOR = 0xFFFF3333;
     private static final int RESULT_BG = 0xAA000000;
     private static final int BAR_HEIGHT = 18;
     private static final long DEATH_ANIM_DURATION_MS = 300;
@@ -106,7 +107,7 @@ public class MatchHudHandler
             teamPlayerIndices.computeIfAbsent(ClientMatchData.playerTeams[i], k -> new ArrayList<>()).add(i);
         }
 
-        Map<String, Boolean> teamDanger = computeDangerState(teamNames);
+        String leaderTeam = computeLeaderTeam(teamNames);
 
         List<String> leftTeams = new ArrayList<>();
         List<String> rightTeams = new ArrayList<>();
@@ -133,11 +134,12 @@ public class MatchHudHandler
         {
             List<Integer> indices = teamPlayerIndices.get(team);
             if (indices == null) continue;
-            boolean danger = teamDanger.getOrDefault(team, false);
+            boolean isLead = team.equals(leaderTeam);
+            boolean trail = leaderTeam != null && !isLead;
             for (int idx : indices)
             {
                 leftX -= iconTotal;
-                renderPlayerIcon(g, mc, idx, leftX, timerY, iconSize, danger);
+                renderPlayerIcon(g, mc, idx, leftX, timerY, iconSize, trail, isLead);
             }
         }
 
@@ -145,16 +147,191 @@ public class MatchHudHandler
         {
             List<Integer> indices = teamPlayerIndices.get(team);
             if (indices == null) continue;
-            boolean danger = teamDanger.getOrDefault(team, false);
+            boolean isLead = team.equals(leaderTeam);
+            boolean trail = leaderTeam != null && !isLead;
             for (int idx : indices)
             {
-                renderPlayerIcon(g, mc, idx, rightX, timerY, iconSize, danger);
+                renderPlayerIcon(g, mc, idx, rightX, timerY, iconSize, trail, isLead);
                 rightX += iconTotal;
             }
         }
+
+        if (ClientMatchData.matchType == MatchType.ZONES)
+        {
+            renderZonesHud(g, mc, timerX, timerY, timerWidth, timerHeight, sw);
+        }
     }
 
-    private static void renderPlayerIcon(GuiGraphics g, Minecraft mc, int idx, int x, int y, int iconSize, boolean danger)
+    private static final int ZONE_BOX_H = 20;
+    private static final int ZONE_BOX_W = 24;
+    private static final int ZONE_GAP = 3;
+    private static final int COUNTER_W = 50;
+    private static final int COUNTER_H = 20;
+    private static final int PENALTY_H = 13;
+
+    private static void renderZonesHud(GuiGraphics g, Minecraft mc, int timerX, int timerY, int timerWidth, int timerHeight, int sw)
+    {
+        if (ClientMatchData.overtimeActive)
+        {
+            renderOvertimeHud(g, mc, timerX, timerY, timerWidth, timerHeight, sw);
+            return;
+        }
+
+        String[] teams = ClientMatchData.teamNames;
+        int[] timers = ClientMatchData.zoneTimers;
+        int[] penalties = ClientMatchData.zonePenalties;
+        int[] colors = ClientMatchData.teamColors;
+        int ctrlIdx = ClientMatchData.controllingTeamIdx;
+        BlockPos[] zoneMins = ClientMatchData.zoneMins;
+        BlockPos[] zoneMaxs = ClientMatchData.zoneMaxs;
+        int[][] zonePcts = ClientMatchData.zoneTeamPcts;
+
+        if (teams.length < 2) return;
+
+        List<String> leftTeams = new ArrayList<>();
+        List<String> rightTeams = new ArrayList<>();
+        for (int i = 0; i < teams.length; i++)
+        {
+            if (i % 2 == 0) leftTeams.add(teams[i]);
+            else rightTeams.add(teams[i]);
+        }
+
+        int zoneCount = zoneMins.length;
+        int totalZoneW = zoneCount * ZONE_BOX_W + Math.max(0, zoneCount - 1) * ZONE_GAP;
+        int rowY = timerY + timerHeight + 4;
+
+        int leftX = sw / 2 - COUNTER_W - totalZoneW / 2 - 8;
+        int rightX = sw / 2 + totalZoneW / 2 + 8;
+
+        int zoneStartX = sw / 2 - totalZoneW / 2;
+
+        for (String team : leftTeams)
+        {
+            int idx = getTeamIndex(teams, team);
+            if (idx < 0 || idx >= timers.length) continue;
+            boolean isControlling = (idx == ctrlIdx);
+            renderTeamCounter(g, mc, leftX, rowY, idx, teams, timers, penalties, colors, isControlling);
+        }
+
+        for (String team : rightTeams)
+        {
+            int idx = getTeamIndex(teams, team);
+            if (idx < 0 || idx >= timers.length) continue;
+            boolean isControlling = (idx == ctrlIdx);
+            renderTeamCounter(g, mc, rightX, rowY, idx, teams, timers, penalties, colors, isControlling);
+        }
+
+        for (int zi = 0; zi < zoneCount; zi++)
+        {
+            int zx = zoneStartX + zi * (ZONE_BOX_W + ZONE_GAP);
+            renderZoneIndicator(g, mc, zx, rowY, zi, zonePcts, ctrlIdx, teams);
+        }
+    }
+
+    private static void renderTeamCounter(GuiGraphics g, Minecraft mc, int x, int y, int idx,
+                                           String[] teams, int[] timers, int[] penalties,
+                                           int[] colors, boolean isControlling)
+    {
+        int bgColor = isControlling ? (colors[idx] | 0xFF000000) : BG_COLOR;
+        int textColor = isControlling ? 0xFFFFFFFF : (colors[idx] | 0xFF000000);
+
+        g.fill(x, y, x + COUNTER_W, y + COUNTER_H, bgColor);
+        g.fill(x + 1, y + 1, x + COUNTER_W - 1, y + COUNTER_H - 1, isControlling ? colors[idx] | 0xFF000000 : 0xFF202020);
+
+        int remainingColor = isControlling ? 0x88FFFFFF : 0xFF777777;
+        String remainingText = "REMAINING";
+
+        g.pose().pushPose();
+        float microScale = 0.5F;
+        int remainingWidth = mc.font.width(remainingText);
+        g.pose().translate(x + COUNTER_W / 2.0F - remainingWidth * microScale / 2.0F, y + 2, 0);
+        g.pose().scale(microScale, microScale, 1);
+        mc.font.drawInBatch(remainingText, 0, 0, remainingColor, false, g.pose().last().pose(), g.bufferSource(),
+            net.minecraft.client.gui.Font.DisplayMode.NORMAL, 0, 0xF000F0);
+        g.pose().popPose();
+
+        int timer = idx < timers.length ? timers[idx] : 100;
+        String timerStr = String.valueOf(timer);
+        int timerW = mc.font.width(timerStr);
+        g.drawString(mc.font, timerStr, x + (COUNTER_W - timerW) / 2, y + 8, textColor);
+
+        int penalty = idx < penalties.length ? penalties[idx] : 0;
+        if (penalty > 0)
+        {
+            String penStr = "+" + penalty;
+            int penW = mc.font.width(penStr);
+            int penX = x + (COUNTER_W - penW) / 2;
+            int penY = y + COUNTER_H + 3;
+            int penBoxW = penW + 10;
+            g.fill(penX - 5, penY, penX - 5 + penBoxW, penY + PENALTY_H, 0xAA000000);
+            g.fill(penX - 4, penY + 1, penX - 4 + penBoxW - 2, penY + PENALTY_H - 1, BG_COLOR);
+            g.drawString(mc.font, penStr, penX, penY + 2, 0xFFFFFFFF);
+        }
+    }
+
+    private static void renderZoneIndicator(GuiGraphics g, Minecraft mc, int x, int y, int zoneIdx,
+                                             int[][] zonePcts, int ctrlIdx, String[] teams)
+    {
+        int[] pcts = zoneIdx < zonePcts.length ? zonePcts[zoneIdx] : new int[0];
+        if (pcts.length < 2) return;
+
+        int borderColor = 0xFFFFFFFF;
+        if (ctrlIdx >= 0 && ctrlIdx < pcts.length && pcts[ctrlIdx] > 70)
+            borderColor = ClientMatchData.teamColors[ctrlIdx] | 0xFF000000;
+
+        int bg = 0xFF1A1A1A;
+        g.fill(x, y, x + ZONE_BOX_W, y + ZONE_BOX_H, borderColor);
+        g.fill(x + 1, y + 1, x + ZONE_BOX_W - 1, y + ZONE_BOX_H - 1, bg);
+
+        int barW = ZONE_BOX_W - 2;
+        int drawnPct = 0;
+        for (int ti = 0; ti < pcts.length; ti++)
+        {
+            int pct = Math.min(pcts[ti], 100);
+            if (pct <= 0) continue;
+            int segW = Math.max(1, pct * barW / 100);
+            g.fill(x + 1 + drawnPct * barW / 100, y + 1,
+                x + 1 + drawnPct * barW / 100 + segW, y + ZONE_BOX_H - 1,
+                (ClientMatchData.teamColors[ti] & 0xFFFFFF) | 0xFF000000);
+            drawnPct += pct;
+        }
+    }
+
+    private static void renderOvertimeHud(GuiGraphics g, Minecraft mc, int timerX, int timerY, int timerWidth, int timerHeight, int sw)
+    {
+        String[] teams = ClientMatchData.teamNames;
+        if (teams.length < 2) return;
+
+        int losingIdx = 0;
+        int losingTimer = -1;
+        for (int i = 0; i < teams.length; i++)
+        {
+            int t = i < ClientMatchData.zoneTimers.length ? ClientMatchData.zoneTimers[i] : 100;
+            if (t > losingTimer) { losingTimer = t; losingIdx = i; }
+        }
+
+        int otColor = ClientMatchData.teamColors[losingIdx] | 0xFF000000;
+        int drain = ClientMatchData.overtimeDrain;
+
+        g.fill(timerX, timerY, timerX + timerWidth, timerY + timerHeight, otColor);
+
+        if (drain >= 0 && drain <= 200)
+        {
+            int fillW = drain * timerWidth / 200;
+            g.fill(timerX, timerY, timerX + fillW, timerY + timerHeight, 0x88000000);
+        }
+
+        g.drawCenteredString(mc.font, "\u00a7c\u00a7lOvertime!", sw / 2, timerY + TIMER_PAD_V, 0xFFFFFFFF);
+    }
+
+    private static int getTeamIndex(String[] teams, String name)
+    {
+        for (int i = 0; i < teams.length; i++)
+            if (teams[i].equals(name)) return i;
+        return -1;
+    }
+
+    private static void renderPlayerIcon(GuiGraphics g, Minecraft mc, int idx, int x, int y, int iconSize, boolean trailing, boolean leader)
     {
         int teamColor = 0xFF888888;
         for (int t = 0; t < ClientMatchData.teamNames.length; t++)
@@ -166,7 +343,7 @@ public class MatchHudHandler
             }
         }
 
-        int actualSize = danger ? Math.max(iconSize * 7 / 10, 8) : iconSize;
+        int actualSize = trailing ? Math.max(iconSize * 7 / 10, 8) : iconSize;
         int offset = (iconSize - actualSize) / 2;
         int cx = x + BORDER + offset;
         int cy = y + BORDER + offset;
@@ -211,8 +388,8 @@ public class MatchHudHandler
             }
         }
 
-        if (danger)
-            g.drawCenteredString(mc.font, "!", x + BORDER + iconSize / 2, y - 6, DANGER_COLOR);
+        if (leader)
+            g.drawCenteredString(mc.font, "LEAD", x + BORDER + iconSize / 2, y - 6, 0xFFFFFF00);
     }
 
     private static void renderDeathX(GuiGraphics g, int x, int y, int size, UUID uuid)
@@ -377,22 +554,42 @@ public class MatchHudHandler
         if (crashT >= 0.999F)
             g.fill((int) splitX - 1, barY - 3, (int) splitX + 1, barY + barH + 3, 0xFFFFFFFF);
 
-        // ── Percentages inside the bar (fade in after crash) ──
+        // ── Percentages / Scores inside the bar (fade in after crash) ──
         if (pctsVisible)
         {
             float pctFade = Mth.clamp((elapsedSec - PCTS_SHOW) / 0.3F, 0.0F, 1.0F);
             int alpha = (int) (pctFade * 255);
-            int pctColor0 = (colors[0] & 0xFFFFFF) | (alpha << 24);
-            int pctColor1 = (colors[1] & 0xFFFFFF) | (alpha << 24);
-            String pctText0 = String.format("%.1f%%", pcts[0]);
-            String pctText1 = String.format("%.1f%%", pcts[1]);
+            int whiteColor = 0xFFFFFF | (alpha << 24);
 
-            int fontWidth0 = mc.font.width(pctText0);
-            int fontWidth1 = mc.font.width(pctText1);
+            if (ClientMatchData.matchType == MatchType.ZONES)
+            {
+                String scoreText0 = ClientMatchData.zoneKnockout && pcts[0] >= 100
+                    ? "KNOCKOUT!"
+                    : String.valueOf((int) pcts[0]);
+                String scoreText1 = ClientMatchData.zoneKnockout && pcts[1] >= 100
+                    ? "KNOCKOUT!"
+                    : String.valueOf((int) pcts[1]);
 
-            int barCenterY = barY + barH / 2 - mc.font.lineHeight / 2;
-            g.drawString(mc.font, pctText1, barX + barWidth - fontWidth1 - 6, barCenterY, pctColor1);
-            g.drawString(mc.font, pctText0, barX + 6, barCenterY, pctColor0);
+                int fontWidth0 = mc.font.width(scoreText0);
+                int fontWidth1 = mc.font.width(scoreText1);
+                int barCenterY = barY + barH / 2 - mc.font.lineHeight / 2;
+                g.drawString(mc.font, scoreText1, barX + barWidth - fontWidth1 - 6, barCenterY, whiteColor);
+                g.drawString(mc.font, scoreText0, barX + 6, barCenterY, whiteColor);
+            }
+            else
+            {
+                int pctColor0 = (colors[0] & 0xFFFFFF) | (alpha << 24);
+                int pctColor1 = (colors[1] & 0xFFFFFF) | (alpha << 24);
+                String pctText0 = String.format("%.1f%%", pcts[0]);
+                String pctText1 = String.format("%.1f%%", pcts[1]);
+
+                int fontWidth0 = mc.font.width(pctText0);
+                int fontWidth1 = mc.font.width(pctText1);
+
+                int barCenterY = barY + barH / 2 - mc.font.lineHeight / 2;
+                g.drawString(mc.font, pctText1, barX + barWidth - fontWidth1 - 6, barCenterY, pctColor1);
+                g.drawString(mc.font, pctText0, barX + 6, barCenterY, pctColor0);
+            }
         }
 
         // ── YOU WIN / YOU LOSE (big text, after crash + delay) ──
@@ -467,26 +664,30 @@ public class MatchHudHandler
             : ((2.0F * t - 2.0F) * (2.0F * t - 2.0F) * ((c2 + 1.0F) * (2.0F * t - 2.0F) + c2) + 2.0F) / 2.0F;
     }
 
-    private static Map<String, Boolean> computeDangerState(String[] teams)
+    private static String computeLeaderTeam(String[] teams)
     {
-        Map<String, Boolean> danger = new HashMap<>();
-        if (teams.length < 2) return danger;
-        float maxPct = -1;
-        int maxIdx = -1;
-        for (int i = 0; i < teams.length; i++)
+        if (teams.length < 2) return null;
+        if (ClientMatchData.matchType == MatchType.ZONES && ClientMatchData.zoneTimers.length == teams.length)
         {
-            float pct = i < ClientMatchData.teamPcts.length ? ClientMatchData.teamPcts[i] : 0;
-            if (pct > maxPct) { maxPct = pct; maxIdx = i; }
+            int best = Integer.MAX_VALUE;
+            int idx = -1;
+            for (int i = 0; i < teams.length; i++)
+            {
+                if (ClientMatchData.zoneTimers[i] < best) { best = ClientMatchData.zoneTimers[i]; idx = i; }
+            }
+            return idx >= 0 ? teams[idx] : null;
         }
-        if (maxIdx >= 0)
+        else
         {
+            float best = -1;
+            int idx = -1;
             for (int i = 0; i < teams.length; i++)
             {
                 float pct = i < ClientMatchData.teamPcts.length ? ClientMatchData.teamPcts[i] : 0;
-                danger.put(teams[i], (maxPct - pct) > 15.0F);
+                if (pct > best) { best = pct; idx = i; }
             }
+            return idx >= 0 ? teams[idx] : null;
         }
-        return danger;
     }
 
     private static AbstractClientPlayer findClientPlayer(Minecraft mc, UUID uuid)

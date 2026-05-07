@@ -14,16 +14,18 @@ public class MatchResultPacket extends PlayS2CPacket
     float[] teamPcts;
     String[] teamNames;
     int[] teamColors;
+    boolean knockout;
 
     public MatchResultPacket() {}
 
-    public MatchResultPacket(UUID matchId, String winnerTeam, float[] teamPcts, String[] teamNames, int[] teamColors)
+    public MatchResultPacket(UUID matchId, String winnerTeam, float[] teamPcts, String[] teamNames, int[] teamColors, boolean knockout)
     {
         this.matchId = matchId;
         this.winnerTeam = winnerTeam;
         this.teamPcts = teamPcts;
         this.teamNames = teamNames;
         this.teamColors = teamColors;
+        this.knockout = knockout;
     }
 
     @Override
@@ -39,6 +41,8 @@ public class MatchResultPacket extends PlayS2CPacket
             buffer.writeInt(teamColors[i]);
             buffer.writeFloat(teamPcts[i]);
         }
+
+        buffer.writeBoolean(knockout);
     }
 
     public static MatchResultPacket decode(FriendlyByteBuf buffer)
@@ -58,7 +62,8 @@ public class MatchResultPacket extends PlayS2CPacket
             pcts[i] = buffer.readFloat();
         }
 
-        return new MatchResultPacket(mid, winner, pcts, names, colors);
+        boolean ko = buffer.readBoolean();
+        return new MatchResultPacket(mid, winner, pcts, names, colors, ko);
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -73,6 +78,7 @@ public class MatchResultPacket extends PlayS2CPacket
             ClientMatchData.teamPcts = teamPcts;
             ClientMatchData.teamNames = teamNames;
             ClientMatchData.teamColors = teamColors;
+            ClientMatchData.zoneKnockout = knockout;
         }
     }
 }

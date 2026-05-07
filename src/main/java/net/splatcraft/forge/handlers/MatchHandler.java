@@ -33,9 +33,11 @@ import net.splatcraft.forge.data.capabilities.worldink.WorldInkCapability;
 import net.splatcraft.forge.data.match.Match;
 import net.splatcraft.forge.data.match.MatchPhase;
 import net.splatcraft.forge.data.match.MatchType;
+import net.splatcraft.forge.data.match.ZonesData;
 import net.splatcraft.forge.network.SplatcraftPacketHandler;
 import net.splatcraft.forge.network.s2c.SyncMatchStatePacket;
 import net.splatcraft.forge.network.s2c.MatchResultPacket;
+import net.splatcraft.forge.network.s2c.SyncZonesStatePacket;
 import net.splatcraft.forge.util.InkBlockUtils;
 
 import java.util.*;
@@ -169,9 +171,20 @@ public class MatchHandler
 
         long gameTime = server.getTickCount();
 
-        if (gameTime % 20 == (Math.abs(match.id.hashCode()) % 20))
+        if (match.type == MatchType.TURF)
         {
-            scanTurf(match, server);
+            if (gameTime % 20 == (Math.abs(match.id.hashCode()) % 20))
+            {
+                scanTurf(match, server);
+            }
+        }
+        else if (match.type == MatchType.ZONES)
+        {
+            if (gameTime % 10 == (Math.abs(match.id.hashCode()) % 10))
+            {
+                scanZones(match, server);
+                syncZones(match, server);
+            }
         }
 
         if (match.remainingTimeTicks == 20 * 60)
@@ -187,10 +200,21 @@ public class MatchHandler
 
         if (match.remainingTimeTicks <= 0)
         {
-            match.phase = MatchPhase.FINISHED;
-            match.finishedTicks = 0;
+            if (match.type == MatchType.ZONES && !match.overtimeActive)
+            {
+                if (tryStartOvertime(match, server))
+                {
+                    match.remainingTimeTicks = 0;
+                    syncZones(match, server);
+                    syncMatch(match, server);
+                    return;
+                }
+            }
 
-            scanTurf(match, server);
+            match.phase = MatchPhase.FINISHED;
+
+            if (match.type == MatchType.TURF)
+                scanTurf(match, server);
 
             sendTitleToMatch(match, "\u00a7c\u00a7lGAME!", null, 5, 40, 10);
             return;
@@ -253,14 +277,40 @@ public class MatchHandler
             String[] names = new String[teamCount];
             int[] colors = new int[teamCount];
             int i = 0;
+
+            boolean knockout = false;
+            if (match.type == MatchType.ZONES)
+            {
+                for (String team : match.getTeamNames())
+                {
+                    if (match.zoneTimers.getOrDefault(team, 100) <= 0)
+                    {
+                        knockout = true;
+                        break;
+                    }
+                }
+            }
+
             for (String team : match.getTeamNames())
             {
-                pcts[i] = match.teamPercentages.getOrDefault(team, 0.0F);
+                if (match.type == MatchType.ZONES)
+                {
+                    int timer = match.zoneTimers.getOrDefault(team, 100);
+                    if (knockout && timer > 0)
+                        pcts[i] = 0;
+                    else
+                        pcts[i] = 100 - timer;
+                }
+                else
+                {
+                    pcts[i] = match.teamPercentages.getOrDefault(team, 0.0F);
+                }
                 names[i] = team;
                 colors[i] = stage != null ? stage.getTeamColor(team) : 0;
                 i++;
             }
-            MatchResultPacket resultPacket = new MatchResultPacket(match.id, winner, pcts, names, colors);
+
+            MatchResultPacket resultPacket = new MatchResultPacket(match.id, winner, pcts, names, colors, knockout);
             for (UUID uuid : match.getPlayerUUIDs())
             {
                 ServerPlayer player = match.getPlayer(uuid);
@@ -503,6 +553,369 @@ public class MatchHandler
                     net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION, stage.dimID);
                 // respawn happens via vanilla, we don't override location
             }
+        }
+    }
+
+    private static void scanZones(Match match, MinecraftServer server)
+    {
+        Stage stage = match.getStage(server);
+        if (stage == null) return;
+
+        java.util.List<ZonesData> zones = stage.getZones();
+        if (zones.isEmpty()) return;
+
+        Level level = null;
+        net.minecraft.resources.ResourceKey<Level> dimKey =
+            net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION, stage.dimID);
+        if (server != null)
+            level = server.getLevel(dimKey);
+
+        if (level == null)
+        {
+            for (UUID uuid : match.getPlayerUUIDs())
+            {
+                ServerPlayer player = match.getPlayer(uuid);
+                if (player != null) { level = player.level(); break; }
+            }
+        }
+        if (level == null) return;
+
+        java.util.Collection<String> teams = match.getTeamNames();
+        String[] teamArr = teams.toArray(new String[0]);
+        int teamCount = teamArr.length;
+
+        if (teamCount == 0) return;
+
+        int zoneCount = zones.size();
+        match.zoneTeamPcts = new int[zoneCount][teamCount];
+
+        int[] oldZoneControllers = match.zoneControllers;
+        if (oldZoneControllers.length != zoneCount)
+            oldZoneControllers = new int[zoneCount];
+        for (int i = 0; i < zoneCount; i++)
+            if (i < oldZoneControllers.length) oldZoneControllers[i] = -1;
+
+        int[] newZoneControllers = new int[zoneCount];
+        for (int i = 0; i < zoneCount; i++) newZoneControllers[i] = -1;
+
+        for (int zi = 0; zi < zoneCount; zi++)
+        {
+            ZonesData zone = zones.get(zi);
+            int[] teamBlocks = new int[teamCount];
+            int totalBlocks = 0;
+
+            for (int x = zone.min.getX(); x <= zone.max.getX(); x++)
+            {
+                for (int z = zone.min.getZ(); z <= zone.max.getZ(); z++)
+                {
+                    BlockPos pos = getTopSolidBlock(level, x, z, zone.min.getY(), zone.max.getY());
+                    if (pos.getY() > zone.max.getY())
+                        continue;
+
+                    net.minecraft.world.level.block.state.BlockState state = level.getBlockState(pos);
+                    if (!state.blocksMotion() || !state.getFluidState().isEmpty()
+                        || InkBlockUtils.isUninkable(level, pos))
+                        continue;
+
+                    totalBlocks++;
+
+                    net.splatcraft.forge.data.capabilities.worldink.WorldInk worldInk =
+                        net.splatcraft.forge.data.capabilities.worldink.WorldInkCapability.get(level, pos);
+                    int inkColor = -1;
+                    if (worldInk.isInked(pos))
+                        inkColor = worldInk.getInk(pos).color();
+
+                    if (inkColor >= 0)
+                    {
+                        for (int ti = 0; ti < teamCount; ti++)
+                        {
+                            int teamColor = stage.getTeamColor(teamArr[ti]);
+                            if (inkColor == teamColor)
+                            {
+                                teamBlocks[ti]++;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            for (int ti = 0; ti < teamCount; ti++)
+            {
+                match.zoneTeamPcts[zi][ti] = totalBlocks > 0
+                    ? teamBlocks[ti] * 100 / totalBlocks : 0;
+            }
+
+            int captor = -1;
+            for (int ti = 0; ti < teamCount; ti++)
+            {
+                if (match.zoneTeamPcts[zi][ti] > 70)
+                {
+                    if (captor == -1)
+                        captor = ti;
+                    else
+                    {
+                        captor = -2;
+                        break;
+                    }
+                }
+            }
+
+            if (captor >= 0)
+            {
+                newZoneControllers[zi] = captor;
+            }
+            else if (captor == -2)
+            {
+                newZoneControllers[zi] = -1;
+            }
+            else
+            {
+                int prev = zi < oldZoneControllers.length ? oldZoneControllers[zi] : -1;
+                if (prev >= 0 && prev < teamCount && match.zoneTeamPcts[zi][prev] > 50)
+                    newZoneControllers[zi] = prev;
+                else
+                    newZoneControllers[zi] = -1;
+            }
+        }
+        match.zoneControllers = newZoneControllers;
+
+        for (int ti = 0; ti < teamCount; ti++)
+        {
+            float totalPct = 0;
+            for (int zi = 0; zi < zoneCount; zi++)
+                totalPct += match.zoneTeamPcts[zi][ti];
+            match.teamPercentages.put(teamArr[ti], zones.size() > 0 ? totalPct / zones.size() : 0);
+        }
+
+        String oldController = match.controllingTeam;
+        String newController = null;
+
+        boolean allSame = true;
+        for (int zi = 0; zi < zoneCount; zi++)
+        {
+            if (newZoneControllers[zi] < 0) { allSame = false; break; }
+            String tn = teamArr[newZoneControllers[zi]];
+            if (newController == null)
+                newController = tn;
+            else if (!newController.equals(tn))
+            { allSame = false; break; }
+        }
+        match.controllingTeam = allSame ? newController : null;
+
+        if (match.controllingTeam != null && !match.controllingTeam.equals(oldController))
+        {
+            match.teamControlStartTimers.put(match.controllingTeam,
+                match.zoneTimers.getOrDefault(match.controllingTeam, 100)
+                + match.zonePenalties.getOrDefault(match.controllingTeam, 0));
+
+            if (oldController != null && !match.overtimeActive)
+            {
+                int start = match.teamControlStartTimers.getOrDefault(oldController, 100);
+                int end = match.zoneTimers.getOrDefault(oldController, 100)
+                    + match.zonePenalties.getOrDefault(oldController, 0);
+                int penalty = (int) Math.round(0.75 * (start - end));
+                if (start == 100) penalty += 1;
+
+                if (penalty > 0)
+                {
+                    match.zonePenalties.merge(oldController, penalty, Integer::sum);
+                    match.teamControlStartTimers.put(oldController,
+                        match.zoneTimers.getOrDefault(oldController, 100)
+                        + match.zonePenalties.getOrDefault(oldController, 0));
+                }
+            }
+
+            match.lastControlLossTick = server.getTickCount();
+
+            int ctrlColor = stage.getTeamColor(match.controllingTeam);
+            if (ctrlColor >= 0)
+            {
+                for (ZonesData zone : zones)
+                {
+                    for (int x = zone.min.getX(); x <= zone.max.getX(); x++)
+                        for (int y = zone.min.getY(); y <= zone.max.getY(); y++)
+                            for (int z = zone.min.getZ(); z <= zone.max.getZ(); z++)
+                            {
+                                BlockPos pos = new BlockPos(x, y, z);
+                                InkBlockUtils.inkBlock(level, pos, ctrlColor, 0, InkBlockUtils.InkType.NORMAL);
+                            }
+                }
+            }
+        }
+
+        if (match.overtimeActive)
+        {
+            String losing = match.overtimeLosingTeam;
+            String winning = match.overtimeWinningTeam;
+
+            if (losing != null && winning != null)
+            {
+                int losingTimer = match.zoneTimers.getOrDefault(losing, 100);
+                int winningTimer = match.zoneTimers.getOrDefault(winning, 100);
+                if (losingTimer < winningTimer)
+                {
+                    match.phase = MatchPhase.FINISHED;
+                    match.finishedTicks = 0;
+                    sendTitleToMatch(match, "\u00a7c\u00a7lGAME!", null, 5, 40, 10);
+                    return;
+                }
+            }
+
+            if (match.controllingTeam != null && match.controllingTeam.equals(winning))
+            {
+                match.phase = MatchPhase.FINISHED;
+                match.finishedTicks = 0;
+                sendTitleToMatch(match, "\u00a7c\u00a7lGAME!", null, 5, 40, 10);
+                return;
+            }
+
+            boolean losingControlsAll = match.controllingTeam != null
+                && match.controllingTeam.equals(losing);
+
+            if (losingControlsAll)
+            {
+                match.overtimeDrainTicks = -1;
+            }
+            else
+            {
+                if (match.overtimeDrainTicks < 0)
+                    match.overtimeDrainTicks = 200;
+                else
+                    match.overtimeDrainTicks--;
+
+                if (match.overtimeDrainTicks <= 0)
+                {
+                    match.phase = MatchPhase.FINISHED;
+                    match.finishedTicks = 0;
+                    sendTitleToMatch(match, "\u00a7c\u00a7lGAME!", null, 5, 40, 10);
+                    return;
+                }
+            }
+        }
+
+        if (match.controllingTeam != null)
+        {
+            int penalty = match.zonePenalties.getOrDefault(match.controllingTeam, 0);
+            if (penalty > 0)
+            {
+                match.zonePenalties.put(match.controllingTeam, penalty - 1);
+            }
+            else
+            {
+                int timer = match.zoneTimers.getOrDefault(match.controllingTeam, 100);
+                if (timer > 0)
+                {
+                    match.zoneTimers.put(match.controllingTeam, timer - 1);
+                    if (timer - 1 <= 0)
+                    {
+                        match.phase = MatchPhase.FINISHED;
+                        match.finishedTicks = 0;
+                        sendTitleToMatch(match, "\u00a7c\u00a7lGAME!", null, 5, 40, 10);
+                    }
+                }
+            }
+        }
+    }
+
+    private static boolean tryStartOvertime(Match match, MinecraftServer server)
+    {
+        java.util.Collection<String> teams = match.getTeamNames();
+        String[] teamArr = teams.toArray(new String[0]);
+        if (teamArr.length < 2) return false;
+
+        String losingTeam = null;
+        String winningTeam = null;
+        int losingTimer = -1;
+        int winningTimer = Integer.MAX_VALUE;
+        for (String team : teamArr)
+        {
+            int timer = match.zoneTimers.getOrDefault(team, 100);
+            if (timer > losingTimer)
+            {
+                losingTimer = timer;
+                losingTeam = team;
+            }
+            if (timer < winningTimer)
+            {
+                winningTimer = timer;
+                winningTeam = team;
+            }
+        }
+
+        if (losingTeam == null || winningTeam == null) return false;
+
+        boolean losingControls = match.controllingTeam != null
+            && match.controllingTeam.equals(losingTeam);
+
+        long ticksSinceLoss = server.getTickCount() - match.lastControlLossTick;
+        boolean lostRecently = ticksSinceLoss < 200
+            && (match.controllingTeam == null || !match.controllingTeam.equals(winningTeam));
+
+        if (losingControls || lostRecently)
+        {
+            match.overtimeActive = true;
+            match.overtimeLosingTeam = losingTeam;
+            match.overtimeWinningTeam = winningTeam;
+            match.overtimeDrainTicks = losingControls ? -1 : (200 - (int) ticksSinceLoss);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static void syncZones(Match match, MinecraftServer server)
+    {
+        java.util.Collection<String> teams = match.getTeamNames();
+        String[] teamArr = teams.toArray(new String[0]);
+        int teamCount = teamArr.length;
+
+        int[] timers = new int[teamCount];
+        int[] penalties = new int[teamCount];
+        int[] colors = new int[teamCount];
+
+        Stage stage = match.getStage(server);
+        for (int i = 0; i < teamCount; i++)
+        {
+            timers[i] = match.zoneTimers.getOrDefault(teamArr[i], 100);
+            penalties[i] = match.zonePenalties.getOrDefault(teamArr[i], 0);
+            colors[i] = stage != null ? stage.getTeamColor(teamArr[i]) : 0;
+        }
+
+        int ctrlIdx = -1;
+        if (match.controllingTeam != null)
+        {
+            for (int i = 0; i < teamCount; i++)
+            {
+                if (teamArr[i].equals(match.controllingTeam))
+                {
+                    ctrlIdx = i;
+                    break;
+                }
+            }
+        }
+
+        java.util.List<ZonesData> zones = stage != null ? stage.getZones() : java.util.Collections.emptyList();
+        BlockPos[] mins = new BlockPos[zones.size()];
+        BlockPos[] maxs = new BlockPos[zones.size()];
+        int[][] pcts = match.zoneTeamPcts;
+        if (pcts.length != zones.size()) pcts = new int[zones.size()][teamCount];
+
+        for (int i = 0; i < zones.size(); i++)
+        {
+            mins[i] = zones.get(i).min;
+            maxs[i] = zones.get(i).max;
+        }
+
+        SyncZonesStatePacket packet = new SyncZonesStatePacket(match.id, teamArr, colors,
+            timers, penalties, ctrlIdx, mins, maxs, pcts,
+            match.overtimeActive, match.overtimeDrainTicks);
+
+        for (UUID uuid : match.getPlayerUUIDs())
+        {
+            ServerPlayer player = match.getPlayer(uuid);
+            if (player != null)
+                SplatcraftPacketHandler.sendToPlayer(packet, player);
         }
     }
 }

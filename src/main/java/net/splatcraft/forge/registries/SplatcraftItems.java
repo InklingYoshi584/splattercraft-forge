@@ -39,6 +39,7 @@ import net.splatcraft.forge.items.remotes.ColorChangerItem;
 import net.splatcraft.forge.items.remotes.InkDisruptorItem;
 import net.splatcraft.forge.items.remotes.RemoteItem;
 import net.splatcraft.forge.items.remotes.TurfScannerItem;
+import net.splatcraft.forge.items.remotes.ZoneMarkerItem;
 import net.splatcraft.forge.items.weapons.*;
 import net.splatcraft.forge.util.ColorUtils;
 import net.splatcraft.forge.util.SplatcraftArmorMaterial;
@@ -186,6 +187,7 @@ public class SplatcraftItems {
     public static final RegistryObject<RemoteItem> turfScanner = REGISTRY.register("turf_scanner", TurfScannerItem::new);
     public static final RegistryObject<RemoteItem> inkDisruptor = REGISTRY.register("ink_disruptor", InkDisruptorItem::new);
     public static final RegistryObject<RemoteItem> colorChanger = REGISTRY.register("color_changer", ColorChangerItem::new);
+    public static final RegistryObject<RemoteItem> zoneMarker = REGISTRY.register("splat_zones", ZoneMarkerItem::new);
 
     //Filters
     public static final RegistryObject<FilterItem> emptyFilter = REGISTRY.register("filter", FilterItem::new);
