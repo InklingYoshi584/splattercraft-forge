@@ -41,7 +41,10 @@ public class SuperJumpSelectPacket extends PlayC2SPacket
 		if (target.isEmpty())
 			return;
 
-		SuperJumpCommand.startSuperJump(serverPlayer, target.get());
+		if (!serverPlayer.onGround())
+			SuperJumpCommand.startPendingSuperJump(serverPlayer, target.get());
+		else
+			SuperJumpCommand.startSuperJump(serverPlayer, target.get());
 	}
 
 	private Optional<Vec3> resolvePlayerTarget(ServerPlayer player)

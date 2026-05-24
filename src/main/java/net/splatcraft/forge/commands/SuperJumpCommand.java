@@ -180,6 +180,20 @@ public class SuperJumpCommand
 		return startJump(player, target, false, true);
 	}
 
+	public static boolean startPendingSuperJump(ServerPlayer player, Vec3 target)
+	{
+		if (!canStartSuperJump(player) || player == null || player.isSpectator() || !player.isAlive() || PlayerCooldown.hasPlayerCooldown(player))
+			return false;
+
+		SuperJump jump = new SuperJump(player.getInventory().selected, player.position(), target, player.noPhysics);
+		jump.setPending(true);
+		PlayerCooldown.setPlayerCooldown(player, jump);
+
+		setJumpSquid(player, true);
+		SplatcraftPacketHandler.sendToTrackersAndSelf(new UpdatePlayerInfoPacket(player), player);
+		return true;
+	}
+
 	public static boolean isInStartup(LivingEntity entity)
 	{
 		if (!(entity instanceof Player player) || !isSuperJumping(player))
@@ -337,6 +351,17 @@ public class SuperJumpCommand
 			player.getAbilities().flying = false;
 			player.fallDistance = 0;
 
+			if (jump.isPending())
+			{
+				if (!player.onGround())
+				{
+					setJumpSquid(player, true);
+					return;
+				}
+				jump.setPending(false);
+				jump.start = player.position();
+			}
+
 			if (jump.getTime() > TRAVEL_TICKS)
 			{
 				player.noPhysics = player.level().isClientSide() || jump.hadNoPhysics();
@@ -376,9 +401,10 @@ public class SuperJumpCommand
 
 	public static class SuperJump extends PlayerCooldown
 	{
-		private final Vec3 start;
+		private Vec3 start;
 		private final Vec3 target;
 		private final boolean noPhysics;
+		private boolean pending;
 
 		public SuperJump(int slotIndex, Vec3 start, Vec3 target, boolean canClip)
 		{
@@ -386,6 +412,7 @@ public class SuperJumpCommand
 			this.start = start;
 			this.target = target;
 			this.noPhysics = canClip;
+			this.pending = false;
 		}
 
 		public SuperJump(CompoundTag nbt)
@@ -395,6 +422,7 @@ public class SuperJumpCommand
 					new Vec3(nbt.getDouble("TargetX"), nbt.getDouble("TargetY"), nbt.getDouble("TargetZ")),
 					nbt.getBoolean("CanClip"));
 			setTime(nbt.getInt("Time"));
+			this.pending = nbt.getBoolean("Pending");
 		}
 
 		public Vec3 getStart()
@@ -410,6 +438,16 @@ public class SuperJumpCommand
 		public boolean hadNoPhysics()
 		{
 			return noPhysics;
+		}
+
+		public boolean isPending()
+		{
+			return pending;
+		}
+
+		public void setPending(boolean pending)
+		{
+			this.pending = pending;
 		}
 
 		public float getTravelProgress()
@@ -429,6 +467,7 @@ public class SuperJumpCommand
 			nbt.putDouble("TargetZ", target.z);
 			nbt.putBoolean("SuperJump", true);
 			nbt.putBoolean("CanClip", noPhysics);
+			nbt.putBoolean("Pending", pending);
 			return nbt;
 		}
 	}
