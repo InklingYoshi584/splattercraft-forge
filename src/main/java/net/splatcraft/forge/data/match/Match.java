@@ -33,6 +33,8 @@ public class Match
     public final Map<String, Integer> zonePenalties = new HashMap<>();
     public final Map<String, Integer> teamControlStartTimers = new HashMap<>();
     public String controllingTeam;
+    public String lastControllingTeam;
+    public String previousLeader;
     public int[] zoneControllers = new int[0];
     public boolean overtimeActive;
     public int overtimeDrainTicks = -1;

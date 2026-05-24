@@ -46,7 +46,10 @@ public class SyncMatchStatePacket extends PlayS2CPacket
         net.splatcraft.forge.data.Stage stage = match.getStage(server);
         for (String team : teams)
         {
-            this.teamPcts[i] = match.teamPercentages.getOrDefault(team, 0.0F);
+            if (match.type == MatchType.ZONES && match.phase == MatchPhase.FINISHED)
+                this.teamPcts[i] = 100 - match.zoneTimers.getOrDefault(team, 100);
+            else
+                this.teamPcts[i] = match.teamPercentages.getOrDefault(team, 0.0F);
             this.teamColors[i] = stage != null ? stage.getTeamColor(team) : 0;
             i++;
         }

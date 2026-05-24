@@ -25,7 +25,7 @@ public class ZoneMarkerItem extends RemoteItem
 {
     public ZoneMarkerItem()
     {
-        super(new Properties().stacksTo(1));
+        super(new Properties().stacksTo(1), 2);
     }
 
     @Override
@@ -34,9 +34,15 @@ public class ZoneMarkerItem extends RemoteItem
         Level level = context.getLevel();
         ItemStack stack = context.getItemInHand();
         BlockPos pos = context.getClickedPos();
+        int mode = getRemoteMode(stack);
 
         if (level.isClientSide)
             return InteractionResult.SUCCESS;
+
+        if (mode == 1)
+        {
+            return removeZoneAt(level, stack, pos, context.getPlayer());
+        }
 
         CompoundTag nbt = stack.getOrCreateTag();
 
@@ -47,25 +53,63 @@ public class ZoneMarkerItem extends RemoteItem
             return InteractionResult.FAIL;
         }
 
+        BlockPos flatPos = new BlockPos(pos.getX(), 0, pos.getZ());
+
         if (!nbt.contains("PointA"))
         {
-            nbt.put("PointA", NbtUtils.writeBlockPos(pos));
+            nbt.put("PointA", NbtUtils.writeBlockPos(flatPos));
             nbt.putString("Dimension", level.dimension().location().toString());
             context.getPlayer().displayClientMessage(
-                Component.translatable("status.zone.point_a", pos.getX(), pos.getY(), pos.getZ()), true);
+                Component.translatable("status.zone.point_a", pos.getX(), pos.getZ()), true);
             return InteractionResult.SUCCESS;
         }
         else if (!nbt.contains("PointB"))
         {
-            nbt.put("PointB", NbtUtils.writeBlockPos(pos));
+            nbt.put("PointB", NbtUtils.writeBlockPos(flatPos));
             BlockPos a = NbtUtils.readBlockPos(nbt.getCompound("PointA"));
             context.getPlayer().displayClientMessage(
-                Component.translatable("status.zone.point_b", a.getX(), a.getY(), a.getZ(),
-                    pos.getX(), pos.getY(), pos.getZ()), true);
+                Component.translatable("status.zone.point_b", a.getX(), a.getZ(),
+                    pos.getX(), pos.getZ()), true);
             return InteractionResult.SUCCESS;
         }
 
         return InteractionResult.PASS;
+    }
+
+    private static InteractionResult removeZoneAt(Level level, ItemStack stack, BlockPos pos, Player player)
+    {
+        if (player == null) return InteractionResult.FAIL;
+
+        List<Stage> stages = Stage.getStagesForPosition(level, Vec3.atCenterOf(pos));
+        if (stages.isEmpty())
+        {
+            player.displayClientMessage(
+                Component.translatable("status.zone.no_stage"), true);
+            return InteractionResult.FAIL;
+        }
+
+        Stage stage = stages.get(0);
+        for (int i = 0; i < stage.getZones().size(); i++)
+        {
+            if (stage.getZones().get(i).contains(pos))
+            {
+                stage.removeZone(i);
+
+                String stageName = null;
+                for (var entry : SaveInfoCapability.get(level.getServer()).getStages().entrySet())
+                {
+                    if (entry.getValue() == stage) { stageName = entry.getKey(); break; }
+                }
+
+                player.displayClientMessage(
+                    Component.translatable("status.zone.removed", stageName != null ? stageName : "unknown", i), true);
+                return InteractionResult.SUCCESS;
+            }
+        }
+
+        player.displayClientMessage(
+            Component.translatable("status.zone.not_in_zone"), true);
+        return InteractionResult.FAIL;
     }
 
     @Override
@@ -95,7 +139,12 @@ public class ZoneMarkerItem extends RemoteItem
             BlockPos a = NbtUtils.readBlockPos(nbt.getCompound("PointA"));
             BlockPos b = NbtUtils.readBlockPos(nbt.getCompound("PointB"));
 
-            stage.addZone(a, b);
+            int minY = Math.min(stage.cornerA.getY(), stage.cornerB.getY());
+            int maxY = Math.max(stage.cornerA.getY(), stage.cornerB.getY());
+            BlockPos zoneA = new BlockPos(a.getX(), minY, a.getZ());
+            BlockPos zoneB = new BlockPos(b.getX(), maxY, b.getZ());
+
+            stage.addZone(zoneA, zoneB);
 
             String stageName = null;
             for (var entry : SaveInfoCapability.get(level.getServer()).getStages().entrySet())
@@ -140,14 +189,12 @@ public class ZoneMarkerItem extends RemoteItem
         {
             BlockPos a = NbtUtils.readBlockPos(nbt.getCompound("PointA"));
             BlockPos b = NbtUtils.readBlockPos(nbt.getCompound("PointB"));
-            tooltip.add(Component.translatable("item.remote.coords.b",
-                a.getX(), a.getY(), a.getZ(), b.getX(), b.getY(), b.getZ()));
+            tooltip.add(Component.literal("(" + a.getX() + ", " + a.getZ() + ") to (" + b.getX() + ", " + b.getZ() + ")"));
         }
         else if (nbt.contains("PointA"))
         {
             BlockPos a = NbtUtils.readBlockPos(nbt.getCompound("PointA"));
-            tooltip.add(Component.translatable("item.remote.coords.a",
-                a.getX(), a.getY(), a.getZ()));
+            tooltip.add(Component.literal("(" + a.getX() + ", " + a.getZ() + ")"));
         }
     }
 

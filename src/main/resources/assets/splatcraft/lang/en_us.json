@@ -661,14 +661,25 @@
   "commands.stage.zones.cleared": "Cleared all zones from stage [%s]",
   "commands.stage.zones.invalid_index": "Invalid zone index: %s",
 
-  "status.zone.point_a": "Set zone corner A to (%s, %s, %s). Right-click another block for corner B.",
-  "status.zone.point_b": "Set zone corner B from (%s, %s, %s) to (%s, %s, %s). Right-click air to save to current stage.",
+  "status.zone.point_a": "Set zone corner A to (%s, %s). Right-click another block for corner B.",
+  "status.zone.point_b": "Set zone corner B from (%s, %s) to (%s, %s). Right-click air to save to current stage.",
   "status.zone.saved": "Zone saved to stage [%s] as zone #%s",
   "status.zone.already_saved": "This marker's zone has already been saved. Clear it to define new zones.",
   "status.zone.no_stage": "You must be standing inside a stage to save the zone.",
+  "status.zone.removed": "Removed zone #%s from stage [%s]",
+  "status.zone.not_in_zone": "No zone found at this position.",
   "item.zone.saved_to": "Saved to stage [%s] as zone #%s",
 
   "item.splatcraft.splat_zones": "Splat Zones Marker",
+  "item.splatcraft.splat_zones.mode.0": "Define",
+  "item.splatcraft.splat_zones.mode.1": "Remove",
+
+  "status.zones.we_control": "We are in control!",
+  "status.zones.we_lost_control": "We lost control!",
+  "status.zones.they_control": "They are in control!",
+  "status.zones.they_lost_control": "They lost control!",
+  "status.zones.we_lead": "We have gained the lead!",
+  "status.zones.we_lost_lead": "We lost the lead!",
 
   "disconnect.lost": "A communication error occurred"
 }

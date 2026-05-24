@@ -124,8 +124,12 @@ public class MatchHudHandler
         int timerX = (sw - timerWidth) / 2;
         int timerY = HUD_TOP;
 
-        g.fill(timerX, timerY, timerX + timerWidth, timerY + timerHeight, BG_COLOR);
-        g.drawCenteredString(mc.font, timeStr, sw / 2, timerY + TIMER_PAD_V, timerColor);
+        boolean hideTimer = ClientMatchData.matchType == MatchType.ZONES && ClientMatchData.overtimeActive;
+        if (!hideTimer)
+        {
+            g.fill(timerX, timerY, timerX + timerWidth, timerY + timerHeight, BG_COLOR);
+            g.drawCenteredString(mc.font, timeStr, sw / 2, timerY + TIMER_PAD_V, timerColor);
+        }
 
         int leftX = timerX - ICON_GAP;
         int rightX = timerX + timerWidth + ICON_GAP;
@@ -174,7 +178,6 @@ public class MatchHudHandler
         if (ClientMatchData.overtimeActive)
         {
             renderOvertimeHud(g, mc, timerX, timerY, timerWidth, timerHeight, sw);
-            return;
         }
 
         String[] teams = ClientMatchData.teamNames;
@@ -297,6 +300,8 @@ public class MatchHudHandler
         }
     }
 
+    private static long lastOvertimeBellMs;
+
     private static void renderOvertimeHud(GuiGraphics g, Minecraft mc, int timerX, int timerY, int timerWidth, int timerHeight, int sw)
     {
         String[] teams = ClientMatchData.teamNames;
@@ -315,13 +320,28 @@ public class MatchHudHandler
 
         g.fill(timerX, timerY, timerX + timerWidth, timerY + timerHeight, otColor);
 
-        if (drain >= 0 && drain <= 200)
+        if (drain >= 0 && drain <= 20)
         {
-            int fillW = drain * timerWidth / 200;
+            int fillW = drain * timerWidth / 20;
             g.fill(timerX, timerY, timerX + fillW, timerY + timerHeight, 0x88000000);
         }
 
-        g.drawCenteredString(mc.font, "\u00a7c\u00a7lOvertime!", sw / 2, timerY + TIMER_PAD_V, 0xFFFFFFFF);
+        g.pose().pushPose();
+        float txtScale = 0.5F;
+        String overtimeText = "\u00a7c\u00a7lOvertime!";
+        int textW = mc.font.width(overtimeText);
+        g.pose().translate(sw / 2.0F - textW * txtScale / 2.0F, timerY + timerHeight / 2.0F - mc.font.lineHeight * txtScale / 2.0F, 0);
+        g.pose().scale(txtScale, txtScale, 1);
+        mc.font.drawInBatch(overtimeText, 0, 0, 0xFFFFFFFF, false, g.pose().last().pose(), g.bufferSource(),
+            net.minecraft.client.gui.Font.DisplayMode.NORMAL, 0, 0xF000F0);
+        g.pose().popPose();
+
+        long now = System.currentTimeMillis();
+        if (now - lastOvertimeBellMs >= 1000)
+        {
+            lastOvertimeBellMs = now;
+            mc.player.playSound(net.minecraft.sounds.SoundEvents.BELL_BLOCK, 0.5F, 1.0F);
+        }
     }
 
     private static int getTeamIndex(String[] teams, String name)
@@ -671,21 +691,27 @@ public class MatchHudHandler
         {
             int best = Integer.MAX_VALUE;
             int idx = -1;
+            boolean allEqual = true;
             for (int i = 0; i < teams.length; i++)
             {
                 if (ClientMatchData.zoneTimers[i] < best) { best = ClientMatchData.zoneTimers[i]; idx = i; }
+                if (ClientMatchData.zoneTimers[i] != ClientMatchData.zoneTimers[0]) allEqual = false;
             }
+            if (allEqual) return null;
             return idx >= 0 ? teams[idx] : null;
         }
         else
         {
             float best = -1;
             int idx = -1;
+            boolean allEqual = true;
             for (int i = 0; i < teams.length; i++)
             {
                 float pct = i < ClientMatchData.teamPcts.length ? ClientMatchData.teamPcts[i] : 0;
                 if (pct > best) { best = pct; idx = i; }
+                if (pct != (0 < ClientMatchData.teamPcts.length ? ClientMatchData.teamPcts[0] : 0)) allEqual = false;
             }
+            if (allEqual) return null;
             return idx >= 0 ? teams[idx] : null;
         }
     }

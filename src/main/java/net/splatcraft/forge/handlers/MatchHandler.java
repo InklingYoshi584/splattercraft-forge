@@ -211,13 +211,16 @@ public class MatchHandler
                 }
             }
 
-            match.phase = MatchPhase.FINISHED;
+            if (!match.overtimeActive)
+            {
+                match.phase = MatchPhase.FINISHED;
 
-            if (match.type == MatchType.TURF)
-                scanTurf(match, server);
+                if (match.type == MatchType.TURF)
+                    scanTurf(match, server);
 
-            sendTitleToMatch(match, "\u00a7c\u00a7lGAME!", null, 5, 40, 10);
-            return;
+                sendTitleToMatch(match, "\u00a7c\u00a7lGAME!", null, 5, 40, 10);
+                return;
+            }
         }
 
         syncMatch(match, server);
@@ -474,7 +477,7 @@ public class MatchHandler
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onPlayerInteract(PlayerInteractEvent event)
     {
-        if (isPlayerFrozen(event.getEntity()))
+        if (isPlayerFrozen(event.getEntity()) && event.isCancelable())
             event.setCanceled(true);
     }
 
@@ -591,9 +594,11 @@ public class MatchHandler
 
         int[] oldZoneControllers = match.zoneControllers;
         if (oldZoneControllers.length != zoneCount)
+        {
             oldZoneControllers = new int[zoneCount];
-        for (int i = 0; i < zoneCount; i++)
-            if (i < oldZoneControllers.length) oldZoneControllers[i] = -1;
+            for (int i = 0; i < zoneCount; i++)
+                oldZoneControllers[i] = -1;
+        }
 
         int[] newZoneControllers = new int[zoneCount];
         for (int i = 0; i < zoneCount; i++) newZoneControllers[i] = -1;
@@ -709,20 +714,21 @@ public class MatchHandler
                 match.zoneTimers.getOrDefault(match.controllingTeam, 100)
                 + match.zonePenalties.getOrDefault(match.controllingTeam, 0));
 
-            if (oldController != null && !match.overtimeActive)
+            String penaltyTarget = oldController != null ? oldController : match.lastControllingTeam;
+            if (penaltyTarget != null && !penaltyTarget.equals(match.controllingTeam) && !match.overtimeActive)
             {
-                int start = match.teamControlStartTimers.getOrDefault(oldController, 100);
-                int end = match.zoneTimers.getOrDefault(oldController, 100)
-                    + match.zonePenalties.getOrDefault(oldController, 0);
+                int start = match.teamControlStartTimers.getOrDefault(penaltyTarget, 100);
+                int end = match.zoneTimers.getOrDefault(penaltyTarget, 100)
+                    + match.zonePenalties.getOrDefault(penaltyTarget, 0);
                 int penalty = (int) Math.round(0.75 * (start - end));
                 if (start == 100) penalty += 1;
 
                 if (penalty > 0)
                 {
-                    match.zonePenalties.merge(oldController, penalty, Integer::sum);
-                    match.teamControlStartTimers.put(oldController,
-                        match.zoneTimers.getOrDefault(oldController, 100)
-                        + match.zonePenalties.getOrDefault(oldController, 0));
+                    match.zonePenalties.merge(penaltyTarget, penalty, Integer::sum);
+                    match.teamControlStartTimers.put(penaltyTarget,
+                        match.zoneTimers.getOrDefault(penaltyTarget, 100)
+                        + match.zonePenalties.getOrDefault(penaltyTarget, 0));
                 }
             }
 
@@ -742,6 +748,8 @@ public class MatchHandler
                             }
                 }
             }
+
+            match.lastControllingTeam = match.controllingTeam;
         }
 
         if (match.overtimeActive)
@@ -780,7 +788,7 @@ public class MatchHandler
             else
             {
                 if (match.overtimeDrainTicks < 0)
-                    match.overtimeDrainTicks = 200;
+                    match.overtimeDrainTicks = 20;
                 else
                     match.overtimeDrainTicks--;
 
@@ -816,6 +824,80 @@ public class MatchHandler
                 }
             }
         }
+
+        sendControlMessages(match, server, teamArr, oldController);
+    }
+
+    private static void sendControlMessages(Match match, MinecraftServer server, String[] teamArr, String oldController)
+    {
+        String currentController = match.controllingTeam;
+        String oldCtrl = oldController;
+        boolean controlChanged = !java.util.Objects.equals(currentController, oldCtrl);
+
+        String currentLeader = null;
+        int bestTimer = Integer.MAX_VALUE;
+        boolean allEqual = true;
+        for (int i = 0; i < teamArr.length; i++)
+        {
+            int timer = match.zoneTimers.getOrDefault(teamArr[i], 100);
+            if (timer < bestTimer) { bestTimer = timer; currentLeader = teamArr[i]; }
+            if (i > 0 && timer != match.zoneTimers.getOrDefault(teamArr[0], 100)) allEqual = false;
+        }
+        if (allEqual && teamArr.length >= 2) currentLeader = null;
+
+        String oldLeader = match.previousLeader;
+        boolean leaderChanged = currentLeader != null && !currentLeader.equals(oldLeader);
+
+        for (UUID uuid : match.getPlayerUUIDs())
+        {
+            ServerPlayer player = match.getPlayer(uuid);
+            if (player == null) continue;
+            String playerTeam = match.getPlayerTeam(uuid);
+
+            if (controlChanged)
+            {
+                if (currentController != null && currentController.equals(playerTeam))
+                {
+                    sendSubtitle(player, Component.translatable("status.zones.we_control").withStyle(net.minecraft.ChatFormatting.GREEN));
+                    player.playNotifySound(net.minecraft.sounds.SoundEvents.PLAYER_LEVELUP, net.minecraft.sounds.SoundSource.PLAYERS, 0.7F, 1.2F);
+                }
+                else if (oldCtrl != null && oldCtrl.equals(playerTeam))
+                {
+                    sendSubtitle(player, Component.translatable("status.zones.we_lost_control").withStyle(net.minecraft.ChatFormatting.RED));
+                    player.playNotifySound(net.minecraft.sounds.SoundEvents.NOTE_BLOCK_BASS.value(), net.minecraft.sounds.SoundSource.PLAYERS, 0.5F, 0.6F);
+                }
+                else if (currentController != null)
+                {
+                    sendSubtitle(player, Component.translatable("status.zones.they_control").withStyle(net.minecraft.ChatFormatting.RED));
+                }
+                else if (oldCtrl != null)
+                {
+                    sendSubtitle(player, Component.translatable("status.zones.they_lost_control").withStyle(net.minecraft.ChatFormatting.GREEN));
+                }
+            }
+
+            if (leaderChanged)
+            {
+                if (currentLeader.equals(playerTeam))
+                {
+                    sendSubtitle(player, Component.translatable("status.zones.we_lead").withStyle(net.minecraft.ChatFormatting.GOLD));
+                    player.playNotifySound(net.minecraft.sounds.SoundEvents.NOTE_BLOCK_PLING.value(), net.minecraft.sounds.SoundSource.PLAYERS, 0.6F, 1.5F);
+                }
+                else if (oldLeader != null && oldLeader.equals(playerTeam))
+                {
+                    sendSubtitle(player, Component.translatable("status.zones.we_lost_lead").withStyle(net.minecraft.ChatFormatting.RED));
+                    player.playNotifySound(net.minecraft.sounds.SoundEvents.NOTE_BLOCK_BASS.value(), net.minecraft.sounds.SoundSource.PLAYERS, 0.5F, 0.6F);
+                }
+            }
+        }
+
+        match.previousLeader = currentLeader;
+    }
+
+    private static void sendSubtitle(ServerPlayer player, Component msg)
+    {
+        player.connection.send(new net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket(Component.empty()));
+        player.connection.send(new net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket(msg));
     }
 
     private static boolean tryStartOvertime(Match match, MinecraftServer server)
@@ -849,7 +931,8 @@ public class MatchHandler
             && match.controllingTeam.equals(losingTeam);
 
         long ticksSinceLoss = server.getTickCount() - match.lastControlLossTick;
-        boolean lostRecently = ticksSinceLoss < 200
+        int scansSinceLoss = (int) (ticksSinceLoss / 10);
+        boolean lostRecently = scansSinceLoss < 20
             && (match.controllingTeam == null || !match.controllingTeam.equals(winningTeam));
 
         if (losingControls || lostRecently)
@@ -857,7 +940,7 @@ public class MatchHandler
             match.overtimeActive = true;
             match.overtimeLosingTeam = losingTeam;
             match.overtimeWinningTeam = winningTeam;
-            match.overtimeDrainTicks = losingControls ? -1 : (200 - (int) ticksSinceLoss);
+            match.overtimeDrainTicks = losingControls ? -1 : (20 - scansSinceLoss);
             return true;
         }
 
