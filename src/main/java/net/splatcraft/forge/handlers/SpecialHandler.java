@@ -114,7 +114,7 @@ public class SpecialHandler
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onLivingDamage(LivingDamageEvent event)
     {
-        if (!(event.getEntity() instanceof Player player) || player.level().isClientSide || !InkArmorSpecialItem.isArmorDeployed(player) || InkArmorSpecialItem.isBroken(player))
+        if (!(event.getEntity() instanceof Player player) || player.level().isClientSide || !InkArmorSpecialItem.hasInkArmor(player) || InkArmorSpecialItem.isBroken(player))
             return;
 
         if (player.getAbsorptionAmount() > 0.0F)

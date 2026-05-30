@@ -20,6 +20,7 @@ public class SyncZonesStatePacket extends PlayS2CPacket
     BlockPos[] zoneMins;
     BlockPos[] zoneMaxs;
     int[][] zoneTeamPcts;
+    int[] zoneControllers;
     boolean overtimeActive;
     int overtimeDrain;
 
@@ -29,7 +30,7 @@ public class SyncZonesStatePacket extends PlayS2CPacket
                                 int[] zoneTimers, int[] zonePenalties,
                                 int controllingTeamIdx,
                                 BlockPos[] zoneMins, BlockPos[] zoneMaxs,
-                                int[][] zoneTeamPcts,
+                                int[][] zoneTeamPcts, int[] zoneControllers,
                                 boolean overtimeActive, int overtimeDrain)
     {
         this.matchId = matchId;
@@ -42,6 +43,7 @@ public class SyncZonesStatePacket extends PlayS2CPacket
         this.zoneMins = zoneMins;
         this.zoneMaxs = zoneMaxs;
         this.zoneTeamPcts = zoneTeamPcts;
+        this.zoneControllers = zoneControllers;
         this.overtimeActive = overtimeActive;
         this.overtimeDrain = overtimeDrain;
     }
@@ -71,6 +73,7 @@ public class SyncZonesStatePacket extends PlayS2CPacket
             buffer.writeInt(zoneTeamPcts[i].length);
             for (int j = 0; j < zoneTeamPcts[i].length; j++)
                 buffer.writeInt(zoneTeamPcts[i][j]);
+            buffer.writeInt(zoneControllers[i]);
         }
 
         buffer.writeBoolean(overtimeActive);
@@ -101,6 +104,7 @@ public class SyncZonesStatePacket extends PlayS2CPacket
         pkt.zoneMins = new BlockPos[pkt.zoneCount];
         pkt.zoneMaxs = new BlockPos[pkt.zoneCount];
         pkt.zoneTeamPcts = new int[pkt.zoneCount][];
+        pkt.zoneControllers = new int[pkt.zoneCount];
         for (int i = 0; i < pkt.zoneCount; i++)
         {
             pkt.zoneMins[i] = buffer.readBlockPos();
@@ -110,6 +114,7 @@ public class SyncZonesStatePacket extends PlayS2CPacket
             pkt.zoneTeamPcts[i] = new int[pctLen];
             for (int j = 0; j < pctLen; j++)
                 pkt.zoneTeamPcts[i][j] = buffer.readInt();
+            pkt.zoneControllers[i] = buffer.readInt();
         }
 
         pkt.overtimeActive = buffer.readBoolean();
@@ -124,7 +129,7 @@ public class SyncZonesStatePacket extends PlayS2CPacket
     {
         ClientMatchData.updateZones(matchId, teamNames, teamColors,
             zoneTimers, zonePenalties, controllingTeamIdx,
-            zoneMins, zoneMaxs, zoneTeamPcts,
+            zoneMins, zoneMaxs, zoneTeamPcts, zoneControllers,
             overtimeActive, overtimeDrain);
     }
 }

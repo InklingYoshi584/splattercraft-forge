@@ -683,7 +683,25 @@ public class MatchHandler
                     newZoneControllers[zi] = -1;
             }
         }
-        match.zoneControllers = newZoneControllers;
+		match.zoneControllers = newZoneControllers;
+
+		for (int zi = 0; zi < zoneCount; zi++)
+		{
+			int oldCtrl = zi < oldZoneControllers.length ? oldZoneControllers[zi] : -1;
+			int newCtrl = newZoneControllers[zi];
+			if (newCtrl >= 0 && newCtrl != oldCtrl)
+			{
+				int zoneColor = stage.getTeamColor(teamArr[newCtrl]);
+				if (zoneColor >= 0)
+				{
+					ZonesData z = zones.get(zi);
+					for (int x = z.min.getX(); x <= z.max.getX(); x++)
+						for (int y = z.min.getY(); y <= z.max.getY(); y++)
+							for (int zz = z.min.getZ(); zz <= z.max.getZ(); zz++)
+								InkBlockUtils.inkBlock(level, new BlockPos(x, y, zz), zoneColor, 0, InkBlockUtils.InkType.NORMAL);
+				}
+			}
+		}
 
         for (int ti = 0; ti < teamCount; ti++)
         {
@@ -733,21 +751,6 @@ public class MatchHandler
             }
 
             match.lastControlLossTick = server.getTickCount();
-
-            int ctrlColor = stage.getTeamColor(match.controllingTeam);
-            if (ctrlColor >= 0)
-            {
-                for (ZonesData zone : zones)
-                {
-                    for (int x = zone.min.getX(); x <= zone.max.getX(); x++)
-                        for (int y = zone.min.getY(); y <= zone.max.getY(); y++)
-                            for (int z = zone.min.getZ(); z <= zone.max.getZ(); z++)
-                            {
-                                BlockPos pos = new BlockPos(x, y, z);
-                                InkBlockUtils.inkBlock(level, pos, ctrlColor, 0, InkBlockUtils.InkType.NORMAL);
-                            }
-                }
-            }
 
             match.lastControllingTeam = match.controllingTeam;
         }
@@ -846,7 +849,7 @@ public class MatchHandler
         if (allEqual && teamArr.length >= 2) currentLeader = null;
 
         String oldLeader = match.previousLeader;
-        boolean leaderChanged = currentLeader != null && !currentLeader.equals(oldLeader);
+		boolean leaderChanged = currentLeader != null && !currentLeader.equals(oldLeader) && oldLeader != null;
 
         for (UUID uuid : match.getPlayerUUIDs())
         {
@@ -891,7 +894,7 @@ public class MatchHandler
             }
         }
 
-        match.previousLeader = currentLeader;
+		match.previousLeader = currentLeader != null ? currentLeader : match.previousLeader;
     }
 
     private static void sendSubtitle(ServerPlayer player, Component msg)
@@ -991,7 +994,7 @@ public class MatchHandler
         }
 
         SyncZonesStatePacket packet = new SyncZonesStatePacket(match.id, teamArr, colors,
-            timers, penalties, ctrlIdx, mins, maxs, pcts,
+            timers, penalties, ctrlIdx, mins, maxs, pcts, match.zoneControllers,
             match.overtimeActive, match.overtimeDrainTicks);
 
         for (UUID uuid : match.getPlayerUUIDs())

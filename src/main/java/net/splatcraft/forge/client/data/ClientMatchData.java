@@ -37,6 +37,7 @@ public class ClientMatchData
     public static BlockPos[] zoneMins = new BlockPos[0];
     public static BlockPos[] zoneMaxs = new BlockPos[0];
     public static int[][] zoneTeamPcts = new int[0][];
+    public static int[] zoneControllers = new int[0];
     public static boolean overtimeActive;
     public static int overtimeDrain;
     public static boolean zoneKnockout;
@@ -93,6 +94,7 @@ public class ClientMatchData
     public static void updateZones(UUID matchId, String[] tNames, int[] tColors,
                                     int[] zTimers, int[] zPenalties, int ctrlIdx,
                                     BlockPos[] zMins, BlockPos[] zMaxs, int[][] zTeamPcts,
+                                    int[] zControllers,
                                     boolean otActive, int otDrain)
     {
         if (currentMatchId != null && !currentMatchId.equals(matchId))
@@ -103,6 +105,7 @@ public class ClientMatchData
             zoneMins = new BlockPos[0];
             zoneMaxs = new BlockPos[0];
             zoneTeamPcts = new int[0][];
+            zoneControllers = new int[0];
             overtimeActive = false;
             overtimeDrain = 0;
         }
@@ -112,6 +115,7 @@ public class ClientMatchData
         zoneMins = zMins;
         zoneMaxs = zMaxs;
         zoneTeamPcts = zTeamPcts;
+        zoneControllers = zControllers;
         overtimeActive = otActive;
         overtimeDrain = otDrain;
     }
@@ -138,6 +142,7 @@ public class ClientMatchData
         zoneMins = new BlockPos[0];
         zoneMaxs = new BlockPos[0];
         zoneTeamPcts = new int[0][];
+        zoneControllers = new int[0];
         overtimeActive = false;
         overtimeDrain = 0;
         zoneKnockout = false;

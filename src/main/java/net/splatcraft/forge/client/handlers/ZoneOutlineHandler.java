@@ -62,14 +62,14 @@ public class ZoneOutlineHandler
         BlockPos[] zoneMins;
         BlockPos[] zoneMaxs;
         int[] zoneColors;
-        int ctrlIdx;
+        int[] zoneCtrls;
 
         if (ClientMatchData.currentMatchId != null && ClientMatchData.matchType == MatchType.ZONES)
         {
             zoneMins = ClientMatchData.zoneMins;
             zoneMaxs = ClientMatchData.zoneMaxs;
             zoneColors = ClientMatchData.teamColors;
-            ctrlIdx = ClientMatchData.controllingTeamIdx;
+            zoneCtrls = ClientMatchData.zoneControllers;
         }
         else
         {
@@ -100,7 +100,7 @@ public class ZoneOutlineHandler
                 zoneMaxs[i] = foundZones.get(i).max;
             }
             zoneColors = new int[0];
-            ctrlIdx = -1;
+            zoneCtrls = new int[0];
         }
 
         if (zoneMins.length == 0) return;
@@ -117,9 +117,10 @@ public class ZoneOutlineHandler
         for (int zi = 0; zi < zoneMins.length; zi++)
         {
             float r, g, b;
-            if (ctrlIdx >= 0 && ctrlIdx < zoneColors.length)
+            int ziCtrl = zi < zoneCtrls.length ? zoneCtrls[zi] : -1;
+            if (ziCtrl >= 0 && ziCtrl < zoneColors.length)
             {
-                int color = zoneColors[ctrlIdx];
+                int color = zoneColors[ziCtrl];
                 r = ((color >> 16) & 0xFF) / 255.0F; g = ((color >> 8) & 0xFF) / 255.0F; b = (color & 0xFF) / 255.0F;
             }
             else { r = 1.0F; g = 1.0F; b = 1.0F; }
