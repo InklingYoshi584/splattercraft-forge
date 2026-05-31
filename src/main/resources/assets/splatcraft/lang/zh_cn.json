@@ -552,6 +552,10 @@
   "gamerule.splatcraft.inkableGround.description": "允许武器将方块替换为涂墨方块",
   "gamerule.splatcraft.rechargeableInkTank": "可充能墨水罐",
   "gamerule.splatcraft.rechargeableInkTank.description": "允许墨水罐被动恢复墨水，在墨水中游泳时恢复速率提高",
+  "gamerule.splatcraft.deathRecap": "死亡回放",
+  "gamerule.splatcraft.deathRecap.description": "在自动重生前，从倾斜角度展示5秒死亡回放，显示击杀者或死亡位置。",
+  "gamerule.splatcraft.inkAbilityWhitelist": "墨水能力白名单",
+  "gamerule.splatcraft.inkAbilityWhitelist.description": "将墨水能力限制为白名单配置中列出的玩家。",
 
   "status.coord_set.a": "设置第一点坐标为 X: %s Y: %s Z: %s",
   "status.coord_set.b": "设置第二点坐标为 X: %s Y: %s Z: %s",

@@ -557,6 +557,8 @@
   "gamerule.splatcraft.rechargeableInkTank.description": "Allows Ink Tanks to passively recover ink, recharge rate increases when swimming on ink",
   "gamerule.splatcraft.deathRecap": "Death recap",
   "gamerule.splatcraft.deathRecap.description": "Shows a 5-second death recap with an angled view of your killer or death location before auto-respawning.",
+  "gamerule.splatcraft.inkAbilityWhitelist": "Ink ability whitelist",
+  "gamerule.splatcraft.inkAbilityWhitelist.description": "Restricts ink abilities to players listed in the ability whitelist config.",
 
   "status.coord_set.a": "Set first position to X: %s Y: %s Z: %s",
   "status.coord_set.b": "Set second position to X: %s Y: %s Z: %s",

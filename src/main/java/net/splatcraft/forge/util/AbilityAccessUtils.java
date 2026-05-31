@@ -13,6 +13,9 @@ public class AbilityAccessUtils
         if (player == null)
             return false;
 
+        if (!net.splatcraft.forge.registries.SplatcraftGameRules.getBooleanRuleValue(player.level(), net.splatcraft.forge.registries.SplatcraftGameRules.INK_ABILITY_WHITELIST))
+            return true;
+
         List<? extends String> whitelist = SplatcraftConfig.Server.abilityWhitelist.get();
         if (whitelist.isEmpty())
             return false;
