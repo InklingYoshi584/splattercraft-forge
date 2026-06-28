@@ -1,106 +1,43 @@
-# Splatcraft 3.0.0
+# Splattercraft 3.3.0
 
-> 2168 insertions, 26 files — The Turf War Update
+## What's New
 
-## /match Command — Turf War Battles
+### Splat Zones Match Type
+- New match type: **Splat Zones** (`/match start <stage> <time> zones`)
+- Zone Marker tool (`/give @s splatcraft:splat_zones`) — define capture zones on stages
+- Per-zone capture tracking with HUD indicators showing ink percentage per team
+- 70%+ ink in a zone captures it; control all zones to start scoring
+- Score counts down from 100 per team; penalties applied on control loss
+- Overtime system with drain timer
+- Knockout: reaching 0 ends the match immediately
 
-- **`/match start <stage> <time> turf`** — Start a turf war match on any configured stage
-- **`/match stop <stage>`** — Stop an active match by stage name (Tab auto-complete)
+### Ink Armor Rework
+- Now applies to **all teammates** when activated (same ink color)
+- Shield HP halved: 12 → 6 (3 hearts)
+- Plays shield break sound effect on destruction
 
-### Match Flow
-- **Ready** → **Set** → **GO!** countdown with screen-filling titles
-- Players frozen during countdown and result phases
-- Real-time turf ink coverage scanning (every second)
-- 1-minute warning at top of screen
-- Last 10 seconds countdown displayed on action bar
-- **GAME!** title when time runs out
+### Super Jump
+- Can now select a jump target while airborne via the GUI overlay
+- Forces squid form mid-air; jump launches automatically on landing
+- Cooldown starts ticking immediately while airborne
 
-### Match HUD
-- Centered timer with black background, turns yellow at 1 minute
-- Player head icons with team ink color borders
-- Death: grayscale icon + gray **X** slam-in animation
-- Special ready: rainbow cycling border
-- Danger state: icons shrink + warning when opponent leads by >15%
-- Adaptive sizing to screen resolution
+## Changes
 
-### Result Screen (Splatroom 3 Table Turf Style)
-- Full bar fills from edges → pause → **CRASH** to final split point
-- Percentage numbers count up smoothly during animation
-- **YOU WIN!** / **YOU LOSE** large text with fade-in
-- Green/red vignette border effects
-- Sound effects: pling during fill, bass on crash, level-up fanfare on win
-- View locked downward over stage with 3-second delay before animation starts
+### Game Mechanics
+- New gamerule `splatcraft:inkAbilityWhitelist` (default: false) — when true, restricts ink abilities to players in the ability whitelist config
+- Splat Zones: each zone independently inks when captured at 70%+ instead of waiting for all zones
+- Super jump: lead messages no longer appear when both teams are still at 100 (initial state)
 
-### Team System
-- Auto-detect teams by ink color matching stage team colors
-- Auto-assign un-matched players to smallest team
-- Force ink color sync for accurate turf scanning
-- Spawn point set to each player's team spawn pad
+### Fixes
+- Splat Zones: knockout score bar updates immediately instead of after a 3-second delay
+- Splat Zones: penalty tracking and overtime drain timing fixed
+- Splat Zones: zone highlight colors now render per-zone instead of using a single global color
+- Splat Zones: improper "we have the lead" message no longer fires on first control capture
 
----
+## Previous Versions
 
-## Special Weapon Improvements
-
-### Hand-Useable Special Items
-- Hold any special weapon item + long-press (2s) → activates the special
-- Auto-finds a main weapon in inventory to use as context
-- Bypasses special points requirement for direct use
-
-### `/startinfinitespecial <item> [players]`
-- Grants infinite-duration special to target players
-- Tab auto-complete lists all registered special weapons
-- Works with all specials: Inkstrike, Inkzooka, Ultra Stamp, Zipcaster, Ink Armor, etc.
-- Death terminates the special (intentional)
-
-### Death Messages
-- Special weapon kills now show the correct weapon name (Inkstrike, Inkzooka, Ultra Stamp, Zipcaster)
-- Previously showed the main weapon name instead of the special that dealt damage
-
----
-
-## Bug Fixes
-
-- **Death recap corpse pushing** — Removed `setCamera(killer)` which teleported the corpse to the killer's location, causing collision and visibility issues
-- **Corpse collision** — Added `noPhysics = true` to death recap corpses
-- **Inkstrike crash** — Fixed NPE in `getRuntimeData()` when rendering other players with `ItemRendererMixin`
-- **Health bar** — Now properly hidden during match countdown (was missing `PLAYER_HEALTH` overlay cancellation)
-
----
-
-## Quality of Life
-
-- Debug messages removed from match system and team assignment
-- `zh_cn` translations for all new features
-- `/match stop` uses stage names instead of UUIDs with Tab auto-complete
-
----
-
-## Files Changed
-
-```
-26 files changed, 2168 insertions(+), 214 deletions(-)
-```
-
-**New files (12):**
-- `data/match/Match.java`, `MatchPhase.java`, `MatchType.java`
-- `handlers/MatchHandler.java`
-- `commands/MatchCommand.java`, `StartInfiniteSpecialCommand.java`
-- `network/s2c/SyncMatchStatePacket.java`, `MatchResultPacket.java`
-- `client/data/ClientMatchData.java`
-- `client/handlers/MatchHudHandler.java`
-
-**Modified files (14):**
-- `PlayerInfo.java` — `infiniteSpecial` field
-- `SpecialHandler.java` — infinite special skip logic
-- `SpecialWeaponItem.java` — hand-usable long-press
-- `InkstrikeSpecialItem.java` — NPE fix
-- `ZipcasterSpecialItem.java` — death weapon name fix
-- `InkstrikeTornadoEntity.java` — death weapon name fix
-- `InkzookaTornadoEntity.java` — death weapon name fix
-- `UltraStampThrownEntity.java` — death weapon name fix
-- `SplatcraftCommonHandler.java` — corpse noPhysics + remove setCamera(killer)
-- `SplatcraftCommands.java` — command registrations
-- `SplatcraftPacketHandler.java` — packet registrations
-- `PlayerMovementHandler.java` — match freeze input
-- `WeaponHotkeyMixin.java` — match freeze weapon use
-- `en_us.json` + `zh_cn.json` — translations
+### 3.0.0 — The Turf War Update
+- `/match` command with Turf War mode, HUD, result screen
+- Special weapon hand-use and `/startinfinitespecial`
+- Death recap cinematic with auto-respawn
+- Various bug fixes and zh_cn translations
