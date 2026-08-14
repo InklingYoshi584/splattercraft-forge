@@ -1,40 +1,17 @@
-# Splattercraft 3.3.0
+# Splattercraft 3.3.1
 
-## What's New
-
-### Splat Zones Match Type
-- New match type: **Splat Zones** (`/match start <stage> <time> zones`)
-- Zone Marker tool (`/give @s splatcraft:splat_zones`) — define capture zones on stages
-- Per-zone capture tracking with HUD indicators showing ink percentage per team
-- 70%+ ink in a zone captures it; control all zones to start scoring
-- Score counts down from 100 per team; penalties applied on control loss
-- Overtime system with drain timer
-- Knockout: reaching 0 ends the match immediately
-
-### Ink Armor Rework
-- Now applies to **all teammates** when activated (same ink color)
-- Shield HP halved: 12 → 6 (3 hearts)
-- Plays shield break sound effect on destruction
-
-### Super Jump
-- Can now select a jump target while airborne via the GUI overlay
-- Forces squid form mid-air; jump launches automatically on landing
-- Cooldown starts ticking immediately while airborne
-
-## Changes
-
-### Game Mechanics
-- New gamerule `splatcraft:inkAbilityWhitelist` (default: false) — when true, restricts ink abilities to players in the ability whitelist config
-- Splat Zones: each zone independently inks when captured at 70%+ instead of waiting for all zones
-- Super jump: lead messages no longer appear when both teams are still at 100 (initial state)
-
-### Fixes
-- Splat Zones: knockout score bar updates immediately instead of after a 3-second delay
-- Splat Zones: penalty tracking and overtime drain timing fixed
-- Splat Zones: zone highlight colors now render per-zone instead of using a single global color
-- Splat Zones: improper "we have the lead" message no longer fires on first control capture
+## Fixes
+- Weapon Workbench recipe is now unlocked for all players — it always appears in the recipe book instead of requiring a pickup-triggered advancement (which failed to fire for players who already had the materials)
+- Sardinium recipe advancement no longer references a non-existent recipe; Grate Ramp advancement no longer rewards a non-existent flipped recipe
 
 ## Previous Versions
+
+### 3.3.0
+- Splat Zones match type: zone marker tool, per-zone capture, penalties, overtime, knockout
+- Ink Armor applies to all teammates; shield HP halved (12 → 6); break sound
+- Super Jump: target selection while airborne, auto-launch on landing, airborne cooldown
+- New gamerule `splatcraft:inkAbilityWhitelist` (default: false)
+- Various Splat Zones HUD/knockout/penalty fixes
 
 ### 3.0.0 — The Turf War Update
 - `/match` command with Turf War mode, HUD, result screen
