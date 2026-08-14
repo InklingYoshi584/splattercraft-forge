@@ -1,10 +1,11 @@
 # Splattercraft 3.3.1
 
 ## Fixes
-- Weapon Workbench recipe is now unlocked for all players — it always appears in the recipe book instead of requiring a pickup-triggered advancement (which failed to fire for players who already had the materials)
+- Weapon Workbench (block) recipe is now unlocked for all players — it always appears in the recipe book instead of requiring a pickup-triggered advancement (which failed to fire for players who already had the materials). It is the base crafting gate; weapons crafted at the workbench remain blueprint-gated
 - Sardinium recipe advancement no longer references a non-existent recipe; Grate Ramp advancement no longer rewards a non-existent flipped recipe
 - Salmon no longer drop Power Eggs
 - Sunken crates and Sardinium deposits now actually generate on ocean floors (the features were registered but never attached to any biome)
+- Weapons at the workbench require blueprints again — the unlock advancements stripped in 3.3.0 are restored (starter Splattershot Jr / Ink Tank Jr stay unlocked)
 
 ## Previous Versions
 

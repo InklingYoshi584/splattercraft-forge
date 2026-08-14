@@ -5,6 +5,7 @@
   "recipes": [
     {
       "name": "weaponType.original",
+      "advancement": "splatcraft:unlocks/rapid_blaster",
       "result": {
         "item": "splatcraft:rapid_blaster",
         "count": 1

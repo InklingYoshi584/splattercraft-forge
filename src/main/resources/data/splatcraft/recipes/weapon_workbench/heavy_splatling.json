@@ -5,6 +5,7 @@
   "recipes": [
     {
       "name": "weaponType.original",
+      "advancement": "splatcraft:unlocks/heavy_splatling",
       "result": {
         "item": "splatcraft:heavy_splatling",
         "count": 1
@@ -23,9 +24,9 @@
           "count": 8
         }
       ]
-    },
-    {
+    },{
       "name": "weaponType.original",
+      "advancement": "splatcraft:unlocks/heavy_splatling_deco",
       "result": {
         "item": "splatcraft:heavy_splatling_deco",
         "count": 1
@@ -48,9 +49,9 @@
           "count": 1
         }
       ]
-    },
-    {
+    },{
       "name": "weaponType.original",
+      "advancement": "splatcraft:unlocks/heavy_splatling_remix",
       "result": {
         "item": "splatcraft:heavy_splatling_remix",
         "count": 1
@@ -77,9 +78,9 @@
           "count": 3
         }
       ]
-    },
-    {
+    },{
       "name": "weaponType.original",
+      "advancement": "splatcraft:unlocks/classic_heavy_splatling",
       "result": {
         "item": "splatcraft:classic_heavy_splatling",
         "count": 1

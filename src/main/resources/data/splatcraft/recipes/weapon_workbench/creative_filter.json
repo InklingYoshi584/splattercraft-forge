@@ -5,6 +5,7 @@
   "recipes": [
     {
       "name": "item.splatcraft.creative_filter",
+      "advancement": "splatcraft:story/every_ink_color",
       "result": {
         "item": "splatcraft:creative_filter",
         "count": 1

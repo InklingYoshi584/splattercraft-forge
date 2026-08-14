@@ -5,11 +5,13 @@
   "recipes": [
     {
       "name": "weaponType.original",
+      "advancement": "splatcraft:unlocks/splat_roller",
       "result": {
         "item": "splatcraft:splat_roller",
         "count": 1
       },
-      "ingredients": [
+      "ingredients":
+      [
         {
           "item": "splatcraft:sardinium",
           "count": 6
@@ -30,11 +32,13 @@
     },
     {
       "name": "weaponType.krak_on",
+      "advancement": "splatcraft:unlocks/krak_on_splat_roller",
       "result": {
         "item": "splatcraft:krak_on_splat_roller",
         "count": 1
       },
-      "ingredients": [
+      "ingredients":
+      [
         {
           "item": "splatcraft:sardinium",
           "count": 5
@@ -59,11 +63,13 @@
     },
     {
       "name": "weaponType.coro_coro",
+      "advancement": "splatcraft:unlocks/corocoro_splat_roller",
       "result": {
         "item": "splatcraft:corocoro_splat_roller",
         "count": 1
       },
-      "ingredients": [
+      "ingredients":
+      [
         {
           "item": "splatcraft:sardinium",
           "count": 8

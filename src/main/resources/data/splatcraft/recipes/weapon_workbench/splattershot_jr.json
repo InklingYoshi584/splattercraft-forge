@@ -26,6 +26,7 @@
     },
     {
       "name": "weaponType.kensa",
+      "advancement": "splatcraft:unlocks/kensa_splattershot_jr",
       "requires_other": true,
       "result": {
         "item": "splatcraft:kensa_splattershot_jr",

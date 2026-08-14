@@ -5,6 +5,7 @@
   "recipes": [
     {
       "name": "inkType.clear",
+      "advancement": "splatcraft:story/turf_war_ruler",
       "result": {
         "item": "splatcraft:clear_ink_band",
         "count": 1
