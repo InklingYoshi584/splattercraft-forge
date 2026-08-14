@@ -1,9 +1,0 @@
-{
-  "type": "splatcraft:chest_loot",
-  "conditions": [],
-  "item": "splatcraft:power_egg",
-  "countMin": 3,
-  "countMax": 6,
-  "chance": 1.0,
-  "parent": "minecraft:entities/salmon"
-}

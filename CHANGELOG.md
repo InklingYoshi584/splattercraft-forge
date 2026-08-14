@@ -3,6 +3,8 @@
 ## Fixes
 - Weapon Workbench recipe is now unlocked for all players — it always appears in the recipe book instead of requiring a pickup-triggered advancement (which failed to fire for players who already had the materials)
 - Sardinium recipe advancement no longer references a non-existent recipe; Grate Ramp advancement no longer rewards a non-existent flipped recipe
+- Salmon no longer drop Power Eggs
+- Sunken crates and Sardinium deposits now actually generate on ocean floors (the features were registered but never attached to any biome)
 
 ## Previous Versions
 

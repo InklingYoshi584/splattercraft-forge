@@ -1,0 +1,10 @@
+{
+  "type": "forge:add_features",
+  "biomes": "#minecraft:is_ocean",
+  "features": [
+    "splatcraft:crate_large",
+    "splatcraft:crate_small",
+    "splatcraft:sardinium_deposit"
+  ],
+  "step": "top_layer_modification"
+}
