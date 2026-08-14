@@ -2,8 +2,7 @@
   "parent": "minecraft:recipes/root",
   "rewards": {
     "recipes": [
-      "splatcraft:grate_ramp",
-      "splatcraft:grate_ramp_flipped"
+      "splatcraft:grate_ramp"
     ]
   },
   "criteria": {

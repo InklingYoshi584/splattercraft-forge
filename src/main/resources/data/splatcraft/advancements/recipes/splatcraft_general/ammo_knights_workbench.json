@@ -6,30 +6,8 @@
     ]
   },
   "criteria": {
-    "has_item": {
-      "trigger": "minecraft:inventory_changed",
-      "conditions": {
-        "items": [
-          {
-            "items": [
-              "splatcraft:sardinium",
-              "splatcraft:ammo_knights_scrap"
-            ]
-          }
-        ]
-      }
-    },
-    "has_the_recipe": {
-      "trigger": "minecraft:recipe_unlocked",
-      "conditions": {
-        "recipe": "splatcraft:ammo_knights_workbench"
-      }
+    "unlock": {
+      "trigger": "minecraft:tick"
     }
-  },
-  "requirements": [
-    [
-      "has_item",
-      "has_the_recipe"
-    ]
-  ]
+  }
 }
