@@ -423,9 +423,6 @@
   "gui.splatcraft.weapon_loadout.none": "Nulla",
   "gui.splatcraft.weapon_loadout.hotkey_hint": "Premi G per riaprire questo schermo",
 
-  "key.categories.splatcraft": "Splatcraft",
-  "key.squidForm": "Forma mollusca",
-  "key.subWeaponHotkey": "Arma secondaria",
   "key.weaponLoadout": "Kit per arma",
 
   "ink_color.invert": "%s invertito",
